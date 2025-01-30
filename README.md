@@ -1,4 +1,4 @@
-# SnakeCafé
+# Ye Olde Snake
 
 ## Introduction 
 
