@@ -1,4 +1,4 @@
-# Ye Olde Snake
+# Ye Olde Dragon
 
 ## Introduction 
 
