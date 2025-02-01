@@ -1,17 +1,17 @@
 matter Coffee {
-init(name: string, roast: string, seasonal: boolean? = zilch) {
-ye.name = name;
-ye.roast = roast;
-ye.seasonal = seasonal;
-}
+    init(name: string, roast: string, seasonal: boolean? = zilch) {
+        ye.name = name;
+        ye.roast = roast;
+        ye.seasonal = seasonal;
+    }
 
-don brew() -> void {
-proclaim(“This coffee is called \(ye.name) and it is a \(ye.roast).”)
-}
+    don brew() -> void {
+        proclaim(“This coffee is called \(ye.name) and it is a \(ye.roast).”)
+    }
 
-don isSeasonal() -> string {
-return this.seasonal?.asString() ?? “Not specified”;
-}
+    don isSeasonal() -> string {
+        return this.seasonal?.asString() ?? “Not specified”;
+    }
 }
 
 thine pike = Coffee(name: “Pike Place”, roast: “medium-roast”);
