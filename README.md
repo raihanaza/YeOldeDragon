@@ -86,8 +86,8 @@ Here are some examples, Ye Olde Dragon on the left, JavaScript on the right.
 ### Type Conversions 
 | YeOldeDragon                                      | JavaScript                               |
 |--------------------------------------------------|------------------------------------------|
-| `thine beverages = 5;`                           | `let beverages = 5;`                     |
-| `thine beveragesButAString = toString(beverages);` | `let beveragesButAString = String(beverages);` |
+| `thine beverages: int = 5;`                           | `let beverages = 5;`                     |
+| `thine beveragesButAString: string = toString(beverages);` | `let beveragesButAString = String(beverages);` |
 
 
 ### Loops
