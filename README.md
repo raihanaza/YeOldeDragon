@@ -113,6 +113,7 @@ for (coin in coins) {
     console.log(“We have a “ + coins.length + “ today!”);
 }
 ```
+
 </td>
 </tr>
 
@@ -203,6 +204,7 @@ function addNums(num1, num2) {
 console.log(addNums(22, 3));
 // Expected output: 25
 ```
+
 </td>
 </tr>
 </table>
