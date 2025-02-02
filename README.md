@@ -19,11 +19,11 @@ Ye Olde Dragon is brought to you by [Raihana Zahra](https://github.com/raihanaza
 | Name          | Type           |
 |--------------|-----------------|
 | YeOldeDragon | JavaScript      |
-| String       | String          |
-| Int          | Number          |
-| Float        | Number          |
-| Boolean      | Boolean         |
-| Zilch        | null, undefined |
+| string       | String          |
+| int          | Number          |
+| float        | Number          |
+| boolean      | Boolean         |
+| zilch        | null, undefined |
 
 
 ## Data Structures
@@ -91,40 +91,120 @@ Here are some examples, Ye Olde Dragon on the left, JavaScript on the right.
 
 
 ### Loops
-| YeOldeDragon                                              | JavaScript                                             |
-|----------------------------------------------------------|--------------------------------------------------------|
-| `thine coins: [string] = ["gold", "silver", "bronze"];`  | `let coins = ["gold", "silver", "bronze"];`           |
-|                                                          |                                                        |
-| `fortill (coin in coins) {`                              | `for (coin in coins) {`                                |
-| `    proclaim("We have a " + coin.length + " today!");`  | `    console.log("We have a " + coins.length + " today!");` |
-| `}`                                                      | `}`                                                    |
-|                                                          |                                                        |
-| `thine dragons = 10`                                     | `let dragons = 10;`                                    |
-|                                                          |                                                        |
-| `whilst (dragons > 0) {`                                 | `while (dragons > 0) {`                                |
-| `    proclaim("There are " + toString(dragons) + " left in the café");` | `    console.log("There are " + dragons + " left in the café");` |
-| `    dragons--;`                                         | `    dragons--;`                                       |
-| `}`                                                      | `}`                                                    |
+<table>
+<tr> <th>YeOldeDragon</th><th>JavaScript</th> </tr>
+<tr>
+<td>
+
+```
+thine coins: [string] = [“gold”, “silver”, “bronze”];
+fortill (coin in coins) {
+    proclaim(“We have a “ + coin.length + “ today!”);
+}
+```
+
+</td>
+<td>
+
+```
+let coins = [“gold”, “silver”, “bronze”];
+
+for (coin in coins) {
+    console.log(“We have a “ + coins.length + “ today!”);
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+```
+thine dragons: int = 10;
+whilst (dragons > 0) { 
+    proclaim(“There are “ + toString(dragons) + “ left in the café”);
+    dragons--;
+}
+```
+
+</td>
+<td>
+
+```
+let dragons = 10;
+while (dragons > 0) {
+    console.log(“There are “ + dragons + “ left in the café”);
+    dragons--;
+}
+```
+
+</td>
+</tr>
+</table>
+
 
 ### Conditionals
-| YeOldeDragon                                          | JavaScript                                         |
-|------------------------------------------------------|--------------------------------------------------|
-| `doth (caféIsOpen == shall) {`                       | `if (caféIsOpen == true) {`                     |
-| `    proclaim("It is open!");`                       | `    console.log("It is open!");`               |
-| `} doth not (caféIsOpen == shant) {`                 | `} else if (caféIsOpen == false) {`             |
-| `    proclaim("It is closed!");`                     | `    console.log("It is closed!");`             |
-| `} not {`                                           | `} else {`                                      |
-| `    proclaim("Lowkey, we don’t know what happened here…");` | `    console.log("Lowkey, we don’t know what happened here…");` |
-| `}`                                                 | `}`                                              |
+<table>
+<tr> <th>YeOldeDragon</th><th>JavaScript</th> </tr>
+<tr>
+<td>
+
+```
+doth (caféIsOpen == shall) {
+    proclaim(“It is open!);
+} doth not (caféIsOpen == shant) {
+    proclaim(“It is closed!);
+} not {
+    proclaim(“Lowkey, we don’t know what happened here…”);
+} 
+```
+
+</td>
+<td>
+
+```
+if (caféIsOpen == true) {
+    console.log(“It is open!)
+} else if (caféIsOpen == false) {
+    console.log(“It is closed!)
+} else {
+    console.log(“Lowkey, we don’t know what happened here…”)
+} 
+```
+
+</td>
+</tr>
+</table>
 
 
 ### Functions
-| YeOldeDragon                                              | JavaScript                                     |
-|----------------------------------------------------------|----------------------------------------------|
-| `don addNums(num1: int, num2: int) -> int {`             | `function addNums(num1, num2) {`             |
-| `    return (num1 + num2);`                              | `    return num1 + num2;`                    |
-| `}`                                                      | `}`                                          |
-|                                                          |                                              |
-| `proclaim(addNums(num1: 22, num2: 3));`                  | `console.log(addNums(22, 3));`               |
-| `~ Expected output: 25`                                  | `// Expected output: 25`                     |
+<table>
+<tr> <th>YeOldeDragon</th><th>JavaScript</th> </tr>
+<tr>
+<td>
 
+```
+don addNums(num1: int, num2: int) -> int {
+    return (num1 + num2);
+}
+
+proclaim(addNums(num1: 22, num2: 3));
+~ Expected output: 25
+```
+
+</td>
+<td>
+
+```
+function addNums(num1, num2) {
+    return num1 + num2
+}
+
+console.log(addNums(22, 3));
+// Expected output: 25
+```
+
+</td>
+</tr>
+</table>
