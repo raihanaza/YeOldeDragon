@@ -19,11 +19,11 @@ Ye Olde Dragon is brought to you by [Raihana Zahra](https://github.com/raihanaza
 | Name          | Type           |
 |--------------|-----------------|
 | YeOldeDragon | JavaScript      |
-| String       | String          |
-| Int          | Number          |
-| Float        | Number          |
-| Boolean      | Boolean         |
-| Zilch        | null, undefined |
+| string       | String          |
+| int          | Number          |
+| float        | Number          |
+| boolean      | Boolean         |
+| zilch        | null, undefined |
 
 
 ## Data Structures
