@@ -176,35 +176,3 @@ if (caféIsOpen == true) {
 </td>
 </tr>
 </table>
-
-
-### Functions
-<table>
-<tr> <th>YeOldeDragon</th><th>JavaScript</th> </tr>
-<tr>
-<td>
-
-```
-don addNums(num1: int, num2: int) -> int {
-    return (num1 + num2);
-}
-
-proclaim(addNums(num1: 22, num2: 3));
-~ Expected output: 25
-```
-
-</td>
-<td>
-
-```
-function addNums(num1, num2) {
-    return num1 + num2
-}
-
-console.log(addNums(22, 3));
-// Expected output: 25
-```
-
-</td>
-</tr>
-</table>
