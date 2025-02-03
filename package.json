@@ -1,0 +1,16 @@
+{
+  "name": "yeoldedragon",
+  "version": "1.0.0",
+  "description": "![yeoldedragon logo](docs/logo.png)",
+  "type": "module",
+  "main": "yeoldedragon.js",
+  "scripts": {
+    "test": "c8 node --test test/**/*.test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "c8": "^10.1.3"
+  }
+}
