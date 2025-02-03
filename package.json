@@ -1,7 +1,7 @@
 {
   "name": "yeoldedragon",
   "version": "1.0.0",
-  "description": "![yeoldedragon logo](docs/logo.png)",
+  "description": "A simple programming language themed around Old English and is a combination of JavaScript, Python, and Swift.",
   "type": "module",
   "main": "yeoldedragon.js",
   "scripts": {
