@@ -92,11 +92,12 @@ YeOldeDragon {
     
     String    = "\"" #lit (Interp #lit)* "\""
     lit       = char*
-    char      = ~control ~"\\" ~"\"" any   --char
+    char      = ~control ~"\\" ~"\"" ~"$" any   --char
               | "\\" escape                --esc
+              
 
-    escape    = "n" | "t" | "\\"
- 	Interp    = "\\(" Exp0 ")"              --interp
+    escape    = "n" | "t" | "\"" | "\\" | "$" | "(" | ")"
+    Interp    = "${" Exp0 "}"                 --interp
     /*
     char        = ~control ~"\\" ~"\"" any
               | "\\" ("n" | "t" | "\"" | "(" | "\\")                --escape
