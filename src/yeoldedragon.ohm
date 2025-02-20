@@ -1,5 +1,5 @@
 YeOldeDragon {
-	Program = Stmt+
+	Program = StmtNoBreak+
     StmtNoBreak = VarDecl
     		  | ConstDecl
               | PrintStmt
