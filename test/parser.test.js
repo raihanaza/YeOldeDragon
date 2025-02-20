@@ -61,6 +61,7 @@ const syntaxChecks = [
   //   ["end of program inside comment", "print(0); // yay"],
   //   ["comments with no text", "print(1);//\nprint(0);//"],
 ];
+
 const syntaxErrors = [
   ["non-letter in an identifier", "thine ab😭c = 2;", /Line 1, col 9:/],
 //   ["malformed number", "let x= 2.;", /Line 1, col 10:/],
