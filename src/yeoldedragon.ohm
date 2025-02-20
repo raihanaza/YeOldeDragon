@@ -1,43 +1,46 @@
 YeOldeDragon {
-	Program = Statement+
-    
-    Statement = VarDecl
+	Program = Stmt+
+    StmtNoBreak = VarDecl
     		  | ConstDecl
               | PrintStmt
               | TypeDecl
               | FuncDecl
               | Exp7 ("++"|"--") ";"										--incdec
-              | Exp7 "=" Exp0 ";"											--assign	
+              | Exp7 "=" Exp0 ";"											--assign
               | return Exp0 ";" 											--return
               | return ";"													--returnvoid
               | IfStmt
               | LoopStmt
-    
+    Stmt = StmtNoBreak
+         | BreakStmt
+    Block = "{" Stmt* "}"
+    BlockNoBreak = "{" StmtNoBreak* "}"
+    BreakStmt = breaketh ";"
     Param = id ":" Type
     Params = "(" ListOf<Param, ",">")"
-    Block = "{" Statement* "}"
-    
+
     Type = Type "?" 														--optional
     	 | "[" Type "]" 													--list
          | "(" ListOf<Type, ",">")" "->" Type 								--function
          | id 																--id
-    
+
     PrintStmt = proclaim Exp0 ";"
     VarDecl = thine Param "=" Exp0 ";"
     ConstDecl = fact Param "=" Exp0 ";"
-    
+
     FuncDecl = don id Params (":" Type)? Block
+    FuncCall = id "(" ListOf<id, ",">")"
     TypeDecl = matter id "{" Param* "}"
-    
-    IfStmt = perchance Exp0 Block else Block 										--long
-    	   | perchance Exp0 Block else IfStmt 									--elseif
-           | perchance Exp0 Block												--short
-    
+
+    IfStmt = perchance Exp0 BlockNoBreak else BlockNoBreak 					--long
+    	   | perchance Exp0 BlockNoBreak else IfStmt 						--elseif
+           | perchance Exp0 BlockNoBreak									--short
+
     LoopStmt = whilst Exp0 Block											--while
     		| fortill Exp0 Block											--for
             | fortill id in Exp0 ("..." | "..<") Exp0 Block 				--range
             | fortill id in Exp0 Block 										--forEach
-    
+
     Exp0 = Exp1 "?" Exp1 ":" Exp0 										--conditional
     	 | Exp1
     Exp1 = Exp1 "??" Exp2 												--ternary
@@ -46,28 +49,30 @@ YeOldeDragon {
     	 | Exp3 ("&&" Exp3)+											--and
          | Exp3
     Exp3 = Exp4 relop Exp4 												--compare
-    	 | Exp4 
-    Exp4 = Exp5 ("+" | "-") Exp6										--addsub
+    	 | Exp4
+    Exp4 = Exp4 ("+" | "-") Exp5										--addsub
     	 | Exp5
-    Exp5 = Exp6 ("*"|"/"|"%") Exp7 										--multiply
+    Exp5 = Exp5 ("*"|"/"|"%") Exp6 										--multiply
     	 | Exp6
     Exp6 = Exp7 "^" Exp6												--power
     	 | Exp7
+         | ne Exp7                                                     --unary
     Exp7 = true ~mut
     	 | false ~mut
          | floatLiteral ~mut
          | intLiteral ~mut
-         | stringLiteral ~mut
-         | id															--id
+         | String ~mut
+         | FuncCall
+         | Exp7 ("(" | "?(") ListOf<Exp0, ","> ")" ~mut   				--call
+         | id
          | "[" "]" ~mut 												--emptyarray
          | "[" NonemptyListOf<Exp0, ","> "]" ~mut 						--arrayExp
-         | "(" Exp0 ")" ~mut 											--parents  
-    
-    stringLiteral = "\"" char* "\""
+         | "(" Exp0 ")" ~mut 											--parents
+
     intLiteral = digit+
     floatLiteral = digit+ "." digit+ (("E"|"e") ("+"|"-")? digit+)?
     mut = ~"==" "=" | "++" | "=="
-    
+
     proclaim = "proclaim" ~idchar
     thine = "thine" ~idchar
     fact = "fact" ~idchar
@@ -79,21 +84,33 @@ YeOldeDragon {
     don = "don" ~idchar
     matter = "matter" ~idchar
     changeth = "changeth" ~idchar
+    breaketh = "breaketh" ~idchar
     spell = "spell" ~idchar
     defaulte = "defaulte" ~idchar
     return = "return" ~idchar
     true = "true" ~idchar
     false = "false" ~idchar
-    
+    ne = "ne" ~idchar
+
     id = ~keyword letter idchar*
-    keyword = proclaim |thine | fact | fortill | whilst | perchance | else | don | matter | changeth | spell | defaulte | true | false | in | return
+    keyword = proclaim | thine | fact | fortill | whilst | perchance | else | don
+            | matter | changeth | spell | defaulte | true | false | in | return
+            | breaketh | ne
     idchar = letter | digit | "_"
     numeral = digit+ ("." digit+)? (("E"|"e") ("+"|"-")? digit+)?
-    char        = ~control ~"\\" ~"\"" any
-              | "\\" ("n" | "t" | "\"" | "\\")                --escape
-              | "\\u{" hex hex? hex? hex? hex? hex? "}"       --codepoint
-    hex         = hexDigit
-    control     = "\x00".."\x1f" | "\x80".."\x9f"
+
+    String    = "\"" #lit (Interp #lit)* "\""
+    lit       = char*
+    char      = ~control ~"\\" ~"\"" ~"$" any   			--char
+              | "\\" escape                					--esc
+              | "\\u{" hex hex? hex? hex? hex? hex? "}"     --codepoint
+
+    escape    = "n" | "t" | "\"" | "\\" | "$" | "(" | ")" | "\""
+    Interp    = "${" Exp0 "}"
+    hex       = hexDigit
+    control   = "\x00".."\x1f" | "\x80".."\x9f"
     relop = "<=" | "<" | "==" | "!=" | ">=" | ">"
-    space += "~" (~"\n" any)*                             --comment
+    comment = "~" (~"\n" any)*                      --line
+            | "\\~" (~"~~" any)* "~~"               --multiline
+    space += comment
 }
