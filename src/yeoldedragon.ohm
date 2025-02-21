@@ -1,5 +1,5 @@
 YeOldeDragon {
-	Program = Stmt+
+	Program = StmtNoBreak+
     StmtNoBreak = VarDecl
     		  | ConstDecl
               | PrintStmt
@@ -57,8 +57,8 @@ YeOldeDragon {
     Exp6 = Exp7 "^" Exp6												--power
     	 | Exp7
          | ne Exp7                                                     --unary
-    Exp7 = true ~mut
-    	 | false ~mut
+    Exp7 = shall ~mut
+    	 | shant ~mut
          | floatLiteral ~mut
          | intLiteral ~mut
          | String ~mut
@@ -71,7 +71,7 @@ YeOldeDragon {
 
     intLiteral = digit+
     floatLiteral = digit+ "." digit+ (("E"|"e") ("+"|"-")? digit+)?
-    mut = ~"==" "=" | "++" | "=="
+    mut = ~"==" "=" | "++" | "--"
 
     proclaim = "proclaim" ~idchar
     thine = "thine" ~idchar
@@ -88,13 +88,13 @@ YeOldeDragon {
     spell = "spell" ~idchar
     defaulte = "defaulte" ~idchar
     return = "return" ~idchar
-    true = "true" ~idchar
-    false = "false" ~idchar
+    shall = "shall" ~idchar
+    shant = "shant" ~idchar
     ne = "ne" ~idchar
 
     id = ~keyword letter idchar*
     keyword = proclaim | thine | fact | fortill | whilst | perchance | else | don
-            | matter | changeth | spell | defaulte | true | false | in | return
+            | matter | changeth | spell | defaulte | shall | shant | in | return
             | breaketh | ne
     idchar = letter | digit | "_"
     numeral = digit+ ("." digit+)? (("E"|"e") ("+"|"-")? digit+)?
@@ -110,7 +110,8 @@ YeOldeDragon {
     hex       = hexDigit
     control   = "\x00".."\x1f" | "\x80".."\x9f"
     relop = "<=" | "<" | "==" | "!=" | ">=" | ">"
-    comment = "~" (~"\n" any)*                      --line
-            | "\\~" (~"~~" any)* "~~"               --multiline
+    comment = "~~" (~"~~" any)* "~~"               --multiline
+            | "~" (~"\n" any)*                      --line
+
     space += comment
 }

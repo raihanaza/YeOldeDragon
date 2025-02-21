@@ -1,15 +1,15 @@
 # Ye Olde Dragon
 ![yeoldedragon logo](docs/logo.png)
 
-## Introduction 
+## Introduction
 Ye Olde Dragon is a statically-typed, object-oriented scripting language whose name was inspired by its parent languages, Python🐉, Javascript 📜, and Swift (like a dragon 🏃‍♂️💨). We intend to bring together the best of all three worlds to create a highly effective and readable language that combines our favorite features and strengths from each. Ye Olde Dragon’s easily understandable syntax makes it an accessible language for beginners and experienced programmers alike, due to its powerful and versatile functionalities.
 
-Ye Olde Dragon is brought to you by [Raihana Zahra](https://github.com/raihanaza), [Lauren Campbell](https://github.com/laurenindira), [Cecilia Zaragoza](https://github.com/ceciliazaragoza), and [Z Anderson](https://github.com/alexanderson22). 
+Ye Olde Dragon is brought to you by [Raihana Zahra](https://github.com/raihanaza), [Lauren Campbell](https://github.com/laurenindira), [Cecilia Zaragoza](https://github.com/ceciliazaragoza), and [Z Anderson](https://github.com/alexanderson22).
 
 ## Features
 - .yod File Extension
 - Static and strong typing
-- Manifest typing 
+- Manifest typing
 - Ternary Conditional Statement
 - Truthy/Falsy types
 - Switch statements without fall-through
@@ -67,7 +67,7 @@ Here are some examples, Ye Olde Dragon on the left, JavaScript on the right.
 | YeOldeDragon   | JavaScript                   |
 |---------------|------------------------------|
 | `~ This is a comment` | `// This is a comment` |
-| `~ This is a multiline comment` <br> `That takes up multiple lines` | `/* This is a multiline comment` <br> `That takes up multiple lines */` |
+| `~~ This is a multiline comment` <br> `That takes up multiple lines ~~` | `/* This is a multiline comment` <br> `That takes up multiple lines */` |
 
 
 ### Hello World
@@ -83,7 +83,7 @@ Here are some examples, Ye Olde Dragon on the left, JavaScript on the right.
 | `fact pi: float = 3.14159;`           | `const pi = 3.14159;`         |
 
 
-### Type Conversions 
+### Type Conversions
 | YeOldeDragon                                      | JavaScript                               |
 |--------------------------------------------------|------------------------------------------|
 | `thine beverages: int = 5;`                           | `let beverages = 5;`                     |
@@ -122,7 +122,7 @@ for (coin in coins) {
 
 ```
 thine dragons: int = 10;
-whilst (dragons > 0) { 
+whilst (dragons > 0) {
     proclaim(“There are “ + toString(dragons) + “ left in the café”);
     dragons--;
 }
@@ -151,13 +151,13 @@ while (dragons > 0) {
 <td>
 
 ```
-doth (caféIsOpen == shall) {
+perchance caféIsOpen == shall {
     proclaim(“It is open!);
-} doth not (caféIsOpen == shant) {
+} else perchance caféIsOpen == shant {
     proclaim(“It is closed!);
-} not {
+} else {
     proclaim(“Lowkey, we don’t know what happened here…”);
-} 
+}
 ```
 
 </td>
@@ -170,7 +170,7 @@ if (caféIsOpen == true) {
     console.log(“It is closed!)
 } else {
     console.log(“Lowkey, we don’t know what happened here…”)
-} 
+}
 ```
 
 </td>
