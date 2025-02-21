@@ -67,7 +67,7 @@ Here are some examples, Ye Olde Dragon on the left, JavaScript on the right.
 | YeOldeDragon   | JavaScript                   |
 |---------------|------------------------------|
 | `~ This is a comment` | `// This is a comment` |
-| `~~ This is a multiline comment` <br> `That takes up multiple lines` | `/* This is a multiline comment` <br> `That takes up multiple lines */` |
+| `~~ This is a multiline comment` <br> `That takes up multiple lines ~~` | `/* This is a multiline comment` <br> `That takes up multiple lines */` |
 
 
 ### Hello World
@@ -151,11 +151,11 @@ while (dragons > 0) {
 <td>
 
 ```
-doth (caféIsOpen == shall) {
+perchance caféIsOpen == shall {
     proclaim(“It is open!);
-} doth not (caféIsOpen == shant) {
+} else perchance caféIsOpen == shant {
     proclaim(“It is closed!);
-} not {
+} else {
     proclaim(“Lowkey, we don’t know what happened here…”);
 }
 ```
