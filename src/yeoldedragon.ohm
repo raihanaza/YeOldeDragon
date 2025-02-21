@@ -1,7 +1,7 @@
 YeOldeDragon {
-	Program = StmtNoBreak+
+    Program = StmtNoBreak+
     StmtNoBreak = VarDecl
-    		  | ConstDecl
+    		    | ConstDecl
               | PrintStmt
               | TypeDecl
               | FuncDecl
@@ -20,7 +20,7 @@ YeOldeDragon {
     Params = "(" ListOf<Param, ",">")"
 
     Type = Type "?" 														--optional
-    	 | "[" Type "]" 													--list
+    	    | "[" Type "]" 													--list
          | "(" ListOf<Type, ",">")" "->" Type 								--function
          | id 																--id
 
@@ -32,27 +32,27 @@ YeOldeDragon {
     FuncCall = id "(" ListOf<id, ",">")"
     TypeDecl = matter id "{" Param* "}"
 
-    IfStmt = perchance Exp0 BlockNoBreak else BlockNoBreak 					--long
-    	   | perchance Exp0 BlockNoBreak else IfStmt 						--elseif
-           | perchance Exp0 BlockNoBreak									--short
+    IfStmt = perchance Exp0 BlockNoBreak else Block 					--long
+    	      | perchance Exp0 Block else IfStmt 						--elseif
+           | perchance Exp0 Block									--short
 
     LoopStmt = whilst Exp0 Block											--while
-    		| fortill Exp0 Block											--for
-            | fortill id in Exp0 ("..." | "..<") Exp0 Block 				--range
-            | fortill id in Exp0 Block 										--forEach
+    		   | fortill Exp0 Block											--for
+             | fortill id in Exp0 ("..." | "..<") Exp0 Block 				     --range
+             | fortill id in Exp0 Block 									--forEach
 
     Exp0 = Exp1 "?" Exp1 ":" Exp0 										--conditional
     	 | Exp1
-    Exp1 = Exp1 "??" Exp2 												--ternary
+    Exp1 = Exp1 "??" Exp2 											--ternary
     	 | Exp2
     Exp2 = Exp3 ("||" Exp3)+											--or
     	 | Exp3 ("&&" Exp3)+											--and
          | Exp3
-    Exp3 = Exp4 relop Exp4 												--compare
+    Exp3 = Exp4 relop Exp4 											--compare
     	 | Exp4
     Exp4 = Exp4 ("+" | "-") Exp5										--addsub
     	 | Exp5
-    Exp5 = Exp5 ("*"|"/"|"%") Exp6 										--multiply
+    Exp5 = Exp5 ("*"|"/"|"%") Exp6 									--multiply
     	 | Exp6
     Exp6 = Exp7 "^" Exp6												--power
     	 | Exp7
