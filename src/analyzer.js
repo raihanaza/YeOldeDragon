@@ -39,6 +39,23 @@ export default function analyze(match) {
     }
   }
 
+
+  function determineType(str) {
+    if (str == "int") {
+      return INT
+    } else if (str == "string") {
+      return STRING
+    } else if (str == "zilch") {
+      return VOID
+    } else if (str == "bool") {
+      return BOOLEAN
+    } else if (str == "float") {
+      return FLOAT
+    } else {
+      return ANY
+    }
+  }
+
   //utility functions
   function checkNotDeclared(name, at) {
     check(!context.lookup(name), `Identifier ${name} already declared`, at);
@@ -226,11 +243,12 @@ export default function analyze(match) {
     VarDecl(qualifier, id, _colon, type, _eq, exp, _semi) {
       checkNotDeclared(id.sourceString, id);
       const mutable = qualifier.sourceString === "thine";
-      const variable = core.variable(id.sourceString, type, mutable);
-      const initizalizer = exp.analyze();
-      checkBothSameType(type, initizalizer.type, type)
+      const varType = determineType(type.sourceString);
+      const variable = core.variable(id.sourceString, varType, mutable);
+      const initializer = exp.analyze();
+      checkBothSameType(varType, initializer.type, exp)
       context.add(id.sourceString, variable);
-      return core.variableDeclaration(variable, initizalizer);
+      return core.variableDeclaration(variable, initializer);
     }, 
     PrintStmt(_print, exp, _semi) {
       return core.printStatement(exp.analyze());
@@ -423,11 +441,8 @@ export default function analyze(match) {
       const [left, op, right] = [exp1.analyze(), addOp.sourceString, exp2.analyze()];
       checkBothSameType(left.type, right.type, exp1);
       if (op === "+") {
-        checkIsStringOrNumericType(left, exp1);
-      } else {
         checkHasNumericType(left, exp1);
       }
-      checkBothSameType(left.type, right.type, exp1);
       return core.binaryExpression(op, left, right, left.type);
     },
     Exp5_multiply(exp1, mulOp, exp2) {

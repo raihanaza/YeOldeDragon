@@ -30,7 +30,7 @@ describe("The analyzer", () => {
             analyze(parse("thine x: int = 1 + 2;")),
             program([
                 variableDeclaration(
-                    variable("x", intType), 
+                    variable("x", intType, true), 
                     binaryExpression("+", "1", "2", intType)
                 ),
             ])
