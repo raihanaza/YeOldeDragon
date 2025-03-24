@@ -1,73 +1,75 @@
 YeOldeDragon {
-    Program = StmtNoBreak+
-    StmtNoBreak = VarDecl
+     Program = Statement+
+     Statement = VarDecl
     		    | ConstDecl
               | PrintStmt
               | TypeDecl
               | FuncDecl
+              | FuncCall
               | Exp7 ("++"|"--") ";"										--incdec
               | Exp7 "=" Exp0 ";"											--assign
+              | breaketh ";"                                                            --break
               | return Exp0 ";" 											--return
-              | return ";"													--returnvoid
+              | return ";"											     --returnvoid
               | IfStmt
               | LoopStmt
-    Stmt = StmtNoBreak
-         | BreakStmt
-    Block = "{" Stmt* "}"
-    BlockNoBreak = "{" StmtNoBreak* "}"
+    Block = "{" Statement* "}"
     BreakStmt = breaketh ";"
     Param = id ":" Type
     Params = "(" ListOf<Param, ",">")"
 
-    Type = Type "?" 														--optional
+    Type = Type "?" 													--optional
     	    | "[" Type "]" 													--list
          | "(" ListOf<Type, ",">")" "->" Type 								--function
-         | id 																--id
+         | "int"                                                                     --intType
+         | id 															--id
 
     PrintStmt = proclaim Exp0 ";"
-    VarDecl = thine Param "=" Exp0 ";"
+    VarDecl = thine id ":" Type "=" Exp0 ";"                                          
     ConstDecl = fact Param "=" Exp0 ";"
 
     FuncDecl = don id Params (":" Type)? Block
     FuncCall = id "(" ListOf<id, ",">")"
-    TypeDecl = matter id "{" Param* "}"
+    TypeDecl = matter id "{" ListOf<Param, ","> "}"
 
-    IfStmt = perchance Exp0 BlockNoBreak else Block 					--long
-    	      | perchance Exp0 Block else IfStmt 						--elseif
-           | perchance Exp0 Block									--short
+    IfStmt = perchance Exp0 Block else Block 					               --long
+    	      | perchance Exp0 Block else IfStmt 						          --elseif
+           | perchance Exp0 Block									          --short
 
     LoopStmt = whilst Exp0 Block											--while
-    		   | fortill Exp0 Block											--for
-             | fortill id in Exp0 ("..." | "..<") Exp0 Block 				     --range
-             | fortill id in Exp0 Block 									--forEach
+    		  | fortill Exp0 Block											--for
+            | fortill id in Exp0 ("..." | "..<") Exp0 Block 				     --range
+            | fortill id in Exp0 Block 										--forEach
 
-    Exp0 = Exp1 "?" Exp1 ":" Exp0 										--conditional
-    	 | Exp1
-    Exp1 = Exp1 "??" Exp2 											--ternary
-    	 | Exp2
-    Exp2 = Exp3 ("||" Exp3)+											--or
-    	 | Exp3 ("&&" Exp3)+											--and
+    Exp0 = Exp1 "?" Exp1 ":" Exp0 										     --ternary
+    	    | Exp1
+    Exp1 = Exp1 "??" Exp2 												--nilcoalescing
+    	    | Exp2
+    Exp2 = Exp3 ("||" Exp3)+										     	--or
+    	    | Exp3 ("&&" Exp3)+										     	--and
          | Exp3
-    Exp3 = Exp4 relop Exp4 											--compare
-    	 | Exp4
-    Exp4 = Exp4 ("+" | "-") Exp5										--addsub
-    	 | Exp5
-    Exp5 = Exp5 ("*"|"/"|"%") Exp6 									--multiply
-    	 | Exp6
-    Exp6 = Exp7 "^" Exp6												--power
-    	 | Exp7
-         | ne Exp7                                                     --unary
+    Exp3 = Exp4 relop Exp4 												--compare
+    	    | Exp4
+    Exp4 = Exp4 ("+" | "-") Exp5										     --addsub
+    	    | Exp5
+    Exp5 = Exp5 ("*"|"/"|"%") Exp6 										--multiply
+    	    | Exp6
+    Exp6 = Exp7 "^" Exp6												     --power
+    	    | Exp7
+         | (ne | "-") Exp7                                                                   --unary
     Exp7 = shall ~mut
-    	 | shant ~mut
+    	    | shant ~mut
          | floatLiteral ~mut
          | intLiteral ~mut
-         | String ~mut
          | FuncCall
-         | Exp7 ("(" | "?(") ListOf<Exp0, ","> ")" ~mut   				--call
-         | id
-         | "[" "]" ~mut 												--emptyarray
-         | "[" NonemptyListOf<Exp0, ","> "]" ~mut 						--arrayExp
-         | "(" Exp0 ")" ~mut 											--parents
+         | Exp7 (("(" | "?(") ListOf<Exp0, ","> ")") ~mut   				     --call
+         | Exp7 "[" Exp0 "]"                                                    --subscript
+         | Exp7 ("." | "?.") id                                                 --member
+         | String ~mut
+         | id                                                                   --id
+         | "[" "]" ~mut 												--emptylist
+         | "[" NonemptyListOf<Exp0, ","> "]" ~mut 						--listExp
+         | "(" Exp0 ")" ~mut 											--parens
 
     intLiteral = digit+
     floatLiteral = digit+ "." digit+ (("E"|"e") ("+"|"-")? digit+)?
@@ -95,23 +97,23 @@ YeOldeDragon {
     id = ~keyword letter idchar*
     keyword = proclaim | thine | fact | fortill | whilst | perchance | else | don
             | matter | changeth | spell | defaulte | shall | shant | in | return
-            | breaketh | ne
+            | breaketh | ne 
     idchar = letter | digit | "_"
     numeral = digit+ ("." digit+)? (("E"|"e") ("+"|"-")? digit+)?
 
     String    = "\"" #lit (Interp #lit)* "\""
     lit       = char*
-    char      = ~control ~"\\" ~"\"" ~"$" any   			--char
-              | "\\" escape                					--esc
-              | "\\u{" hex hex? hex? hex? hex? hex? "}"     --codepoint
+    char      = ~control ~"\\" ~"\"" ~"$" any   			                    --char
+              | "\\" escape                					               --esc
+              | "\\u{" hex hex? hex? hex? hex? hex? "}"                         --codepoint
 
     escape    = "n" | "t" | "\"" | "\\" | "$" | "(" | ")" | "\""
     Interp    = "${" Exp0 "}"
     hex       = hexDigit
     control   = "\x00".."\x1f" | "\x80".."\x9f"
     relop = "<=" | "<" | "==" | "!=" | ">=" | ">"
-    comment = "~~" (~"~~" any)* "~~"               --multiline
-            | "~" (~"\n" any)*                      --line
+    comment = "~~" (~"~~" any)* "~~"                                            --multiline
+            | "~" (~"\n" any)*                                                  --line
 
     space += comment
 }

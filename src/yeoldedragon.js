@@ -1,7 +1,11 @@
-#! /usr/bin/env node
+import * as fs from "fs";
+import parse from "./parser.js";
 
-import * as fs from "node:fs/promises";
-import stringify from "graph-stringify";
-import compile from "./compiler.js";
+if (process.argv.length !== 3) {
+  console.error("Usage: node src/yeoldedragon.js FILENAME");
+  process.exit(1);
+}
 
-//console.log("Hello world from yeoldedragon.js!");
+const soureCode = fs.readFileSync(process.argv[2], "utf-8");
+const match = parse(soureCode);
+console.log("did parse");
