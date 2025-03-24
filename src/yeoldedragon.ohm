@@ -1,6 +1,6 @@
 YeOldeDragon {
-     Program = StmtNoBreak+
-     StmtNoBreak = VarDecl
+     Program = Statement+
+     Statement = VarDecl
     		    | ConstDecl
               | PrintStmt
               | TypeDecl
@@ -8,14 +8,12 @@ YeOldeDragon {
               | FuncCall
               | Exp7 ("++"|"--") ";"										--incdec
               | Exp7 "=" Exp0 ";"											--assign
+              | breaketh ";"                                                            --break
               | return Exp0 ";" 											--return
               | return ";"											     --returnvoid
               | IfStmt
               | LoopStmt
-    Stmt = StmtNoBreak
-         | BreakStmt
-    Block = "{" Stmt* "}"
-    BlockNoBreak = "{" StmtNoBreak* "}"
+    Block = "{" Statement* "}"
     BreakStmt = breaketh ";"
     Param = id ":" Type
     Params = "(" ListOf<Param, ",">")"
@@ -23,10 +21,11 @@ YeOldeDragon {
     Type = Type "?" 													--optional
     	    | "[" Type "]" 													--list
          | "(" ListOf<Type, ",">")" "->" Type 								--function
+         | "int"                                                                     --intType
          | id 															--id
 
     PrintStmt = proclaim Exp0 ";"
-    VarDecl = thine Param "=" Exp0 ";"
+    VarDecl = thine id ":" Type "=" Exp0 ";"                                          
     ConstDecl = fact Param "=" Exp0 ";"
 
     FuncDecl = don id Params (":" Type)? Block
@@ -42,9 +41,9 @@ YeOldeDragon {
             | fortill id in Exp0 ("..." | "..<") Exp0 Block 				     --range
             | fortill id in Exp0 Block 										--forEach
 
-    Exp0 = Exp1 "?" Exp1 ":" Exp0 										     --conditional
+    Exp0 = Exp1 "?" Exp1 ":" Exp0 										     --ternary
     	    | Exp1
-    Exp1 = Exp1 "??" Exp2 												--ternary
+    Exp1 = Exp1 "??" Exp2 												--nilcoalescing
     	    | Exp2
     Exp2 = Exp3 ("||" Exp3)+										     	--or
     	    | Exp3 ("&&" Exp3)+										     	--and
@@ -57,18 +56,20 @@ YeOldeDragon {
     	    | Exp6
     Exp6 = Exp7 "^" Exp6												     --power
     	    | Exp7
-         | ne Exp7                                                                   --unary
+         | (ne | "-") Exp7                                                                   --unary
     Exp7 = shall ~mut
     	    | shant ~mut
          | floatLiteral ~mut
          | intLiteral ~mut
-         | String ~mut
          | FuncCall
-         | Exp7 ("(" | "?(") ListOf<Exp0, ","> ")" ~mut   				     --call
-         | id
-         | "[" "]" ~mut 												--emptyarray
-         | "[" NonemptyListOf<Exp0, ","> "]" ~mut 						--arrayExp
-         | "(" Exp0 ")" ~mut 											--parents
+         | Exp7 (("(" | "?(") ListOf<Exp0, ","> ")") ~mut   				     --call
+         | Exp7 "[" Exp0 "]"                                                    --subscript
+         | Exp7 ("." | "?.") id                                                 --member
+         | String ~mut
+         | id                                                                   --id
+         | "[" "]" ~mut 												--emptylist
+         | "[" NonemptyListOf<Exp0, ","> "]" ~mut 						--listExp
+         | "(" Exp0 ")" ~mut 											--parens
 
     intLiteral = digit+
     floatLiteral = digit+ "." digit+ (("E"|"e") ("+"|"-")? digit+)?
@@ -96,7 +97,7 @@ YeOldeDragon {
     id = ~keyword letter idchar*
     keyword = proclaim | thine | fact | fortill | whilst | perchance | else | don
             | matter | changeth | spell | defaulte | shall | shant | in | return
-            | breaketh | ne
+            | breaketh | ne 
     idchar = letter | digit | "_"
     numeral = digit+ ("." digit+)? (("E"|"e") ("+"|"-")? digit+)?
 
