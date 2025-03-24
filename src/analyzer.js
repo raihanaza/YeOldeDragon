@@ -2,7 +2,6 @@ import * as core from "./core.js";
 
 const INT = core.intType;
 const FLOAT = core.floatType;
-// const NUM = core.numType;
 const STRING = core.stringType;
 const BOOLEAN = core.booleanType;
 const VOID = core.voidType;
@@ -33,9 +32,9 @@ export default function analyze(match) {
   const grammar = match.matcher.grammar;
 
   //error checking gate
-  function check(condition, message, errorLocation) {
+  function check(condition, message, at) {
     if (!condition) {
-      const prefix = errorLocation.at.source.getLineAndColumnMessage();
+      const prefix = at.source.getLineAndColumnMessage();
       throw new Error(`${prefix} ${message}`);
     }
   }
@@ -46,7 +45,7 @@ export default function analyze(match) {
   }
 
   function checkHasBeenDeclared(entitty, at) {
-    check(entitty, `Identifier ${at} not declared`, at);
+    check(entitty, `Identifier ${at.sourceString} not declared`, at);
   }
 
   function checkHasNumericType(e, at) {
@@ -103,12 +102,13 @@ export default function analyze(match) {
     check(e.mutable, `Cannot assign to immutable variable ${e.name}`, at);
   }
 
+  // TODO for Lauren
   function checkBothSameType(type1, type2, at) {
     check(type1 === type2, `Operands must have the same type`, at);
   }
 
-  function checkTypeMatchesExpressionType(type, expType, at) {
-    check(type === expType.kind, `Type mismatch. Expected ${type} but got ${expType}`, at);
+  function checkVarDecTypeMatchesExpressionType(type, expType, at) {
+    check(type === expType, `Type mismatch. Expected ${type} but got ${expType}`, at);
   }
 
   function checkAllSameType(elements, at) {
@@ -257,12 +257,11 @@ export default function analyze(match) {
       checkNotDeclared(id.sourceString, id);
       const mutable = qualifier.sourceString === "thine";
       const typeName = type.sourceString;
-      const variable = core.variable(id.sourceString, type, mutable);
+      const variable = core.variable(id.sourceString, typeName, mutable);
       const initializer = exp.analyze();
 
       console.log("type.sourceString", typeName, "initializer.type", initializer.type);
-      //console.log("type", type, "initializer", initializer);
-      checkTypeMatchesExpressionType(typeName, initializer.type, type);
+      checkVarDecTypeMatchesExpressionType(typeName, initializer.type.kind, type);
 
       context.add(id.sourceString, variable);
       return core.variableDeclaration(variable, initializer);
