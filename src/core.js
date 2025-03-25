@@ -156,19 +156,19 @@ export function memberExpression(object, op, field) {
 // }
 
 export function stringExpression(literal, interpolation) {
-  return { kind: "StringExpression", literal, interpolation };
+  return { kind: "StringExpression", literal, interpolation, type: stringType };
 }
 
 export function field(name, type) {
   return { kind: "Field", name, type };
 }
 
-export const voidType = { kind: "void" };
-export const anyType = { kind: "any" };
-export const booleanType = { kind: "bool" };
-export const floatType = { kind: "float" };
-export const intType = { kind: "int" };
-export const stringType = { kind: "string" };
+export const voidType = "void";
+export const anyType = "any";
+export const booleanType = "bool";
+export const floatType = "float";
+export const intType = "int";
+export const stringType = "string";
 
 const floatToFloatType = functionType([floatType], floatType);
 const anyToVoidType = functionType([anyType], voidType);

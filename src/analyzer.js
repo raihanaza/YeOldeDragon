@@ -162,35 +162,35 @@ export default function analyze(match) {
     );
   }
 
-  function typeDescription(type) {
-    switch (type.kind) {
-      case "VoidType":
-        return "void";
-      case "AnyType":
-        return "any";
-      case "IntType":
-        return "int";
-      case "FloatType":
-        return "float";
-      case "StringType":
-        return "string";
-      case "BooleanType":
-        return "boolean";
-      case "ListType":
-        return `[${typeDescription(type.type)}]`;
-      case "OptionalType":
-        return `${typeDescription(type.baseType)}?`;
-      case "ObjectType":
-        return type.name;
-      case "FunctionType":
-        const paramTypes = type.paramTypes.map(typeDescription).join(", ");
-        const returnTypes = typeDescription(type.returnType);
-        return `(${paramTypes}) => ${returnTypes}`;
-    }
-  }
+  // function typeDescription(type) {
+  //   switch (type.kind) {
+  //     case "void":
+  //       return "void";
+  //     case "any":
+  //       return "any";
+  //     case "int":
+  //       return "int";
+  //     case "FloatType":
+  //       return "float";
+  //     case "StringType":
+  //       return "string";
+  //     case "BooleanType":
+  //       return "boolean";
+  //     case "ListType":
+  //       return `[${typeDescription(type.type)}]`;
+  //     case "OptionalType":
+  //       return `${typeDescription(type.baseType)}?`;
+  //     case "ObjectType":
+  //       return type.name;
+  //     case "FunctionType":
+  //       const paramTypes = type.paramTypes.map(typeDescription).join(", ");
+  //       const returnTypes = typeDescription(type.returnType);
+  //       return `(${paramTypes}) => ${returnTypes}`;
+  //   }
+  // }
 
   function checkIsAssignable(e, { toType: type }, at) {
-    check(assignable(e.type, type), `Cannot assign ${typeDescription(e.type)} to ${typeDescription(type)}`, at);
+    check(assignable(e.type, type), `Cannot assign ${e.type} to ${type}`, at);
   }
 
   function isMutable(e) {
@@ -261,7 +261,7 @@ export default function analyze(match) {
       const initializer = exp.analyze();
 
       console.log("type.sourceString", typeName, "initializer.type", initializer.type);
-      checkVarDecTypeMatchesExpressionType(typeName, initializer.type.kind, type);
+      checkVarDecTypeMatchesExpressionType(typeName, initializer.type, type);
 
       context.add(id.sourceString, variable);
       return core.variableDeclaration(variable, initializer);
@@ -550,7 +550,10 @@ export default function analyze(match) {
     intLiteral(_digits) {
       return BigInt(this.sourceString);
     },
-    //TODO: go over this with Toal
+    // TODO: go over this
+    lit(_chars) {
+      return this.sourceString;
+    },
     String(_openQuote, lit1, interp, lit2, _closeQuote) {
       const staticText1 = lit1.sourceString;
       const interpolations = interp.children.map((i) => i.children[1].analyze());

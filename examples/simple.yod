@@ -1,1 +1,1 @@
-thine x: int = z;
+thine x: string = "hi";
