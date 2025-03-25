@@ -4,9 +4,15 @@ import parse from "../src/parser.js";
 import analyze from "../src/analyzer.js";
 import { program, variableDeclaration, variable, intType, floatType, binaryExpression } from "../src/core.js";
 
-const semanticChecks = [["variable declaration", "thine x: int = 1;"]];
+const semanticChecks = [
+  ["int variable declaration", "thine x: int = 1;"],
+  //["string variable declaration", "thine x: float = 1.0;"],
+];
 
-const semanticErrors = [["variable declaration with mismatched types", "thine x: bool = 1;"]];
+const semanticErrors = [
+  //  ["variable declaration with mismatched types", "thine x: bool = 1;", /Type mismatch. Expected type bool but got int/],
+  ["variable declaration with mismatched types", "thine x: bool = 1;"],
+];
 
 describe("The analyzer", () => {
   for (const [scenario, source] of semanticChecks) {
