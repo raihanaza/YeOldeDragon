@@ -39,7 +39,6 @@ export default function analyze(match) {
     }
   }
 
-
   function determineType(str) {
     if (str == "int") {
       return INT
@@ -124,7 +123,7 @@ export default function analyze(match) {
   }
 
   function checkVarDecTypeMatchesExpressionType(type, expType, at) {
-    check(type === expType, `Type mismatch. Expected ${type} but got ${expType}`, at);
+    check(type === expType, `Type mismatch in declaration. Expected ${expType} but got ${type}`, at);
   }
 
   function checkAllSameType(elements, at) {
@@ -178,8 +177,9 @@ export default function analyze(match) {
     );
   }
 
-  function checkIsAssignable(e, { toType: type }, at) {
-    check(assignable(e.type, type), `Cannot assign ${e.type} to ${type}`, at);
+  function checkIsAssignable(e, type, at) {
+    console.log("E TYPE: ", e.type)
+    check(assignable(type, e.type), `Cannot assign from ${type} to ${e.type}`, at);
   }
 
   function isMutable(e) {
@@ -235,7 +235,8 @@ export default function analyze(match) {
   }
 
   function checkIfReturnable(e, { from: f }, at) {
-    checkIsAssignable(e, { toType: f.type.returnType }, at);
+    console.log("RETURN: ", f.type.returnType)
+    checkIsAssignable(e, f.type.returnType, at);
   }
 
   //TODO: the name of this var should be builder, and .addOperation("rep",
@@ -250,7 +251,7 @@ export default function analyze(match) {
       const typeName = type.sourceString;
       const variable = core.variable(id.sourceString, typeName, mutable);
       const initializer = exp.analyze();
-      checkVarDecTypeMatchesExpressionType(typeName, initializer.type, type);
+      checkVarDecTypeMatchesExpressionType(initializer.type, typeName, exp);
       context.add(id.sourceString, variable);
       if (mutable) {
         return core.variableDeclaration(variable, initializer);
@@ -301,6 +302,7 @@ export default function analyze(match) {
     Statement_incdec(id, op, _semi) {
       const variable = id.analyze();
       checkHasNumericType(variable, id)
+      //TODO: check if there's a cleaner way to check this
       if (op.sourceString === "++") { return core.incrementStatement(variable); }
       if (op.sourceString === "--") { return core.decrementStatement(variable); }
     },
@@ -309,7 +311,8 @@ export default function analyze(match) {
       const target = variable.analyze();
       const source = exp.analyze();
       checkIsMutable(target, variable);
-      checkIsAssignable(source, target, variable);
+      checkIsAssignable(source, target.type, source);
+      checkBothSameType(target, source, variable)
       return core.assignmentStatement(target, source);
     },
 
@@ -317,7 +320,7 @@ export default function analyze(match) {
       checkInFunction({ at: returnKeyword });
       checkReturnsSomething(context.function, { at: returnKeyword });
       const returnExpression = exp.analyze();
-      checkIfReturnable(returnExpression, { from: context.function }, { at: exp });
+      checkIfReturnable(returnExpression, { from: context.function }, returnKeyword);
       return core.returnStatement(returnExpression);
     },
 
@@ -369,7 +372,7 @@ export default function analyze(match) {
       context = context.newChildContext({ inLoop: true });
       const body = block.analyze();
       context = context.parent;
-      return core.forStatement(count, body);
+      return core.repeatStatement(count, body);
     },
 
     LoopStmt_range(forKeyword, id, _in, exp1, op, exp2, block) {
@@ -431,7 +434,6 @@ export default function analyze(match) {
     Type_id(id) {
       const entity = context.lookup(id.sourceString);
       checkHasBeenDeclared(entity, id.sourceString, { at: id });
-      checkIsType(entity, { at: id });
       return entity;
     },
 
@@ -451,7 +453,7 @@ export default function analyze(match) {
     Exp2_or(exp1, _or, exp2) {
       let left = exp1.analyze();
       checkHasBoolenType(left, exp1);
-      for (let e of exps.children) {
+      for (let e of exp2.children) {
         let right = e.analyze();
         checkHasBoolenType(right, e);
         left = core.binaryExpression("||", left, right, BOOLEAN);
@@ -461,7 +463,7 @@ export default function analyze(match) {
     Exp2_and(exp1, _and, exp2) {
       let left = exp1.analyze();
       checkHasBoolenType(left, exp1);
-      for (let e of exps.children) {
+      for (let e of exp2.children) {
         let right = e.analyze();
         checkHasBoolenType(right, e);
         left = core.binaryExpression("&&", left, right, BOOLEAN);
@@ -554,10 +556,11 @@ export default function analyze(match) {
     Exp7_emptylist(_open, _close) {
       return core.emptyListExpression(core.anyType);
     },
+    //TODO: fiddle with list exp until types work
     Exp7_listExp(_open, args, _close) {
       const elements = args.asIteration().children.map((e) => e.analyze());
       checkAllSameType(elements, args);
-      return core.listExpression(elements);
+      return core.listExpression(elements, elements[0].type);
     },
     Exp7_parens(_open, exp, _close) {
       return exp.analyze();
