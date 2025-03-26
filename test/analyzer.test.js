@@ -24,7 +24,8 @@ const semanticChecks = [
 
 const semanticErrors = [
   //["variable declaration with mismatched types", "thine x: bool = 1;", /Type mismatch. Expected type bool but got int/],
-  //["variable declaration with mismatched types", "thine x: bool = 1;"],
+  //["variable declaration with mismatched types", "thine x: bool = 1;",],
+  //["don addNums(num1: int, yes: boolean) -> int { return num1 + yes; }",],
 ];
 
 describe("The analyzer", () => {

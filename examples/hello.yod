@@ -1,0 +1,2 @@
+thine x: int = 1;
+proclaim("Good morrow, ${x} fair world!");
