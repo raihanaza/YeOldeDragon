@@ -1,7 +1,7 @@
 YeOldeDragon {
      Program = Statement+
      Statement = VarDecl
-    		    | ConstDecl
+    		| ConstDecl
               | PrintStmt
               | TypeDecl
               | FuncDecl
@@ -25,7 +25,7 @@ YeOldeDragon {
          | id 															--id
 
     PrintStmt = proclaim Exp0 ";"
-    VarDecl = thine id ":" Type "=" Exp0 ";"                                          
+    VarDecl = thine id ":" Type "=" Exp0 ";"
     ConstDecl = fact Param "=" Exp0 ";"
 
     FuncDecl = don id Params (":" Type)? Block
@@ -97,11 +97,11 @@ YeOldeDragon {
     id = ~keyword letter idchar*
     keyword = proclaim | thine | fact | fortill | whilst | perchance | else | don
             | matter | changeth | spell | defaulte | shall | shant | in | return
-            | breaketh | ne 
+            | breaketh | ne
     idchar = letter | digit | "_"
     numeral = digit+ ("." digit+)? (("E"|"e") ("+"|"-")? digit+)?
 
-    String    = "\"" #lit (Interp #lit)* "\""
+    String    = "\"" lit (Interp lit)* "\""
     lit       = char*
     char      = ~control ~"\\" ~"\"" ~"$" any   			                    --char
               | "\\" escape                					               --esc

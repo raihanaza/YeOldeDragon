@@ -10,7 +10,7 @@ const ANY = core.anyType;
 class Context {
   //checks if in loop so that it can break
   constructor({ parent = null, locals = new Map(), inLoop = false, function: f = null }) {
-    Object.assign(this, { parent, locals, inLoop, function: f })
+    Object.assign(this, { parent, locals, inLoop, function: f });
   }
   add(name, entity) {
     this.locals.set(name, entity);
@@ -32,9 +32,9 @@ export default function analyze(match) {
   const grammar = match.matcher.grammar;
 
   //error checking gate
-  function check(condition, message, errorLocation) {
+  function check(condition, message, at) {
     if (!condition) {
-      const prefix = errorLocation.at.source.getLineAndColumnMessage();
+      const prefix = at.source.getLineAndColumnMessage();
       throw new Error(`${prefix} ${message}`);
     }
   }
@@ -62,7 +62,7 @@ export default function analyze(match) {
   }
 
   function checkHasBeenDeclared(entitty, at) {
-    check(entitty, `Identifier ${at} not declared`, at);
+    check(entitty, `Identifier ${at.sourceString} not declared`, at);
   }
 
   function checkHasNumericType(e, at) {
@@ -104,19 +104,28 @@ export default function analyze(match) {
   }
 
   function checkHasOptionalObjectType(e, at) {
-    check(e.type?.kind === "OptionalType" && e.type.baseType?.kind === "ObjectType", `Expected an optional object but got ${e.type.name}`, at)
+    check(
+      e.type?.kind === "OptionalType" && e.type.baseType?.kind === "ObjectType",
+      `Expected an optional object but got ${e.type.name}`,
+      at
+    );
   }
 
   function checkHasObjectType(e, at) {
-    check(e.type?.kind === "ObjectType", `Expected an object type but got ${e.type.name}`, at)
+    check(e.type?.kind === "ObjectType", `Expected an object type but got ${e.type.name}`, at);
   }
 
   function checkIsMutable(e, at) {
     check(e.mutable, `Cannot assign to immutable variable ${e.name}`, at);
   }
 
+  // TODO for Lauren
   function checkBothSameType(type1, type2, at) {
     check(type1 === type2, `Operands must have the same type`, at);
+  }
+
+  function checkVarDecTypeMatchesExpressionType(type, expType, at) {
+    check(type === expType, `Type mismatch. Expected ${type} but got ${expType}`, at);
   }
 
   function checkAllSameType(elements, at) {
@@ -131,57 +140,74 @@ export default function analyze(match) {
   function checkIsType(e, at) {
     const isBasicType = /int|float|string|boolean|void|any/.test(e.name);
     const isCompositeType = /ObjectTupe|FunctionType|ListType|OptionalType/.test(e?.kind);
-    check(isBasicType || isCompositeType, "Type expected", at)
+    check(isBasicType || isCompositeType, "Type expected", at);
   }
 
   function includesAsField(objectType, type) {
-    return objectType.fields.some(field => field.type === type || 
-      (field.type?.kind === "ObjectType" && includesAsField(field.type, type))
-    )
+    return objectType.fields.some(
+      (field) => field.type === type || (field.type?.kind === "ObjectType" && includesAsField(field.type, type))
+    );
   }
 
   function checkIfSelfContaining(objectType, at) {
-    const selfContaining = includesAsField(objectType, objectType)
+    const selfContaining = includesAsField(objectType, objectType);
     check(!selfContaining, `Object type ${struct.name} cannot contain itself`, at);
   }
 
-  function equivalent (t1, t2) {
+  function equivalent(t1, t2) {
     return (
-      t1 === t2 || 
-      (t1?.kind === "OptionalType" && t2?.kind == "OptionalType" && equivalent(t1.type, t2.type)) || 
+      t1 === t2 ||
+      (t1?.kind === "OptionalType" && t2?.kind == "OptionalType" && equivalent(t1.type, t2.type)) ||
       (t1?.kind === "ListType" && t2?.kind === "ListType" && equivalent(t1.type, t2.type)) ||
-      (t1?.kind === "FunctionType" && t2?.kind === "FunctionType" && equivalent(t1.returnType === t2.returnType) && (t1.paramTypes.length === t2.paramTypes.length) && (t1.paramTypes.every((t, i) => equivalent(t, t2.paramTypes[i]))))
-    )
+      (t1?.kind === "FunctionType" &&
+        t2?.kind === "FunctionType" &&
+        equivalent(t1.returnType === t2.returnType) &&
+        t1.paramTypes.length === t2.paramTypes.length &&
+        t1.paramTypes.every((t, i) => equivalent(t, t2.paramTypes[i])))
+    );
   }
 
   function assignable(fromType, toType) {
     return (
       toType === core.anyType ||
       equivalent(fromType, toType) ||
-      (fromType?.kind === "FunctionType" && toType?.kind === "FunctionType" && assignable(fromType.returnType, toType.returnType) && fromType.paramTypes.length === toType.paramTypes.length && toType.paramTypes.every((t, i) => assignable(t, fromType.paramTypes[i])))
-    )
+      (fromType?.kind === "FunctionType" &&
+        toType?.kind === "FunctionType" &&
+        assignable(fromType.returnType, toType.returnType) &&
+        fromType.paramTypes.length === toType.paramTypes.length &&
+        toType.paramTypes.every((t, i) => assignable(t, fromType.paramTypes[i])))
+    );
   }
 
-  function typeDescription(type) {
-    switch (type.kind) {
-      case "VoidType": return "void";
-      case "AnyType": return "any";
-      case "IntType": return "int";
-      case "FloatType": return "float";
-      case "StringType": return "string";
-      case "BooleanType": return "boolean";
-      case "ListType": return `[${typeDescription(type.type)}]`;
-      case "OptionalType": return `${typeDescription(type.baseType)}?`;
-      case "ObjectType": return type.name;
-      case "FunctionType": 
-        const paramTypes = type.paramTypes.map(typeDescription).join(", ");
-        const returnTypes = typeDescription(type.returnType);
-        return `(${paramTypes}) => ${returnTypes}`;
-    }
-  }
+  // function typeDescription(type) {
+  //   switch (type.kind) {
+  //     case "void":
+  //       return "void";
+  //     case "any":
+  //       return "any";
+  //     case "int":
+  //       return "int";
+  //     case "FloatType":
+  //       return "float";
+  //     case "StringType":
+  //       return "string";
+  //     case "BooleanType":
+  //       return "boolean";
+  //     case "ListType":
+  //       return `[${typeDescription(type.type)}]`;
+  //     case "OptionalType":
+  //       return `${typeDescription(type.baseType)}?`;
+  //     case "ObjectType":
+  //       return type.name;
+  //     case "FunctionType":
+  //       const paramTypes = type.paramTypes.map(typeDescription).join(", ");
+  //       const returnTypes = typeDescription(type.returnType);
+  //       return `(${paramTypes}) => ${returnTypes}`;
+  //   }
+  // }
 
   function checkIsAssignable(e, { toType: type }, at) {
-    check(assignable(e.type, type), `Cannot assign ${typeDescription(e.type)} to ${typeDescription(type)}`, at);
+    check(assignable(e.type, type), `Cannot assign ${e.type} to ${type}`, at);
   }
 
   function isMutable(e) {
@@ -189,7 +215,7 @@ export default function analyze(match) {
       (e?.kind === "Variable" && e.mutable) ||
       (e?.kind == "SubscriptExpression" && isMutable(e?.list)) ||
       (e?.kind === "MemberExpression" && isMutable(e?.object))
-    )
+    );
   }
 
   function checkIsMutable(e, at) {
@@ -197,12 +223,16 @@ export default function analyze(match) {
   }
 
   function checkHasDistinctFields(type, at) {
-    const fieldNames = new Set(type.fields.map(field => field.name));
+    const fieldNames = new Set(type.fields.map((field) => field.name));
     check(fieldNames.size === type.fields.length, `Fields must be distinct from each other`, at);
   }
 
   function checkHasMember(object, field, at) {
-    check(object.type.fields.map(field => field.name).includes(field), `Object type ${object.name} does not have a field ${field}`, at);
+    check(
+      object.type.fields.map((field) => field.name).includes(field),
+      `Object type ${object.name} does not have a field ${field}`,
+      at
+    );
   }
 
   function checkInLoop(at) {
@@ -238,18 +268,21 @@ export default function analyze(match) {
 
   const analyzer = grammar.createSemantics().addOperation("analyze", {
     Program(statements) {
-      return core.program(statements.children.map(s => s.analyze()));
+      return core.program(statements.children.map((s) => s.analyze()));
     },
     VarDecl(qualifier, id, _colon, type, _eq, exp, _semi) {
       checkNotDeclared(id.sourceString, id);
       const mutable = qualifier.sourceString === "thine";
-      const varType = determineType(type.sourceString);
-      const variable = core.variable(id.sourceString, varType, mutable);
+      const typeName = type.sourceString;
+      const variable = core.variable(id.sourceString, typeName, mutable);
       const initializer = exp.analyze();
-      checkBothSameType(varType, initializer.type, exp)
+
+      console.log("type.sourceString", typeName, "initializer.type", initializer.type);
+      checkVarDecTypeMatchesExpressionType(typeName, initializer.type, type);
+
       context.add(id.sourceString, variable);
       return core.variableDeclaration(variable, initializer);
-    }, 
+    },
     PrintStmt(_print, exp, _semi) {
       return core.printStatement(exp.analyze());
     },
@@ -257,7 +290,7 @@ export default function analyze(match) {
       checkNotDeclared(id.sourceString, id);
       const type = core.objectType(id.sourceString, []);
       context.add(id.sourceString, type);
-      type.fields = fields.children.map(field => field.analyze());
+      type.fields = fields.children.map((field) => field.analyze());
       checkHasDistinctFields(type, id);
       checkIfSelfContaining(type, id);
       return core.typeDeclaration(type);
@@ -316,14 +349,14 @@ export default function analyze(match) {
       context = context.parent;
       const alternate = trailingIfStatement.analyze();
       return core.ifStatement(test, consequent, alternate);
-    }, 
+    },
     IfStmt_short(_if, exp, block) {
       const test = exp.analyze();
       checkHasBoolenType(test, exp);
       context = context.newChildContext();
       const consequent = block.analyze();
       context = context.parent;
-      return core.shortIfStatement(test, consequent);  
+      return core.shortIfStatement(test, consequent);
     },
     LoopStmt_while(whileKeyword, exp, block) {
       const test = exp.analyze();
@@ -332,15 +365,15 @@ export default function analyze(match) {
       const body = block.analyze();
       context = context.parent;
       return core.whileStatement(test, body);
-    }, 
+    },
     LoopStmt_for(forKeyword, exp, block) {
-      const count = exp.analyze()
+      const count = exp.analyze();
       checkHasIntType(count, exp);
       context = context.newChildContext({ inLoop: true });
       const body = block.analyze();
       context = context.parent;
       return core.forStatement(count, body);
-    }, 
+    },
     LoopStmt_range(forKeyword, id, _in, exp1, op, exp2, block) {
       const [low, high] = [exp1.analyze(), exp2.analyze()];
       checkHasIntType(low, exp1);
@@ -351,7 +384,7 @@ export default function analyze(match) {
       const body = block.analyze();
       context = context.parent;
       return core.forRangeStatement(iterator, low, op.sourceString, high, body);
-    }, 
+    },
     LoopStmt_forEach(forKeyword, id, _in, exp, block) {
       const collection = exp.analyze();
       checkHasListType(collection, exp);
@@ -375,7 +408,7 @@ export default function analyze(match) {
       return param;
     },
     Params(_open, params, _close) {
-      return params.asIteration().children.map(p => p.analyze());
+      return params.asIteration().children.map((p) => p.analyze());
     },
     Type_optional(baseType, _question) {
       return core.optionalType(baseType.analyze());
@@ -384,7 +417,7 @@ export default function analyze(match) {
       return core.listType(type.analyze());
     },
     Type_function(_open, types, _close, _arrow, type) {
-      const paramTypes = types.asIteration().children.map(t => t.analyze());
+      const paramTypes = types.asIteration().children.map((t) => t.analyze());
       const returnType = type.analyze();
       return core.functionType(paramTypes, returnType);
     },
@@ -458,50 +491,50 @@ export default function analyze(match) {
       return core.binaryExpression(op, left, right, left.type);
     },
     Exp6_unary(unaryOp, exp) {
-      const [op, operand] = [unaryOp.sourceString, exp.analyze()]
-      let type
+      const [op, operand] = [unaryOp.sourceString, exp.analyze()];
+      let type;
       if (op === "ne") {
-        checkHasBoolenType(operand, exp)
-        type = BOOLEAN
+        checkHasBoolenType(operand, exp);
+        type = BOOLEAN;
       } else if (op === "-") {
-        checkHasNumericType(operand, exp)
-        type = operand.type
+        checkHasNumericType(operand, exp);
+        type = operand.type;
       }
-      return core.unaryExpression(op, operand, type)
+      return core.unaryExpression(op, operand, type);
     },
     Exp7_call(exp, open, argList, close) {
       const callee = exp.analyze();
-      checkIsCallable(callee, exp)
-      const exps = argList.asIteration().children
-      const targetTypes = callee?.kind === "ObjectType" ? callee.fields.map(f => f.type) : callee.type.paramTypes
-      checkArgumentCount(exps.length, targetTypes.length, open)
-      const args = exps.map((exp, i) => { 
-        const arg = exp.analyze()
-        checkIsAssignable(arg, targetTypes[i], exp)
-        return arg
-      })
-      return callee?.kind === "ObjectType" ? core.objectCall(callee, args) : core.functionCall(callee, args)
+      checkIsCallable(callee, exp);
+      const exps = argList.asIteration().children;
+      const targetTypes = callee?.kind === "ObjectType" ? callee.fields.map((f) => f.type) : callee.type.paramTypes;
+      checkArgumentCount(exps.length, targetTypes.length, open);
+      const args = exps.map((exp, i) => {
+        const arg = exp.analyze();
+        checkIsAssignable(arg, targetTypes[i], exp);
+        return arg;
+      });
+      return callee?.kind === "ObjectType" ? core.objectCall(callee, args) : core.functionCall(callee, args);
     },
     Exp7_subscript(exp1, _open, exp2, _close) {
-      const [array, subscript] = [exp1.analyze(), exp2.analyze()]
-      checkHasListType(array, exp1)
-      checkHasIntType(subscript, exp2)
-      return core.subscriptExpression(array, subscript)
-    }, 
+      const [array, subscript] = [exp1.analyze(), exp2.analyze()];
+      checkHasListType(array, exp1);
+      checkHasIntType(subscript, exp2);
+      return core.subscriptExpression(array, subscript);
+    },
     Exp7_member(exp, dot, id) {
       //TODO: some error handling here
-      const object = exp.analyze()
-      let objectType
+      const object = exp.analyze();
+      let objectType;
       if (dot.sourceString === "?.") {
-        checkHasOptionalObjectType(object, exp)
-        objectType = object.type.baseType
+        checkHasOptionalObjectType(object, exp);
+        objectType = object.type.baseType;
       } else {
-        checkHasObjectType(object, exp)
-        objectType = object.type
+        checkHasObjectType(object, exp);
+        objectType = object.type;
       }
-      checkHasMember(objectType, id.sourceString, id)
-      const field = objectType.fields.find(f => f.name === id.sourceString)
-      return core.memberExpression(object, dot.sourceString, field)
+      checkHasMember(objectType, id.sourceString, id);
+      const field = objectType.fields.find((f) => f.name === id.sourceString);
+      return core.memberExpression(object, dot.sourceString, field);
     },
     Exp7_id(id) {
       const e = context.lookup(id.sourceString);
@@ -512,33 +545,36 @@ export default function analyze(match) {
       return core.emptyListExpression(core.anyType);
     },
     Exp7_listExp(_open, args, _close) {
-      const elements = args.asIteration().children.map(e => e.analyze());
+      const elements = args.asIteration().children.map((e) => e.analyze());
       checkAllSameType(elements, args);
       return core.listExpression(elements);
-    }, 
+    },
     Exp7_parens(_open, exp, _close) {
       return exp.analyze();
     },
-    shall(_) { 
-      return true 
+    shall(_) {
+      return true;
     },
-    shant(_) { 
-      return false 
+    shant(_) {
+      return false;
     },
-    floatLiteral(_whole, _point, _fraction, _e, _sign, _exponent) { 
-      return Number(this.sourceString) 
+    floatLiteral(_whole, _point, _fraction, _e, _sign, _exponent) {
+      return Number(this.sourceString);
     },
-    intLiteral(_digits) { 
-      return BigInt(this.sourceString) 
+    intLiteral(_digits) {
+      return BigInt(this.sourceString);
     },
-    //TODO: go over this with Toal
-    String(_openQuote, lit1, interp, lit2, _closeQuote) { 
-      const staticText1 = lit1.sourceString
-      const interpolations = interp.children.map(i => i.children[1].analyze());
-      const staticText2 = lit2.sourceString
+    // TODO: go over this
+    lit(_chars) {
+      return this.sourceString;
+    },
+    String(_openQuote, lit1, interp, lit2, _closeQuote) {
+      const staticText1 = lit1.sourceString;
+      const interpolations = interp.children.map((i) => i.children[1].analyze());
+      const staticText2 = lit2.sourceString;
       return core.stringExpression(staticText1, interpolations, staticText2);
     },
-  })
+  });
 
   return analyzer(match).analyze();
-}                                                                                                                                                        
+}
