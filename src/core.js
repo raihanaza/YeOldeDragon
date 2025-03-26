@@ -30,8 +30,8 @@ export function func(name, params, body, type) {
   return { kind: "FunctionType", name, params, body, type };
 }
 
-export function functionType(paramTypes, returnType) {
-  return { kind: "FunctionType", paramTypes, returnType };
+export function functionType(paramNames, paramTypes, returnType) {
+  return { kind: "FunctionType", paramNames, paramTypes, returnType };
 }
 
 export function functionCall(name, args) {

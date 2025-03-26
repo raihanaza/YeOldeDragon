@@ -24,8 +24,9 @@ YeOldeDragon {
 
     Params      = "(" ListOf<Param, ","> ")"
     Param       = id ":" Type
-    FuncDecl = don id Params "->" Type Block
+    FuncDecl    = don id Params "->" Type Block
     // FuncCall = id "(" ListOf<Exp0, ",">")" ~mut
+    Arg         = id ":" Exp0
 
     TypeDecl = matter id "{" ListOf<Param, ","> "}"
 
@@ -63,9 +64,7 @@ YeOldeDragon {
     	    | shant ~mut
          | floatLiteral ~mut
          | intLiteral ~mut
-         | Exp7 "(" ListOf<Exp0, ","> ")" ~mut                                   --call
-        // | FuncCall
-        // | Exp7 (("(" | "?(") ListOf<Exp0, ","> ")") ~mut   				     --call
+         | Exp7 "(" ListOf<Arg, ","> ")" ~mut                                   --call
          | Exp7 "[" Exp0 "]"                                                    --subscript
          | Exp7 ("." | "?.") id                                                 --member
          | String ~mut

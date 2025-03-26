@@ -162,6 +162,11 @@ export default function analyze(match) {
     );
   }
 
+  // function checkArgNameMatches(e, { toName: name }, at) {
+  //   console.log("**toType**", name, "**e**", e);
+  //   check(assignable(e.type, type), `Cannot assign ${e.type} to ${type}`, at);
+  // }
+
   function checkIsAssignable(e, { toType: type }, at) {
     check(assignable(e.type, type), `Cannot assign ${e.type} to ${type}`, at);
   }
@@ -253,8 +258,9 @@ export default function analyze(match) {
       // This is fine; we did not need the type to analyze the parameters,
       // but we do need to set it before analyzing the body.
       const paramTypes = func.params.map((param) => param.type);
+      const paramNames = func.params.map((param) => param.name);
       const returnType = type.children?.[0]?.analyze() ?? core.voidType;
-      func.type = core.functionType(paramTypes, returnType);
+      func.type = core.functionType(paramNames, paramTypes, returnType);
 
       // Analyze body while still in child context
       func.body = block.analyze();
@@ -277,7 +283,7 @@ export default function analyze(match) {
       checkIfSelfContaining(type, id);
       return core.typeDeclaration(type);
     },
-    // TODO: func call
+
     Statement_incdec(_inc, id, _semi) {
       const variable = id.analyze();
       return core.incrementStatement(variable);
@@ -316,6 +322,7 @@ export default function analyze(match) {
       context = context.parent;
       return core.ifStatement(test, consequent, alternate);
     },
+
     IfStmt_elseif(_if, exp, block1, _else, trailingIfStatement) {
       const text = exp.analyze();
       checkHasBoolenType(test, exp);
@@ -325,6 +332,7 @@ export default function analyze(match) {
       const alternate = trailingIfStatement.analyze();
       return core.ifStatement(test, consequent, alternate);
     },
+
     IfStmt_short(_if, exp, block) {
       const test = exp.analyze();
       checkHasBoolenType(test, exp);
@@ -333,6 +341,7 @@ export default function analyze(match) {
       context = context.parent;
       return core.shortIfStatement(test, consequent);
     },
+
     LoopStmt_while(whileKeyword, exp, block) {
       const test = exp.analyze();
       checkHasBoolenType(test, exp);
@@ -393,6 +402,12 @@ export default function analyze(match) {
       return paramList.asIteration().children.map((p) => p.analyze());
     },
 
+    Arg(id, _colon, exp) {
+      const arg = core.variable(id.sourceString, exp.analyze(), false);
+      context.add(arg.name, arg);
+      return arg;
+    },
+
     Type_optional(baseType, _question) {
       return core.optionalType(baseType.analyze());
     },
@@ -421,12 +436,14 @@ export default function analyze(match) {
       checkBothSameType(consequence.type, alternate.type, exp2);
       return core.ternaryExpression(test, consequence, alternate);
     },
+
     Exp1_nilcoalescing(exp1, elseOp, exp2) {
       const [optional, op, alternate] = [exp1.analyze(), elseOp.sourceString, exp2.analyze()];
       checkHasOptionalType(optional, exp1);
       checkIsAssignable(alternate, optional.type.type, exp2);
       return core.nilCoalescingExpression(optional, alternate);
     },
+
     Exp2_or(exp1, _or, exp2) {
       let left = exp1.analyze();
       checkHasBoolenType(left, exp1);
@@ -457,6 +474,7 @@ export default function analyze(match) {
         return core.binaryExpression(op, left, right, BOOLEAN);
       }
     },
+
     Exp4_addsub(exp1, addOp, exp2) {
       const [left, op, right] = [exp1.analyze(), addOp.sourceString, exp2.analyze()];
       checkBothSameType(left.type, right.type, exp1);
@@ -468,18 +486,21 @@ export default function analyze(match) {
       checkBothSameType(left.type, right.type, exp1);
       return core.binaryExpression(op, left, right, left.type);
     },
+
     Exp5_multiply(exp1, mulOp, exp2) {
       const [left, op, right] = [exp1.analyze(), mulOp.sourceString, exp2.analyze()];
       checkHasNumericType(left, exp1);
       checkBothSameType(left.type, right.type, exp1);
       return core.binaryExpression(op, left, right, left.type);
     },
+
     Exp6_power(exp1, powerOp, exp2) {
       const [left, op, right] = [exp1.analyze(), powerOp.sourceString, exp2.analyze()];
       checkHasNumericType(left, exp1);
       checkBothSameType(left.type, right.type, exp1);
       return core.binaryExpression(op, left, right, left.type);
     },
+
     Exp6_unary(unaryOp, exp) {
       const [op, operand] = [unaryOp.sourceString, exp.analyze()];
       let type;
@@ -497,11 +518,20 @@ export default function analyze(match) {
       const callee = exp.analyze();
       checkIsCallable(callee, { at: exp });
       const exps = argList.asIteration().children;
+      // TODO: what to do when an objectType? Do we currently store the name of attribute for object?
+      //console.log("callee", callee.type.paramNames);
+      const targetParamNames =
+        callee?.kind === "FunctionType" ? callee.type.paramNames : callee.fields.map((f) => f.type);
       const targetTypes = callee?.kind === "ObjectType" ? callee.fields.map((f) => f.type) : callee.type.paramTypes;
+      console.log(exps.length, targetTypes.length);
+
       checkArgumentCount(exps.length, targetTypes.length, { at: open });
+      //console.log("targetParamNames", targetParamNames);
       const args = exps.map((exp, i) => {
         const arg = exp.analyze();
         checkIsAssignable(arg, { toType: targetTypes[i] }, { at: exp });
+        // console.log("arg", arg);
+        //checkArgNameMatches(arg, { toName: targetParamNames[i] }, { at: exp });
         return arg;
       });
       return callee?.kind === "ObjectType" ? core.objectCall(callee, args) : core.functionCall(callee, args);
@@ -534,32 +564,41 @@ export default function analyze(match) {
       checkHasBeenDeclared(entity, id.sourceString, { at: id });
       return entity;
     },
+
     Exp7_emptylist(_open, _close) {
       return core.emptyListExpression(core.anyType);
     },
+
     Exp7_listExp(_open, args, _close) {
       const elements = args.asIteration().children.map((e) => e.analyze());
       checkAllSameType(elements, args);
       return core.listExpression(elements);
     },
+
     Exp7_parens(_open, exp, _close) {
       return exp.analyze();
     },
+
     shall(_) {
       return true;
     },
+
     shant(_) {
       return false;
     },
+
     floatLiteral(_whole, _point, _fraction, _e, _sign, _exponent) {
       return Number(this.sourceString);
     },
+
     intLiteral(_digits) {
       return BigInt(this.sourceString);
     },
+
     lit(_chars) {
       return this.sourceString;
     },
+
     String(_openQuote, firstLit, interps, restOfLits, _closeQuote) {
       const litText1 = firstLit.sourceString;
       const interpolations = interps.children.map((i) => i.children[1].analyze());
