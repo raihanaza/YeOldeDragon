@@ -1,6 +1,5 @@
-don addNums(num1: int, yes: boolean) -> void {
+don addNums(num1: int, yes: boolean) -> string {
     return "hi";
-    ~ proclaim("hello");
 }
 
 ~~

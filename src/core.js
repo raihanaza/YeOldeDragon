@@ -19,7 +19,6 @@ export function constantDeclaration(variable, initializer, mutable) {
 }
 
 export function printStatement(expression) {
-  console.log("printStatement", expression);
   return { kind: "PrintStatement", expression, type: voidType };
 }
 
