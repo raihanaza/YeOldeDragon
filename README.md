@@ -22,7 +22,7 @@ Ye Olde Dragon is brought to you by [Raihana Zahra](https://github.com/raihanaza
 | string       | String          |
 | int          | Number          |
 | float        | Number          |
-| bool         | Boolean         |
+| boolean      | Boolean         |
 | zilch        | null, undefined |
 
 
