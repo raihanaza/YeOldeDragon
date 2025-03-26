@@ -45,8 +45,8 @@ export default function analyze(match) {
   }
 
   function checkHasBeenDeclared(entity, name, at) {
-    console.log("********entity********", entity);
-    console.log("********name********", name);
+    // console.log("********entity********", entity);
+    // console.log("********name********", name);
     check(entity, `Identifier ${name} not declared`, at);
   }
 
@@ -307,7 +307,7 @@ export default function analyze(match) {
       checkReturnsNothing(context.function, returnKeyword);
       return core.shortReturnStatement();
     },
-    
+
     IfStmt_long(_if, exp, block1, _else, block2) {
       const test = exp.analyze();
       checkHasBoolenType(test, exp);
@@ -562,15 +562,19 @@ export default function analyze(match) {
     intLiteral(_digits) {
       return BigInt(this.sourceString);
     },
-    // TODO: go over this
     lit(_chars) {
       return this.sourceString;
     },
-    String(_openQuote, lit1, interp, lit2, _closeQuote) {
-      const staticText1 = lit1.sourceString;
-      const interpolations = interp.children.map((i) => i.children[1].analyze());
-      const staticText2 = lit2.sourceString;
-      return core.stringExpression(staticText1, interpolations, staticText2);
+    String(_openQuote, firstLit, interps, restOfLits, _closeQuote) {
+      const litText1 = firstLit.sourceString;
+      const interpolations = interps.children.map((i) => i.children[1].analyze());
+      const litText2 = restOfLits.children.map((lit) => lit.sourceString);
+      let res = [litText1];
+      for (let i = 0; i < interpolations.length; i++) {
+        res.push(interpolations[i]);
+        res.push(litText2[i]);
+      }
+      return core.stringExpression(res);
     },
   });
 

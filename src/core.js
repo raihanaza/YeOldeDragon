@@ -160,8 +160,8 @@ export function objectInstance(name, fields) {
   return { kind: "ObjectInstance", name, fields };
 }
 
-export function stringExpression(literal, interpolation) {
-  return { kind: "StringExpression", literal, interpolation, type: stringType };
+export function stringExpression(strings) {
+  return { kind: "StringExpression", strings, type: stringType };
 }
 
 export function field(name, type) {
