@@ -44,8 +44,8 @@ export default function analyze(match) {
     check(!context.lookup(name), `Identifier ${name} already declared`, at);
   }
 
-  function checkHasBeenDeclared(entitty, at) {
-    check(entitty, `Identifier ${at.sourceString} not declared`, at);
+  function checkHasBeenDeclared(entity, name, at) {
+    check(entity, `Identifier ${name} not declared`, at);
   }
 
   function checkHasNumericType(e, at) {
@@ -77,9 +77,9 @@ export default function analyze(match) {
     check(e.type.kind === "OptionalType", `Expected optional type but got ${e.type.name}`, at);
   }
 
-  function checkHasFunctionType(e, at) {
-    check(e.type.kind === "FunctionType", `Expected function type but got ${e.type.name}`, at);
-  }
+  // function checkHasFunctionType(e, at) {
+  //   check(e.type.kind === "FunctionType", `Expected function type but got ${e.type.name}`, at);
+  // }
 
   function checkIsStringOrNumericType(e, at) {
     const expectedTypes = [core.intType, core.floatType, core.stringType];
@@ -121,8 +121,8 @@ export default function analyze(match) {
   }
 
   function checkIsType(e, at) {
-    const isBasicType = /int|float|string|boolean|void|any/.test(e.name);
-    const isCompositeType = /ObjectTupe|FunctionType|ListType|OptionalType/.test(e?.kind);
+    const isBasicType = /int|float|string|boolean|void|any/.test(e);
+    const isCompositeType = /ObjectType|FunctionType|ListType|OptionalType/.test(e?.kind);
     check(isBasicType || isCompositeType, "Type expected", at);
   }
 
@@ -161,33 +161,6 @@ export default function analyze(match) {
         toType.paramTypes.every((t, i) => assignable(t, fromType.paramTypes[i])))
     );
   }
-
-  // function typeDescription(type) {
-  //   switch (type.kind) {
-  //     case "void":
-  //       return "void";
-  //     case "any":
-  //       return "any";
-  //     case "int":
-  //       return "int";
-  //     case "FloatType":
-  //       return "float";
-  //     case "StringType":
-  //       return "string";
-  //     case "BooleanType":
-  //       return "boolean";
-  //     case "ListType":
-  //       return `[${typeDescription(type.type)}]`;
-  //     case "OptionalType":
-  //       return `${typeDescription(type.baseType)}?`;
-  //     case "ObjectType":
-  //       return type.name;
-  //     case "FunctionType":
-  //       const paramTypes = type.paramTypes.map(typeDescription).join(", ");
-  //       const returnTypes = typeDescription(type.returnType);
-  //       return `(${paramTypes}) => ${returnTypes}`;
-  //   }
-  // }
 
   function checkIsAssignable(e, { toType: type }, at) {
     check(assignable(e.type, type), `Cannot assign ${e.type} to ${type}`, at);
@@ -249,26 +222,52 @@ export default function analyze(match) {
     checkIsAssignable(e, { toType: f.type.returnType }, at);
   }
 
+  //TODO: the name of this var should be builder, and .addOperation("rep",
   const analyzer = grammar.createSemantics().addOperation("analyze", {
     Program(statements) {
       return core.program(statements.children.map((s) => s.analyze()));
     },
+
     VarDecl(qualifier, id, _colon, type, _eq, exp, _semi) {
       checkNotDeclared(id.sourceString, id);
       const mutable = qualifier.sourceString === "thine";
       const typeName = type.sourceString;
       const variable = core.variable(id.sourceString, typeName, mutable);
       const initializer = exp.analyze();
-
-      console.log("type.sourceString", typeName, "initializer.type", initializer.type);
       checkVarDecTypeMatchesExpressionType(typeName, initializer.type, type);
-
       context.add(id.sourceString, variable);
       return core.variableDeclaration(variable, initializer);
     },
+
+    FuncDecl(_func, id, parameters, _colons, type, block) {
+      checkNotDeclared(id.sourceString, { at: id });
+      // Add immediately so that we can have recursion
+      const func = core.func(id.sourceString);
+      context.add(id.sourceString, func);
+
+      // Parameters are part of the child context
+      context = context.newChildContext({ inLoop: false, function: func });
+      func.params = parameters.analyze();
+
+      // Now that the parameters are known, we compute the function's type.
+      // This is fine; we did not need the type to analyze the parameters,
+      // but we do need to set it before analyzing the body.
+      const paramTypes = func.params.map((param) => param.type);
+      const returnType = type.children?.[0]?.analyze() ?? core.voidType;
+      func.type = core.functionType(paramTypes, returnType);
+
+      // Analyze body while still in child context
+      func.body = block.analyze();
+
+      // Go back up to the outer context before returning
+      context = context.parent;
+      return core.functionDeclaration(func);
+    },
+
     PrintStmt(_print, exp, _semi) {
       return core.printStatement(exp.analyze());
     },
+
     TypeDecl(_object, id, _left, fields, _right) {
       checkNotDeclared(id.sourceString, id);
       const type = core.objectType(id.sourceString, []);
@@ -278,22 +277,12 @@ export default function analyze(match) {
       checkIfSelfContaining(type, id);
       return core.typeDeclaration(type);
     },
-    FuncDecl(_fun, id, parameters, _equals, exp, _semi) {
-      checkNotDeclared(id.sourceString, id);
-      const fun = core.functionDeclaration(id.sourceString);
-      context.add(id.sourceString, fun);
-
-      context = new Context({ parent: context, function: fun });
-      const params = parameters.analyze();
-      const body = exp.analyze();
-      context = context.parent;
-      return core.functionDeclaration(id.sourceString, params, body);
-    },
     // TODO: func call
     Statement_incdec(_inc, id, _semi) {
       const variable = id.analyze();
       return core.incrementStatement(variable);
     },
+
     Statement_assign(variable, _eq, exp, _semi) {
       const target = variable.analyze();
       const source = exp.analyze();
@@ -301,13 +290,15 @@ export default function analyze(match) {
       checkIsAssignable(source, target, variable);
       return core.assignmentStatement(target, source);
     },
+
     Statement_return(returnKeyword, exp, _semi) {
-      checkInFunction(returnKeyword);
-      checkReturnsSomething(context.function, returnKeyword);
+      checkInFunction({ at: returnKeyword });
+      checkReturnsSomething(context.function, { at: returnKeyword });
       const returnExpression = exp.analyze();
-      checkIfReturnable(returnExpression, context.function, exp);
+      checkIfReturnable(returnExpression, { from: context.function }, { at: exp });
       return core.returnStatement(returnExpression);
     },
+
     Statement_returnvoid(returnKeyword, _semi) {
       checkInFunction(returnKeyword);
       checkReturnsNothing(context.function, returnKeyword);
@@ -349,6 +340,7 @@ export default function analyze(match) {
       context = context.parent;
       return core.whileStatement(test, body);
     },
+
     LoopStmt_for(forKeyword, exp, block) {
       const count = exp.analyze();
       checkHasIntType(count, exp);
@@ -357,6 +349,7 @@ export default function analyze(match) {
       context = context.parent;
       return core.forStatement(count, body);
     },
+
     LoopStmt_range(forKeyword, id, _in, exp1, op, exp2, block) {
       const [low, high] = [exp1.analyze(), exp2.analyze()];
       checkHasIntType(low, exp1);
@@ -368,6 +361,7 @@ export default function analyze(match) {
       context = context.parent;
       return core.forRangeStatement(iterator, low, op.sourceString, high, body);
     },
+
     LoopStmt_forEach(forKeyword, id, _in, exp, block) {
       const collection = exp.analyze();
       checkHasListType(collection, exp);
@@ -378,38 +372,47 @@ export default function analyze(match) {
       context = context.parent;
       return core.forEachStatement(iterator, collection, body);
     },
+
     Statement_break(breakKeyword, _semi) {
       checkInLoop(breakKeyword);
       return core.breakStatement();
     },
+
     Block(_open, statements, _close) {
       return statements.children.map((s) => s.analyze());
     },
+
     Param(id, _colon, type) {
       const param = core.variable(id.sourceString, type.analyze(), false);
       context.add(param.name, param);
       return param;
     },
-    Params(_open, params, _close) {
-      return params.asIteration().children.map((p) => p.analyze());
+
+    Params(_open, paramList, _close) {
+      return paramList.asIteration().children.map((p) => p.analyze());
     },
+
     Type_optional(baseType, _question) {
       return core.optionalType(baseType.analyze());
     },
+
     Type_list(_open, type, _close) {
       return core.listType(type.analyze());
     },
+
     Type_function(_open, types, _close, _arrow, type) {
       const paramTypes = types.asIteration().children.map((t) => t.analyze());
       const returnType = type.analyze();
       return core.functionType(paramTypes, returnType);
     },
+
     Type_id(id) {
-      const e = context.lookup(id.sourceString);
-      checkHasBeenDeclared(e, id);
-      checkIsType(e, id);
-      return e;
+      const entity = context.lookup(id.sourceString);
+      checkHasBeenDeclared(entity, id.sourceString, { at: id });
+      checkIsType(entity, { at: id });
+      return entity;
     },
+
     Exp0_ternary(exp1, _questionMark, exp2, _colon, exp3) {
       const test = exp1.analyze();
       checkHasBoolenType(test, exp1);
@@ -488,19 +491,21 @@ export default function analyze(match) {
       }
       return core.unaryExpression(op, operand, type);
     },
-    Exp7_call(exp, open, argList, close) {
+
+    Exp7_call(exp, open, argList, _close) {
       const callee = exp.analyze();
-      checkIsCallable(callee, exp);
+      checkIsCallable(callee, { at: exp });
       const exps = argList.asIteration().children;
       const targetTypes = callee?.kind === "ObjectType" ? callee.fields.map((f) => f.type) : callee.type.paramTypes;
-      checkArgumentCount(exps.length, targetTypes.length, open);
+      checkArgumentCount(exps.length, targetTypes.length, { at: open });
       const args = exps.map((exp, i) => {
         const arg = exp.analyze();
-        checkIsAssignable(arg, targetTypes[i], exp);
+        checkIsAssignable(arg, { toType: targetTypes[i] }, { at: exp });
         return arg;
       });
       return callee?.kind === "ObjectType" ? core.objectCall(callee, args) : core.functionCall(callee, args);
     },
+
     Exp7_subscript(exp1, _open, exp2, _close) {
       const [array, subscript] = [exp1.analyze(), exp2.analyze()];
       checkHasListType(array, exp1);
@@ -522,10 +527,11 @@ export default function analyze(match) {
       const field = objectType.fields.find((f) => f.name === id.sourceString);
       return core.memberExpression(object, dot.sourceString, field);
     },
+
     Exp7_id(id) {
-      const e = context.lookup(id.sourceString);
-      checkHasBeenDeclared(e, id);
-      return e;
+      const entity = context.lookup(id.sourceString);
+      checkHasBeenDeclared(entity, id.sourceString, { at: id });
+      return entity;
     },
     Exp7_emptylist(_open, _close) {
       return core.emptyListExpression(core.anyType);
