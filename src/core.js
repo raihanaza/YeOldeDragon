@@ -169,7 +169,7 @@ export function field(name, type) {
 
 export const voidType = "void";
 export const anyType = "any";
-export const booleanType = "bool";
+export const booleanType = "boolean";
 export const floatType = "float";
 export const intType = "int";
 export const stringType = "string";

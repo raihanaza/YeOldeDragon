@@ -44,8 +44,8 @@ export default function analyze(match) {
     check(!context.lookup(name), `Identifier ${name} already declared`, at);
   }
 
-  function checkHasBeenDeclared(entity, at) {
-    check(entity, `Identifier ${at.sourceString} not declared`, at);
+  function checkHasBeenDeclared(entity, name, at) {
+    check(entity, `Identifier ${name} not declared`, at);
   }
 
   function checkHasNumericType(e, at) {
@@ -407,10 +407,10 @@ export default function analyze(match) {
     },
 
     Type_id(id) {
-      const e = context.lookup(id.sourceString);
-      checkHasBeenDeclared(e, id);
-      checkIsType(e, id);
-      return e;
+      const entity = context.lookup(id.sourceString);
+      checkHasBeenDeclared(entity, id.sourceString, { at: id });
+      checkIsType(entity, { at: id });
+      return entity;
     },
 
     Exp0_ternary(exp1, _questionMark, exp2, _colon, exp3) {
@@ -527,10 +527,11 @@ export default function analyze(match) {
       const field = objectType.fields.find((f) => f.name === id.sourceString);
       return core.memberExpression(object, dot.sourceString, field);
     },
+
     Exp7_id(id) {
-      const e = context.lookup(id.sourceString);
-      checkHasBeenDeclared(e, id);
-      return e;
+      const entity = context.lookup(id.sourceString);
+      checkHasBeenDeclared(entity, id.sourceString, { at: id });
+      return entity;
     },
     Exp7_emptylist(_open, _close) {
       return core.emptyListExpression(core.anyType);

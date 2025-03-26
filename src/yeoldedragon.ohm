@@ -13,24 +13,26 @@ YeOldeDragon {
               | return ";"											     --returnvoid
               | IfStmt
               | LoopStmt
-    Block = "{" Statement* "}"
-    BreakStmt = breaketh ";"
-    Param = id ":" Type
-    Params = "(" ListOf<Param, ",">")"
-
-    Type = Type "?" 													--optional
-    	    | "[" Type "]" 													--list
-         | "(" ListOf<Type, ",">")" "->" Type 								--function
-         | id 															--id
 
     PrintStmt = proclaim Exp0 ";"
     // TODO: need to change VarDecl to include the fact as well? or do consts not need manifest type checking?
     VarDecl = thine id ":" Type "=" Exp0 ";"
     ConstDecl = fact Param "=" Exp0 ";"
 
+    Block = "{" Statement* "}"
+    BreakStmt = breaketh ";"
+
+    Params      = "(" ListOf<Param, ","> ")"
+    Param       = id ":" Type
     FuncDecl = don id Params "->" Type Block
     // FuncCall = id "(" ListOf<Exp0, ",">")" ~mut
+
     TypeDecl = matter id "{" ListOf<Param, ","> "}"
+
+    Type = Type "?" 													--optional
+    	    | "[" Type "]" 													--list
+         | "(" ListOf<Type, ",">")" "->" Type 								--function
+         | id 															--id
 
     IfStmt = perchance Exp0 Block else Block 					               --long
     	      | perchance Exp0 Block else IfStmt 						          --elseif
