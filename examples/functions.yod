@@ -1,4 +1,4 @@
-don addNums(num1: int, yes: boolean) -> int {
+don addNums(num1: int, yes: bool) -> int {
     return num1;
 }
 
