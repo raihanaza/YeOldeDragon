@@ -1,7 +1,6 @@
 YeOldeDragon {
      Program = Statement+
      Statement = VarDecl
-    		| ConstDecl
               | PrintStmt
               | TypeDecl
               | FuncDecl
@@ -25,8 +24,8 @@ YeOldeDragon {
          | id 															--id
 
     PrintStmt = proclaim Exp0 ";"
-    VarDecl = thine id ":" Type "=" Exp0 ";"
-    ConstDecl = fact Param "=" Exp0 ";"
+    VarDecl = (thine | fact) id ":" Type "=" Exp0 ";"
+    
 
     FuncDecl = don id Params (":" Type)? Block
     FuncCall = id "(" ListOf<id, ",">")"

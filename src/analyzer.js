@@ -119,9 +119,8 @@ export default function analyze(match) {
     check(e.mutable, `Cannot assign to immutable variable ${e.name}`, at);
   }
 
-  // TODO for Lauren
-  function checkBothSameType(type1, type2, at) {
-    check(type1 === type2, `Operands must have the same type`, at);
+  function checkBothSameType(e1, e2, at) {
+    check(e1.type === e2.type, `Operands must have the same type`, at);
   }
 
   function checkVarDecTypeMatchesExpressionType(type, expType, at) {
@@ -139,7 +138,7 @@ export default function analyze(match) {
 
   function checkIsType(e, at) {
     const isBasicType = /int|float|string|boolean|void|any/.test(e.name);
-    const isCompositeType = /ObjectTupe|FunctionType|ListType|OptionalType/.test(e?.kind);
+    const isCompositeType = /ObjectType|FunctionType|ListType|OptionalType/.test(e?.kind);
     check(isBasicType || isCompositeType, "Type expected", at);
   }
 
@@ -276,12 +275,14 @@ export default function analyze(match) {
       const typeName = type.sourceString;
       const variable = core.variable(id.sourceString, typeName, mutable);
       const initializer = exp.analyze();
-
-      console.log("type.sourceString", typeName, "initializer.type", initializer.type);
       checkVarDecTypeMatchesExpressionType(typeName, initializer.type, type);
-
       context.add(id.sourceString, variable);
-      return core.variableDeclaration(variable, initializer);
+
+      if (mutable) {
+        return core.variableDeclaration(variable, initializer);
+      } else {
+        return core.constantDeclaration(variable, initializer)
+      }
     },
     PrintStmt(_print, exp, _semi) {
       return core.printStatement(exp.analyze());
@@ -307,9 +308,11 @@ export default function analyze(match) {
       return core.functionDeclaration(id.sourceString, params, body);
     },
     // TODO: func call
-    Statement_incdec(_inc, id, _semi) {
+    Statement_incdec(id, op, _semi) {
       const variable = id.analyze();
-      return core.incrementStatement(variable);
+      checkHasNumericType(variable, id)
+      if (op.sourceString === "++") { return core.incrementStatement(variable); }
+      if (op.sourceString === "--") { return core.decrementStatement(variable); }
     },
     Statement_assign(variable, _eq, exp, _semi) {
       const target = variable.analyze();
@@ -342,7 +345,7 @@ export default function analyze(match) {
       return core.ifStatement(test, consequent, alternate);
     },
     IfStmt_elseif(_if, exp, block1, _else, trailingIfStatement) {
-      const text = exp.analyze();
+      const test = exp.analyze();
       checkHasBoolenType(test, exp);
       context = context.newChildContext();
       const consequent = block1.analyze();
@@ -431,7 +434,7 @@ export default function analyze(match) {
       const test = exp1.analyze();
       checkHasBoolenType(test, exp1);
       const [consequence, alternate] = [exp2.analyze(), exp3.analyze()];
-      checkBothSameType(consequence.type, alternate.type, exp2);
+      checkBothSameType(consequence, alternate, exp2);
       return core.ternaryExpression(test, consequence, alternate);
     },
     Exp1_nilcoalescing(exp1, elseOp, exp2) {
@@ -462,7 +465,7 @@ export default function analyze(match) {
     },
     Exp3_compare(exp1, relop, exp2) {
       const [left, op, right] = [exp1.analyze(), relop.sourceString, exp2.analyze()];
-      checkBothSameType(left.type, right.type, exp1);
+      checkBothSameType(left, right, exp1);
       if (["==", "!="].includes(op)) {
         return core.binaryExpression(op, left, right, BOOLEAN);
       } else if (["<", "<=", ">", ">="].includes(op)) {
@@ -472,22 +475,21 @@ export default function analyze(match) {
     },
     Exp4_addsub(exp1, addOp, exp2) {
       const [left, op, right] = [exp1.analyze(), addOp.sourceString, exp2.analyze()];
-      checkBothSameType(left.type, right.type, exp1);
-      if (op === "+") {
-        checkHasNumericType(left, exp1);
-      }
+      checkHasNumericType(left, exp1);
+      checkHasNumericType(right, exp2);
+      checkBothSameType(left, right, exp1)
       return core.binaryExpression(op, left, right, left.type);
     },
     Exp5_multiply(exp1, mulOp, exp2) {
       const [left, op, right] = [exp1.analyze(), mulOp.sourceString, exp2.analyze()];
       checkHasNumericType(left, exp1);
-      checkBothSameType(left.type, right.type, exp1);
+      checkBothSameType(left, right, exp1);
       return core.binaryExpression(op, left, right, left.type);
     },
     Exp6_power(exp1, powerOp, exp2) {
       const [left, op, right] = [exp1.analyze(), powerOp.sourceString, exp2.analyze()];
       checkHasNumericType(left, exp1);
-      checkBothSameType(left.type, right.type, exp1);
+      checkBothSameType(left, right, exp1);
       return core.binaryExpression(op, left, right, left.type);
     },
     Exp6_unary(unaryOp, exp) {

@@ -11,7 +11,7 @@ export function variableDeclaration(variable, initializer) {
 }
 
 export function variable(name, type, mutable) {
-  return { kind: "Variable", name, type, mutable: true };
+  return { kind: "Variable", name, type, mutable};
 }
 
 export function constantDeclaration(variable, initializer, mutable) {
