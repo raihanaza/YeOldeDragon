@@ -249,6 +249,7 @@ export default function analyze(match) {
     checkIsAssignable(e, { toType: f.type.returnType }, at);
   }
 
+  //TODO: the name of this var should be builder, and .addOperation("rep",
   const analyzer = grammar.createSemantics().addOperation("analyze", {
     Program(statements) {
       return core.program(statements.children.map((s) => s.analyze()));
@@ -265,26 +266,25 @@ export default function analyze(match) {
       return core.variableDeclaration(variable, initializer);
     },
 
-    FuncDecl(_fun, id, parameters, _colons, type, block) {
+    FuncDecl(_func, id, parameters, _colons, type, block) {
       checkNotDeclared(id.sourceString, { at: id });
-      //console.log("don source stringggggggggg(************", _fun);
       // Add immediately so that we can have recursion
       const func = core.func(id.sourceString);
       context.add(id.sourceString, func);
 
       // Parameters are part of the child context
       context = context.newChildContext({ inLoop: false, function: func });
-      func.params = parameters.rep();
+      func.params = parameters.analyze();
 
       // Now that the parameters are known, we compute the function's type.
       // This is fine; we did not need the type to analyze the parameters,
       // but we do need to set it before analyzing the body.
       const paramTypes = func.params.map((param) => param.type);
-      const returnType = type.children?.[0]?.rep() ?? core.voidType;
+      const returnType = type.children?.[0]?.analyze() ?? core.voidType;
       func.type = core.functionType(paramTypes, returnType);
 
       // Analyze body while still in child context
-      func.body = block.rep();
+      func.body = block.analyze();
 
       // Go back up to the outer context before returning
       context = context.parent;
@@ -304,19 +304,6 @@ export default function analyze(match) {
       checkIfSelfContaining(type, id);
       return core.typeDeclaration(type);
     },
-
-    FuncDecl(_fun, id, parameters, _equals, exp, _semi) {
-      checkNotDeclared(id.sourceString, id);
-      const fun = core.functionDeclaration(id.sourceString);
-      context.add(id.sourceString, fun);
-
-      context = new Context({ parent: context, function: fun });
-      const params = parameters.analyze();
-      const body = exp.analyze();
-      context = context.parent;
-      return core.functionDeclaration(id.sourceString, params, body);
-    },
-
     // TODO: func call
     Statement_incdec(_inc, id, _semi) {
       const variable = id.analyze();
@@ -332,10 +319,10 @@ export default function analyze(match) {
     },
 
     Statement_return(returnKeyword, exp, _semi) {
-      checkInFunction(returnKeyword);
-      checkReturnsSomething(context.function, returnKeyword);
+      checkInFunction({ at: returnKeyword });
+      checkReturnsSomething(context.function, { at: returnKeyword });
       const returnExpression = exp.analyze();
-      checkIfReturnable(returnExpression, context.function, exp);
+      checkIfReturnable(returnExpression, { from: context.function }, { at: exp });
       return core.returnStatement(returnExpression);
     },
 
@@ -380,6 +367,7 @@ export default function analyze(match) {
       context = context.parent;
       return core.whileStatement(test, body);
     },
+
     LoopStmt_for(forKeyword, exp, block) {
       const count = exp.analyze();
       checkHasIntType(count, exp);
@@ -388,6 +376,7 @@ export default function analyze(match) {
       context = context.parent;
       return core.forStatement(count, body);
     },
+
     LoopStmt_range(forKeyword, id, _in, exp1, op, exp2, block) {
       const [low, high] = [exp1.analyze(), exp2.analyze()];
       checkHasIntType(low, exp1);
@@ -399,6 +388,7 @@ export default function analyze(match) {
       context = context.parent;
       return core.forRangeStatement(iterator, low, op.sourceString, high, body);
     },
+
     LoopStmt_forEach(forKeyword, id, _in, exp, block) {
       const collection = exp.analyze();
       checkHasListType(collection, exp);
@@ -409,38 +399,47 @@ export default function analyze(match) {
       context = context.parent;
       return core.forEachStatement(iterator, collection, body);
     },
+
     Statement_break(breakKeyword, _semi) {
       checkInLoop(breakKeyword);
       return core.breakStatement();
     },
+
     Block(_open, statements, _close) {
       return statements.children.map((s) => s.analyze());
     },
+
     Param(id, _colon, type) {
       const param = core.variable(id.sourceString, type.analyze(), false);
       context.add(param.name, param);
       return param;
     },
-    Params(_open, params, _close) {
-      return params.asIteration().children.map((p) => p.analyze());
+
+    Params(_open, paramList, _close) {
+      return paramList.asIteration().children.map((p) => p.analyze());
     },
+
     Type_optional(baseType, _question) {
       return core.optionalType(baseType.analyze());
     },
+
     Type_list(_open, type, _close) {
       return core.listType(type.analyze());
     },
+
     Type_function(_open, types, _close, _arrow, type) {
       const paramTypes = types.asIteration().children.map((t) => t.analyze());
       const returnType = type.analyze();
       return core.functionType(paramTypes, returnType);
     },
+
     Type_id(id) {
       const e = context.lookup(id.sourceString);
       checkHasBeenDeclared(e, id);
       checkIsType(e, id);
       return e;
     },
+
     Exp0_ternary(exp1, _questionMark, exp2, _colon, exp3) {
       const test = exp1.analyze();
       checkHasBoolenType(test, exp1);

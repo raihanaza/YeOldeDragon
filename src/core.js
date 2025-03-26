@@ -11,7 +11,7 @@ export function variableDeclaration(variable, initializer) {
 }
 
 export function variable(name, type, mutable) {
-  return { kind: "Variable", name, type, mutable: true };
+  return { kind: "Variable", name, type, mutable };
 }
 
 export function constantDeclaration(variable, initializer, mutable) {
@@ -22,8 +22,8 @@ export function printStatement(expression) {
   return { kind: "PrintStatement", expression };
 }
 
-export function functionDeclaration(fun) {
-  return { kind: "FunctionDeclaration", fun };
+export function functionDeclaration(func) {
+  return { kind: "FunctionDeclaration", func };
 }
 
 export function func(name, params, body, type) {
@@ -156,7 +156,7 @@ export function memberExpression(object, op, field) {
 }
 
 export function objectInstance(name, fields) {
-    return { kind: "ObjectInstance", name, fields };
+  return { kind: "ObjectInstance", name, fields };
 }
 
 export function stringExpression(literal, interpolation) {
