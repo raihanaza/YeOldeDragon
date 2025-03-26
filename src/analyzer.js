@@ -77,9 +77,9 @@ export default function analyze(match) {
     check(e.type.kind === "OptionalType", `Expected optional type but got ${e.type.name}`, at);
   }
 
-  function checkHasFunctionType(e, at) {
-    check(e.type.kind === "FunctionType", `Expected function type but got ${e.type.name}`, at);
-  }
+  // function checkHasFunctionType(e, at) {
+  //   check(e.type.kind === "FunctionType", `Expected function type but got ${e.type.name}`, at);
+  // }
 
   function checkIsStringOrNumericType(e, at) {
     const expectedTypes = [core.intType, core.floatType, core.stringType];
@@ -161,33 +161,6 @@ export default function analyze(match) {
         toType.paramTypes.every((t, i) => assignable(t, fromType.paramTypes[i])))
     );
   }
-
-  // function typeDescription(type) {
-  //   switch (type.kind) {
-  //     case "void":
-  //       return "void";
-  //     case "any":
-  //       return "any";
-  //     case "int":
-  //       return "int";
-  //     case "FloatType":
-  //       return "float";
-  //     case "StringType":
-  //       return "string";
-  //     case "BooleanType":
-  //       return "boolean";
-  //     case "ListType":
-  //       return `[${typeDescription(type.type)}]`;
-  //     case "OptionalType":
-  //       return `${typeDescription(type.baseType)}?`;
-  //     case "ObjectType":
-  //       return type.name;
-  //     case "FunctionType":
-  //       const paramTypes = type.paramTypes.map(typeDescription).join(", ");
-  //       const returnTypes = typeDescription(type.returnType);
-  //       return `(${paramTypes}) => ${returnTypes}`;
-  //   }
-  // }
 
   function checkIsAssignable(e, { toType: type }, at) {
     check(assignable(e.type, type), `Cannot assign ${e.type} to ${type}`, at);
@@ -519,19 +492,20 @@ export default function analyze(match) {
       return core.unaryExpression(op, operand, type);
     },
 
-    FuncCall(exp, open, argList, close) {
+    Exp7_call(exp, open, argList, _close) {
       const callee = exp.analyze();
-      checkIsCallable(callee, exp);
+      checkIsCallable(callee, { at: exp });
       const exps = argList.asIteration().children;
       const targetTypes = callee?.kind === "ObjectType" ? callee.fields.map((f) => f.type) : callee.type.paramTypes;
-      checkArgumentCount(exps.length, targetTypes.length, open);
+      checkArgumentCount(exps.length, targetTypes.length, { at: open });
       const args = exps.map((exp, i) => {
         const arg = exp.analyze();
-        checkIsAssignable(arg, targetTypes[i], exp);
+        checkIsAssignable(arg, { toType: targetTypes[i] }, { at: exp });
         return arg;
       });
       return callee?.kind === "ObjectType" ? core.objectCall(callee, args) : core.functionCall(callee, args);
     },
+
     Exp7_subscript(exp1, _open, exp2, _close) {
       const [array, subscript] = [exp1.analyze(), exp2.analyze()];
       checkHasListType(array, exp1);

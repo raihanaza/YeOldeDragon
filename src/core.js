@@ -27,7 +27,7 @@ export function functionDeclaration(func) {
 }
 
 export function func(name, params, body, type) {
-  return { kind: "Function", name, params, body, type };
+  return { kind: "FunctionType", name, params, body, type };
 }
 
 export function functionType(paramTypes, returnType) {

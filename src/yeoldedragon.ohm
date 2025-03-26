@@ -5,7 +5,7 @@ YeOldeDragon {
               | PrintStmt
               | TypeDecl
               | FuncDecl
-              | FuncCall ";"                                                        --call
+              | Exp7_call ";"                                                        --call
               | Exp7 ("++"|"--") ";"										--incdec
               | Exp7 "=" Exp0 ";"											--assign
               | breaketh ";"                                                            --break
@@ -21,7 +21,6 @@ YeOldeDragon {
     Type = Type "?" 													--optional
     	    | "[" Type "]" 													--list
          | "(" ListOf<Type, ",">")" "->" Type 								--function
-         //| "int"                                                                     --intType
          | id 															--id
 
     PrintStmt = proclaim Exp0 ";"
@@ -30,7 +29,7 @@ YeOldeDragon {
     ConstDecl = fact Param "=" Exp0 ";"
 
     FuncDecl = don id Params "->" Type Block
-    FuncCall = id "(" ListOf<id, ",">")" ~mut
+    // FuncCall = id "(" ListOf<Exp0, ",">")" ~mut
     TypeDecl = matter id "{" ListOf<Param, ","> "}"
 
     IfStmt = perchance Exp0 Block else Block 					               --long
@@ -62,8 +61,8 @@ YeOldeDragon {
     	    | shant ~mut
          | floatLiteral ~mut
          | intLiteral ~mut
-        // | Exp7 "(" ListOf<Exp0, ","> ")" ~mut                                   --call
-         | FuncCall
+         | Exp7 "(" ListOf<Exp0, ","> ")" ~mut                                   --call
+        // | FuncCall
         // | Exp7 (("(" | "?(") ListOf<Exp0, ","> ")") ~mut   				     --call
          | Exp7 "[" Exp0 "]"                                                    --subscript
          | Exp7 ("." | "?.") id                                                 --member
