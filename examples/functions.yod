@@ -1,6 +1,6 @@
-don addNums() -> int {
+don addNums(num1: int) -> int {
     ~ return (num1 + num2);
-    return 1;
+    return num1;
     ~ proclaim("hello!");
 }
 
