@@ -21,7 +21,7 @@ plugins:
 - jekyll-remote-theme
 
 # Site settings
-url: 'https://raihana.github.io'
+url: 'https://raihanaza.github.io'
 baseurl: '/YeOldeDragon'
 title: 'My website'
 description: 'YeOldeDragon website'
