@@ -1,6 +1,15 @@
+don addNums() -> int {
+    ~ return (num1 + num2);
+    return 1;
+    ~ proclaim("hello!");
+}
+
+~~
 don addNums(num1: int, num2: int) -> int {
     return (num1 + num2);
-} 
+    proclaim("hello!")
+}
+~~
 
-proclaim(addNums(num1: 22, num2: 3));
+~ proclaim(addNums(num1: 22, num2: 3));
 ~ Expected output: 25

@@ -22,8 +22,16 @@ export function printStatement(expression) {
   return { kind: "PrintStatement", expression };
 }
 
-export function functionDeclaration(name, parameters, returnType, body) {
-  return { kind: "FunctionDeclaration", name, parameters, returnType, body };
+export function functionDeclaration(fun) {
+  return { kind: "FunctionDeclaration", fun };
+}
+
+export function func(name, params, body, type) {
+  return { kind: "Function", name, params, body, type };
+}
+
+export function functionType(paramTypes, returnType) {
+  return { kind: "FunctionType", paramTypes, returnType };
 }
 
 export function functionCall(name, args) {
@@ -37,10 +45,6 @@ export function functionCall(name, args) {
     }
   }
   return { kind: "FunctionCall", name, args };
-}
-
-export function functionType(paramTypes, returnType) {
-  return { kind: "FunctionType", paramTypes, returnType };
 }
 
 export function intrinsicFunction(name, type) {
@@ -151,9 +155,9 @@ export function memberExpression(object, op, field) {
   return { kind: "MemberExpression", object, op, field, type: field.type };
 }
 
-// export function objectInstance(name, fields) {
-//     return { kind: "ObjectInstance", name, fields };
-// }
+export function objectInstance(name, fields) {
+    return { kind: "ObjectInstance", name, fields };
+}
 
 export function stringExpression(literal, interpolation) {
   return { kind: "StringExpression", literal, interpolation, type: stringType };
