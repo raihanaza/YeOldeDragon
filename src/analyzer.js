@@ -45,6 +45,8 @@ export default function analyze(match) {
   }
 
   function checkHasBeenDeclared(entity, name, at) {
+    console.log("********entity********", entity);
+    console.log("********name********", name);
     check(entity, `Identifier ${name} not declared`, at);
   }
 
@@ -121,6 +123,7 @@ export default function analyze(match) {
   }
 
   function checkIsType(e, at) {
+    console.log("********e********", e);
     const isBasicType = /int|float|string|boolean|void|any/.test(e);
     const isCompositeType = /ObjectType|FunctionType|ListType|OptionalType/.test(e?.kind);
     check(isBasicType || isCompositeType, "Type expected", at);
@@ -304,6 +307,7 @@ export default function analyze(match) {
       checkReturnsNothing(context.function, returnKeyword);
       return core.shortReturnStatement();
     },
+    
     IfStmt_long(_if, exp, block1, _else, block2) {
       const test = exp.analyze();
       checkHasBoolenType(test, exp);
@@ -408,6 +412,8 @@ export default function analyze(match) {
 
     Type_id(id) {
       const entity = context.lookup(id.sourceString);
+      console.log("********entity_Type_id********", entity);
+      console.log("********id_sourceString********", id.sourceString);
       checkHasBeenDeclared(entity, id.sourceString, { at: id });
       checkIsType(entity, { at: id });
       return entity;

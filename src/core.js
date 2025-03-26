@@ -19,7 +19,8 @@ export function constantDeclaration(variable, initializer, mutable) {
 }
 
 export function printStatement(expression) {
-  return { kind: "PrintStatement", expression };
+  console.log("printStatement", expression);
+  return { kind: "PrintStatement", expression, type: voidType };
 }
 
 export function functionDeclaration(func) {
@@ -186,7 +187,7 @@ export const standardLibrary = Object.freeze({
   void: voidType,
   any: anyType,
   π: variable("π", false, floatType),
-  print: intrinsicFunction("print", anyToVoidType),
+  proclaim: intrinsicFunction("proclaim", anyToVoidType),
   exp: intrinsicFunction("exp", floatToFloatType),
   sin: intrinsicFunction("sin", floatToFloatType),
   cos: intrinsicFunction("cos", floatToFloatType),
