@@ -4,6 +4,19 @@
   box-sizing: border-box;
 }
 
+.scroll-container {
+  background: url("images/scrollpaper.png");
+  background-size: cover;
+  background-position: center;
+  border: 10px double #d4a373;
+  padding: 3rem 2rem;
+  margin: 2rem auto;
+  max-width: 1000px;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  position: relative;
+}
+
 .site-icon {
   display: block;
   margin: 0 auto 1rem auto;
@@ -49,7 +62,7 @@ header h1 {
 
 .tagline {
   font-style: italic;
-  color: #666;
+  color: #000000;
   margin-top: 0.5rem;
 }
 
@@ -79,7 +92,11 @@ p {
 .bios {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.5rem;
+  justify-content: center;
+  gap: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1rem 0;
 }
 
 .bio-card {
@@ -114,7 +131,7 @@ p {
 
 footer {
   text-align: center;
-  color: #888;
+  color: #000000;
   font-size: 0.9rem;
   margin-top: 4rem;
 }
