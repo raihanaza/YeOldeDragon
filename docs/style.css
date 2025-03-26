@@ -4,11 +4,30 @@
   box-sizing: border-box;
 }
 
+.site-icon {
+  display: block;
+  margin: 0 auto 1rem auto;
+  width: 80px;
+  max-width: 120px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
 body {
-  font-family: 'Courier New', monospace;
-  background: #fefcfb;
-  color: #333;
+  font-family: 'Caudex', serif;
+  background-image: url("images/parchment.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-position: center;
+  color: #3e2c1c;
   padding: 2rem;
+  line-height: 1.6;
+}
+
+h1, h2 {
+  font-family: 'MedievalSharp', cursive;
+  color: #5c3a21;
+  text-shadow: 1px 1px 1px #2a2a29;
 }
 
 .container {
@@ -16,7 +35,6 @@ body {
   margin: auto;
 }
 
-/* Header */
 header {
   text-align: center;
   margin-bottom: 2rem;
@@ -33,7 +51,6 @@ header h1 {
   margin-top: 0.5rem;
 }
 
-/* Sections */
 section {
   margin-bottom: 3rem;
 }
