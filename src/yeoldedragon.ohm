@@ -1,18 +1,18 @@
 YeOldeDragon {
      Program = Statement+
      Statement = VarDecl
-    	         | ConstDecl
-              | PrintStmt
-              | ClassDecl
-              | FuncDecl
-              | Exp7_call ";"                                                        --call
-              | Exp7 ("++"|"--") ";"										--incdec
-              | Exp7 "=" Exp0 ";"											--assign
-              | breaketh ";"                                                            --break
-              | return Exp0 ";" 											--return
-              | return ";"											     --returnvoid
-              | IfStmt
-              | LoopStmt
+               | ConstDecl
+               | PrintStmt
+               | ClassDecl
+               | FuncDecl
+               | Exp7_call ";"                                              --call
+               | Exp7 ("++"|"--") ";"										--incdec
+               | Exp7 "=" Exp0 ";"											--assign
+               | breaketh ";"                                               --break
+               | return Exp0 ";" 											--return
+               | return ";"											        --returnvoid
+               | IfStmt
+               | LoopStmt
 
     PrintStmt = proclaim Exp0 ";"
     // TODO: need to change VarDecl to include the fact as well? or do consts not need manifest type checking?
@@ -27,53 +27,54 @@ YeOldeDragon {
     FuncDecl    = don id Params "->" Type Block
     Arg         = id ":" Exp0
 
-    ClassDecl = matter id "{" ClassInit FuncDecl* "}"
-    // how to do default parameters?
-    ClassInit = init "(" ClassParams ")" "{" Statement* "}"
-    ClassParams = ListOf<Param, ",">
+    // should FuncDecl be a separate block with
+    ClassDecl = matter id "{" ClassInit ClassBlock "}"
+    // how to do default parameters? how to require users to initialize parameters in Block?
+    ClassInit = init "(" ListOf<Param, ","> ")" Block
+    ClassBlock = FuncDecl*
 
-    Type = Type "?" 													--optional
-    	    | "[" Type "]" 													--list
+    Type = Type "?" 												    	--optional
+             | "[" Type "]" 													--list
          | "(" ListOf<Type, ",">")" "->" Type 								--function
-         | id 															--id
+         | id 															    --id
 
-    IfStmt = perchance Exp0 Block else Block 					               --long
-    	      | perchance Exp0 Block else IfStmt 						          --elseif
-           | perchance Exp0 Block									          --short
+    IfStmt = perchance Exp0 Block else Block 					            --long
+               | perchance Exp0 Block else IfStmt 						        --elseif
+           | perchance Exp0 Block									        --short
 
     LoopStmt = whilst Exp0 Block											--while
-    		  | fortill Exp0 Block											--for
-            | fortill id in Exp0 ("..." | "..<") Exp0 Block 				     --range
-            | fortill id in Exp0 Block 										--forEach
+                     | fortill Exp0 Block											--for
+             | fortill id in Exp0 ("..." | "..<") Exp0 Block 	   	        --range
+             | fortill id in Exp0 Block 									--forEach
 
-    Exp0 = Exp1 "?" Exp1 ":" Exp0 										     --ternary
-    	    | Exp1
-    Exp1 = Exp1 "??" Exp2 												--nilcoalescing
-    	    | Exp2
+    Exp0 = Exp1 "?" Exp1 ":" Exp0 										    --ternary
+             | Exp1
+    Exp1 = Exp1 "??" Exp2 												    --nilcoalescing
+         | Exp2
     Exp2 = Exp3 ("||" Exp3)+										     	--or
-    	    | Exp3 ("&&" Exp3)+										     	--and
+             | Exp3 ("&&" Exp3)+										     	--and
          | Exp3
-    Exp3 = Exp4 relop Exp4 												--compare
-    	    | Exp4
-    Exp4 = Exp4 ("+" | "-") Exp5										     --addsub
-    	    | Exp5
-    Exp5 = Exp5 ("*"|"/"|"%") Exp6 										--multiply
-    	    | Exp6
-    Exp6 = Exp7 "^" Exp6												     --power
-    	    | Exp7
-         | (ne | "-") Exp7                                                                   --unary
+    Exp3 = Exp4 relop Exp4 												    --compare
+             | Exp4
+    Exp4 = Exp4 ("+" | "-") Exp5										    --addsub
+             | Exp5
+    Exp5 = Exp5 ("*"|"/"|"%") Exp6 										    --multiply
+             | Exp6
+    Exp6 = Exp7 "^" Exp6												    --power
+             | Exp7
+         | (ne | "-") Exp7                                                  --unary
     Exp7 = shall ~mut
-    	    | shant ~mut
+             | shant ~mut
          | floatLiteral ~mut
          | intLiteral ~mut
-         | Exp7 "(" ListOf<Arg, ","> ")" ~mut                                   --call
-         | Exp7 "[" Exp0 "]"                                                    --subscript
-         | Exp7 ("." | "?.") id                                                 --member
+         | Exp7 "(" ListOf<Arg, ","> ")" ~mut                               --call
+         | Exp7 "[" Exp0 "]"                                                --subscript
+         | Exp7 ("." | "?.") id                                             --member
          | String ~mut
-         | id                                                                   --id
-         | "[" "]" ~mut 												--emptylist
-         | "[" NonemptyListOf<Exp0, ","> "]" ~mut 						--listExp
-         | "(" Exp0 ")" ~mut 											--parens
+         | id                                                               --id
+         | "[" "]" ~mut 												    --emptylist
+         | "[" NonemptyListOf<Exp0, ","> "]" ~mut 					        --listExp
+         | "(" Exp0 ")" ~mut 											    --parens
 
     intLiteral = digit+
     floatLiteral = digit+ "." digit+ (("E"|"e") ("+"|"-")? digit+)?
