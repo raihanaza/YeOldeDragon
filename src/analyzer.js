@@ -289,11 +289,12 @@ export default function analyze(match) {
       return core.printStatement(exp.analyze());
     },
 
-    TypeDecl(_object, id, _left, fields, _right) {
+    ClassDecl(_object, id, _left, classInit, classBlock, _right) {
       checkNotDeclared(id.sourceString, id);
       const type = core.objectType(id.sourceString, []);
       context.add(id.sourceString, type);
-      type.fields = fields.children.map((field) => field.analyze());
+      //this line below shouldn't work, need to get types and fields from classInit
+      type.fields = classInit.children.map((field) => field.analyze());
       checkHasDistinctFields(type, id);
       checkIfSelfContaining(type, id);
       return core.typeDeclaration(type);
@@ -418,8 +419,7 @@ export default function analyze(match) {
     },
 
     Arg(id, _colon, exp) {
-      // TODO: this probably shouldn't be a variable
-      const arg = core.variable(id.sourceString, exp.analyze().type, false);
+      const arg = core.argument(id.sourceString, exp.analyze().type);
       return arg;
     },
 

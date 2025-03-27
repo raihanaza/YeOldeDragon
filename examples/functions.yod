@@ -1,5 +1,5 @@
-don addNums(num1: int, yes: boolean) -> void {
+don addNums(num1: int, yes: boolean) -> int {
+    return num1;
 }
 
 proclaim(addNums(num1: 1, yes: shall));
-~ proclaim(addNums(1, shall));

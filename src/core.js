@@ -14,6 +14,10 @@ export function variable(name, type, mutable) {
   return { kind: "Variable", name, type, mutable };
 }
 
+export function argument(name, type) {
+  return { kind: "Argument", name, type };
+}
+
 export function constantDeclaration(variable, initializer, mutable) {
   return { kind: "ConstantDeclaration", variable, initializer, mutable: false };
 }
