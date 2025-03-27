@@ -14,12 +14,16 @@ export function variable(name, type, mutable) {
   return { kind: "Variable", name, type, mutable };
 }
 
+export function argument(name, type) {
+  return { kind: "Argument", name, type };
+}
+
 export function constantDeclaration(variable, initializer, mutable) {
   return { kind: "ConstantDeclaration", variable, initializer, mutable: false };
 }
 
 export function printStatement(expression) {
-  return { kind: "PrintStatement", expression };
+  return { kind: "PrintStatement", expression, type: voidType };
 }
 
 export function functionDeclaration(func) {
@@ -30,8 +34,8 @@ export function func(name, params, body, type) {
   return { kind: "FunctionType", name, params, body, type };
 }
 
-export function functionType(paramTypes, returnType) {
-  return { kind: "FunctionType", paramTypes, returnType };
+export function functionType(paramNames, paramTypes, returnType) {
+  return { kind: "FunctionType", paramNames, paramTypes, returnType };
 }
 
 export function functionCall(name, args) {
@@ -143,6 +147,20 @@ export function call(callee, args) {
   return { kind: "Call", callee, args, type: callee.type.returnType };
 }
 
+// eventually add parent classes/superclasses as parameter for classDeclaration?
+// export function classDeclaration(name, superClass, fields, methods) {
+export function classDeclaration(type) {
+  return { kind: "ClassDeclaration", type };
+}
+
+export function classInitializer(fields, body) {
+  return { kind: "ClassInitializer", fields, body };
+}
+
+export function objectType(name, fields, methods) {
+  return { kind: "ObjectType", name, fields, methods };
+}
+
 export function objectDefinition(name, fields, methods) {
   return { kind: "ObjectDefinition", name, fields, methods };
 }
@@ -159,8 +177,8 @@ export function objectInstance(name, fields) {
   return { kind: "ObjectInstance", name, fields };
 }
 
-export function stringExpression(literal, interpolation) {
-  return { kind: "StringExpression", literal, interpolation, type: stringType };
+export function stringExpression(strings) {
+  return { kind: "StringExpression", strings, type: stringType };
 }
 
 export function field(name, type) {
@@ -186,7 +204,7 @@ export const standardLibrary = Object.freeze({
   void: voidType,
   any: anyType,
   π: variable("π", false, floatType),
-  print: intrinsicFunction("print", anyToVoidType),
+  proclaim: intrinsicFunction("proclaim", anyToVoidType),
   exp: intrinsicFunction("exp", floatToFloatType),
   sin: intrinsicFunction("sin", floatToFloatType),
   cos: intrinsicFunction("cos", floatToFloatType),
