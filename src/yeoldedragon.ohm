@@ -3,7 +3,7 @@ YeOldeDragon {
      Statement = VarDecl
     	         | ConstDecl
               | PrintStmt
-              | TypeDecl
+              | ClassDecl
               | FuncDecl
               | Exp7_call ";"                                                        --call
               | Exp7 ("++"|"--") ";"										--incdec
@@ -25,10 +25,12 @@ YeOldeDragon {
     Params      = "(" ListOf<Param, ","> ")"
     Param       = id ":" Type
     FuncDecl    = don id Params "->" Type Block
-    // FuncCall = id "(" ListOf<Exp0, ",">")" ~mut
     Arg         = id ":" Exp0
 
-    TypeDecl = matter id "{" ListOf<Param, ","> "}"
+    ClassDecl = matter id "{" ClassInit FuncDecl* "}"
+    // how to do default parameters?
+    ClassInit = init "(" ClassParams ")" "{" Statement* "}"
+    ClassParams = ListOf<Param, ",">
 
     Type = Type "?" 													--optional
     	    | "[" Type "]" 													--list
@@ -87,6 +89,7 @@ YeOldeDragon {
     in = "in" ~idchar
     don = "don" ~idchar
     matter = "matter" ~idchar
+    init = "init" ~idchar
     changeth = "changeth" ~idchar
     breaketh = "breaketh" ~idchar
     spell = "spell" ~idchar
@@ -98,7 +101,7 @@ YeOldeDragon {
 
     id = ~keyword letter idchar*
     keyword = proclaim | thine | fact | fortill | whilst | perchance | else | don
-            | matter | changeth | spell | defaulte | shall | shant | in | return
+            | matter | init | changeth | spell | defaulte | shall | shant | in | return
             | breaketh | ne
     idchar = letter | digit | "_"
     numeral = digit+ ("." digit+)? (("E"|"e") ("+"|"-")? digit+)?

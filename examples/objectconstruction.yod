@@ -1,26 +1,27 @@
 matter Coffee {
-    init(name: string, roast: string, seasonal: boolean? = zilch) {
+    init(name: string, roast: string, seasonal: boolean?) {
         ye.name = name;
         ye.roast = roast;
         ye.seasonal = seasonal;
     }
 
     don brew() -> void {
-        proclaim(“This coffee is called \(ye.name) and it is a \(ye.roast).”)
+        proclaim("This coffee is called \(ye.name) and it is a ${ye.roast}.");
     }
 
     don isSeasonal() -> string {
-        return this.seasonal?.asString() ?? “Not specified”;
+       ~ need to implement null coalescing operator
+       ~ return this.seasonal?.asString() ?? “Not specified”;
     }
 }
 
-thine pike = Coffee(name: “Pike Place”, roast: “medium-roast”);
-proclaim(pike.brew());
+~thine pike: Coffee = Coffee(name: “Pike Place”, roast: “medium-roast”);
+~proclaim(pike.brew());
 ~ Expected output: This coffee is called Pike Place and it is a medium-roast.
 
 proclaim(pike.isSeasonal());
-~ Expected output: Not specified 
+~ Expected output: Not specified
 
-thine holidayBlend = Coffee(name: “Holiday Blend”, roast: “light-roast”, seasonal: true);
-console.log(holidayBlend.isSeasonal());
+~ thine holidayBlend: Coffee = Coffee(name: “Holiday Blend”, roast: “light-roast”, seasonal: true);
+~console.log(holidayBlend.isSeasonal());
 ~ Expected output: true

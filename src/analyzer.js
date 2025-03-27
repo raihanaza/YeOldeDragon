@@ -174,6 +174,7 @@ export default function analyze(match) {
     if (type.kind == "OptionalType") return `${typeDescription(type.baseType)}?`;
   }
 
+  // TODO: still need to work on throwing error if missing arg name?
   function checkArgNameMatchesParam(e, { toName: name }, at) {
     check(assignable(e.name, name), `Cannot assign ${e.name} to ${name}`, at);
   }
@@ -417,6 +418,7 @@ export default function analyze(match) {
     },
 
     Arg(id, _colon, exp) {
+      // TODO: this probably shouldn't be a variable
       const arg = core.variable(id.sourceString, exp.analyze().type, false);
       return arg;
     },

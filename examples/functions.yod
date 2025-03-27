@@ -2,3 +2,4 @@ don addNums(num1: int, yes: boolean) -> void {
 }
 
 proclaim(addNums(num1: 1, yes: shall));
+~ proclaim(addNums(1, shall));
