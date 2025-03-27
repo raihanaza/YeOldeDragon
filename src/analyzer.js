@@ -167,9 +167,30 @@ export default function analyze(match) {
   //   check(assignable(e.type, type), `Cannot assign ${e.type} to ${type}`, at);
   // }
 
-  function checkIsAssignable(e, { toType: type }, at) {
-    check(assignable(e.type, type), `Cannot assign ${e.type} to ${type}`, at);
+  function typeDescription(type) {
+    if (typeof type === "string") return type;
+    if (type.kind == "ObjectType") return type.name;
+    if (type.kind == "FunctionType") {
+      const paramTypes = type.paramTypes.map(typeDescription).join(", ");
+      const returnType = typeDescription(type.returnType);
+      return `(${paramTypes})->${returnType}`;
+    }
+    if (type.kind == "ArrayType") return `[${typeDescription(type.baseType)}]`;
+    if (type.kind == "OptionalType") return `${typeDescription(type.baseType)}?`;
   }
+
+  function checkIsAssignable(e, { toType: type }, at) {
+    console.log("e", e, "e.type", e.type, "type", type);
+    const source = typeDescription(e.type);
+    const target = typeDescription(type);
+    const message = `Cannot assign a ${source} to a ${target}`;
+    console.log("source", source, "target", target);
+    check(assignable(e.type, type), message, at);
+  }
+
+  // function checkIsAssignable(e, { toType: type }, at) {
+  //   check(assignable(e.type, type), `Cannot assign ${e.type} to ${type}`, at);
+  // }
 
   function isMutable(e) {
     return (
@@ -260,6 +281,7 @@ export default function analyze(match) {
       const paramTypes = func.params.map((param) => param.type);
       const paramNames = func.params.map((param) => param.name);
       const returnType = type.children?.[0]?.analyze() ?? core.voidType;
+      console.log("paramNames", paramNames, "paramTypes", paramTypes, "returnType", returnType);
       func.type = core.functionType(paramNames, paramTypes, returnType);
 
       // Analyze body while still in child context
@@ -403,8 +425,7 @@ export default function analyze(match) {
     },
 
     Arg(id, _colon, exp) {
-      const arg = core.variable(id.sourceString, exp.analyze(), false);
-      context.add(arg.name, arg);
+      const arg = core.variable(id.sourceString, exp.analyze().type, false);
       return arg;
     },
 
@@ -521,14 +542,16 @@ export default function analyze(match) {
       // TODO: what to do when an objectType? Do we currently store the name of attribute for object?
       //console.log("callee", callee.type.paramNames);
       const targetParamNames =
-        callee?.kind === "FunctionType" ? callee.type.paramNames : callee.fields.map((f) => f.type);
+        callee?.kind === "ObjectType" ? callee.fields.map((f) => f.type) : callee.type.paramNames;
       const targetTypes = callee?.kind === "ObjectType" ? callee.fields.map((f) => f.type) : callee.type.paramTypes;
-      console.log(exps.length, targetTypes.length);
+      console.log("targetParamNames", targetParamNames, "targetTypes", targetTypes);
 
       checkArgumentCount(exps.length, targetTypes.length, { at: open });
       //console.log("targetParamNames", targetParamNames);
+      console.log("exps", exps);
       const args = exps.map((exp, i) => {
         const arg = exp.analyze();
+        console.log("arg", arg, "targetTypes[i]", targetTypes[i]);
         checkIsAssignable(arg, { toType: targetTypes[i] }, { at: exp });
         // console.log("arg", arg);
         //checkArgNameMatches(arg, { toName: targetParamNames[i] }, { at: exp });
