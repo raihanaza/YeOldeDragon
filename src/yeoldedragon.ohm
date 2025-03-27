@@ -13,6 +13,7 @@ YeOldeDragon {
                | return ";"											        --returnvoid
                | IfStmt
                | LoopStmt
+               | TypeDecl
 
     PrintStmt = proclaim Exp0 ";"
     // TODO: need to change VarDecl to include the fact as well? or do consts not need manifest type checking?
@@ -27,10 +28,11 @@ YeOldeDragon {
     FuncDecl    = don id Params "->" Type Block
     Arg         = id ":" Exp0
 
-    // should FuncDecl be a separate block with
-    ClassDecl = matter id "{" ClassInit ClassBlock "}"
+    TypeDecl = matter id "{" Field* "}"
     // how to do default parameters? how to require users to initialize parameters in Block?
-    ClassInit = init "(" ListOf<Param, ","> ")" Block
+    ClassDecl = matter id "{" ClassInit ClassBlock "}"
+    Field = id ":" Type
+    ClassInit = init "(" ListOf<Field, ","> ")" Block
     ClassBlock = FuncDecl*
 
     Type = Type "?" 												    	--optional

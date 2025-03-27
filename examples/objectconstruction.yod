@@ -1,4 +1,11 @@
 matter Coffee {
+    name: string
+    roast: string
+    seasonal: boolean
+}
+
+~~~
+matter Coffee {
     init(name: string, roast: string, seasonal: boolean?) {
         ye.name = name;
         ye.roast = roast;
@@ -14,12 +21,12 @@ matter Coffee {
        ~ return this.seasonal?.asString() ?? “Not specified”;
     }
 }
-
+~~~
 ~thine pike: Coffee = Coffee(name: “Pike Place”, roast: “medium-roast”);
 ~proclaim(pike.brew());
 ~ Expected output: This coffee is called Pike Place and it is a medium-roast.
 
-proclaim(pike.isSeasonal());
+~ proclaim(pike.isSeasonal());
 ~ Expected output: Not specified
 
 ~ thine holidayBlend: Coffee = Coffee(name: “Holiday Blend”, roast: “light-roast”, seasonal: true);

@@ -134,7 +134,7 @@ export default function analyze(match) {
 
   function checkIfSelfContaining(objectType, at) {
     const selfContaining = includesAsField(objectType, objectType);
-    check(!selfContaining, `Object type ${struct.name} cannot contain itself`, at);
+    check(!selfContaining, `Object type ${objectType.name} cannot contain itself`, at);
   }
 
   function equivalent(t1, t2) {
@@ -289,15 +289,66 @@ export default function analyze(match) {
       return core.printStatement(exp.analyze());
     },
 
+    TypeDecl(_matter, id, _left, fields, _right) {
+      checkNotDeclared(id.sourceString, { at: id });
+      // To allow recursion, enter into context without any fields yet
+      const type = core.objectType(id.sourceString, []);
+      context.add(id.sourceString, type);
+      // Now add the types as you parse and analyze. Since we already added
+      // the struct type itself into the context, we can use it in fields.
+      type.fields = fields.children.map((field) => field.analyze());
+      checkHasDistinctFields(type, { at: id });
+      checkIfSelfContaining(type, { at: id });
+      return core.classDeclaration(type);
+    },
+
     ClassDecl(_object, id, _left, classInit, classBlock, _right) {
       checkNotDeclared(id.sourceString, id);
+      // To allow recursion, enter into context without any fields yet
       const type = core.objectType(id.sourceString, []);
       context.add(id.sourceString, type);
       //this line below shouldn't work, need to get types and fields from classInit
-      type.fields = classInit.children.map((field) => field.analyze());
+      //type.fields = classInit.children.map((field) => field.analyze());
+      type.fields = classInit.children.map((field) => {
+        //field.analyze();
+        //console.log("***field***", field);
+        console.log("field.sourcestring", field.sourceString);
+
+        // const fieldType = field.type.analyze();
+        // const fieldName = field.id.sourceString;
+        // console.log("***fieldType***", fieldType);
+        // console.log("***fieldName***", fieldName);
+      });
+      console.log("***type.fields***", type.fields);
+      type.methods = classBlock.children.map((method) => method.analyze());
       checkHasDistinctFields(type, id);
       checkIfSelfContaining(type, id);
-      return core.typeDeclaration(type);
+      // checkHadDistinctMethods(type, id);
+      // maybe just check if have distinct methods names since don't want to overload?
+      return core.classDeclaration(type);
+    },
+
+    ClassInit(_init, _open, fields, block, _close) {
+      console.log("fields", fields);
+      // fields.map((field) => {
+      //   console.log("field sourceString in classInit", field.sourceString, "field", field);
+      //   // const fieldType = field.type.analyze();
+      //   const fieldName = field.id.sourceString;
+      //   //consol
+      //   // console.log("fieldType", fieldType);
+      //   // console.log("fieldName", fieldName);
+      // });
+      // const fieldList = fields.asIteration().children.map((field) => field.analyze());
+      // const type = core.objectType(this.sourceString, fieldList);
+      // context.add(type.name, type);
+      // return type;
+      const fieldNamesTypes = fields.asIteration().children.map((field) => field.analyze());
+      //return fields.asIteration().children.map((field) => field.analyze());
+      return core.classInitializer(fieldsTypes, block.analyze());
+    },
+
+    Field(id, _colon, type) {
+      return core.field(id.sourceString, type.analyze());
     },
 
     Statement_incdec(_inc, id, _semi) {

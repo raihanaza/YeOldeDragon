@@ -147,6 +147,20 @@ export function call(callee, args) {
   return { kind: "Call", callee, args, type: callee.type.returnType };
 }
 
+// eventually add parent classes/superclasses as parameter for classDeclaration?
+// export function classDeclaration(name, superClass, fields, methods) {
+export function classDeclaration(type) {
+  return { kind: "ClassDeclaration", type };
+}
+
+export function classInitializer(fields, body) {
+  return { kind: "ClassInitializer", fields, body };
+}
+
+export function objectType(name, fields, methods) {
+  return { kind: "ObjectType", name, fields, methods };
+}
+
 export function objectDefinition(name, fields, methods) {
   return { kind: "ObjectDefinition", name, fields, methods };
 }
