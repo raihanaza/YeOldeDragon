@@ -137,6 +137,15 @@ export default function analyze(match) {
     check(!selfContaining, `Object type ${objectType.name} cannot contain itself`, at);
   }
 
+  function checkStatementsAreInitializers(initializations) {
+    initializations.map((initialization) => {
+      check(initialization.kind === "AssignmentStatement", `Expected an initializer but got ${initialization.kind}`, {
+        at: initialization,
+      });
+    }
+    );
+  }
+
   function equivalent(t1, t2) {
     return (
       t1 === t2 ||
@@ -329,8 +338,10 @@ export default function analyze(match) {
       console.log();
       const fieldNamesTypes = fields.analyze();
       let block2 = block.analyze();
+      console.log("block2", block2);
       // for some reason can't directly analyze a block. block.analyze() throws an error that _terminal is not a function
       const initializations = [];
+      checkStatementsAreInitializers(initializations);
       //const initializations = block.children.map((initialization) => initialization.analyze());
       return core.classInitializer(fieldNamesTypes, initializations);
     },
