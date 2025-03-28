@@ -59,31 +59,31 @@
         <section id="examples">
           <h2>Code Examples</h2>
 
+          <div class="code-title">Hello World</div>
           <div class="code-block">
-            <pre><code>// Hello World
-proclaim("Hello, dragons!!!!");</code></pre>
+            <pre><code> proclaim("Hello, dragons!!!!");</code></pre>
           </div>
 
+          <div class="code-title">While Loops</div>
           <div class="code-block">
-            <pre><code>// While Loops
-thine dragons: int = 10;
+            <pre><code>thine dragons: int = 10;
 whilst (dragons > 0) {
     proclaim(“There are “ + toString(dragons) + “ left in the café”);
     dragons--;
 }</code></pre>
           </div>
-
+          
+          <div class="code-title">For Loops</div>
           <div class="code-block">
-            <pre><code>// For Loops
-thine coins: [string] = [“gold”, “silver”, “bronze”];
+            <pre><code>thine coins: [string] = [“gold”, “silver”, “bronze”];
 fortill (coin in coins) {
     proclaim(“We have a “ + coin.length + “ today!”);
 }</code></pre>
           </div>
 
+          <div class="code-title">Conditionals</div>
           <div class="code-block">
-            <pre><code>// Conditionals
-perchance caféIsOpen == shall {
+            <pre><code>perchance caféIsOpen == shall {
     proclaim(“It is open!);
 } else perchance caféIsOpen == shant {
     proclaim(“It is closed!);
@@ -92,9 +92,9 @@ perchance caféIsOpen == shall {
 }</code></pre>
           </div>
 
+          <div class="code-title">Switch Statements</div>
           <div class="code-block">
-            <pre><code>// Switch Statements
-thine earnings: string = “gold coin”;
+            <pre><code>thine earnings: string = “gold coin”;
 
 changeth (earnings) {
     spell “gold coin”:
@@ -108,14 +108,36 @@ changeth (earnings) {
 }</code></pre>
           </div>
 
+          <div class="code-title">Functions</div>
           <div class="code-block">
-            <pre><code>// Functions
-don addNums(num1: int, yes: bool) -> int {
+            <pre><code>don addNums(num1: int, yes: bool) -> int {
     return num1;
 }
 
 proclaim(addNums(1, shall));
 </code></pre>
+          </div>
+
+          <div class="code-title">Classes</div>
+          <div class="code-block">
+            <pre><code>matter Coffee {
+    init(name: string, roast: string, seasonal: boolean? = zilch) {
+        ye.name = name;
+        ye.roast = roast;
+        ye.seasonal = seasonal;
+    }
+
+    don brew() -> void {
+        proclaim(“This coffee is called \(ye.name) and it is a \(ye.roast).”)
+    }
+
+    don isSeasonal() -> string {
+        return this.seasonal?.asString() ?? “Not specified”;
+    }
+}
+
+thine pike = Coffee(name: “Pike Place”, roast: “medium-roast”);
+proclaim(pike.brew());</code></pre>
           </div>
 
         <section id="devs">

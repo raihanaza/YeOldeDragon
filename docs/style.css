@@ -89,6 +89,14 @@ p {
   overflow-x: auto;
 }
 
+.code-title {
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: #3e2c1c;
+  font-family: 'Caudex', serif;
+}
+
 .bios {
   display: flex;
   flex-wrap: wrap;
