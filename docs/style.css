@@ -6,6 +6,7 @@
 
 .scroll-container {
   background: url("images/scrollpaper.png");
+  filter: brightness(120%);
   background-size: cover;
   background-position: center;
   border: 10px double #d4a373;
@@ -29,7 +30,6 @@
 
 body {
   font-family: 'Caudex', serif;
-  background-image: url("images/parchment.png");
   background-size: cover;
   background-repeat: no-repeat;
   background-attachment: fixed;
