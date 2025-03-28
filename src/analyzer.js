@@ -327,14 +327,11 @@ export default function analyze(match) {
     ClassInit(_init, fields, block) {
       console.log("***classInit called***");
       console.log();
-      //const fieldNamesTypes = fields.asIteration().children.map((field) => field.analyze());
-      const fieldNamesTypes = fields;
-      console.log("fieldNamesTypes", fieldNamesTypes);
-      console.log("block.children", block.children);
-      console.log("block.string", block.sourceString);
+      const fieldNamesTypes = fields.analyze();
       let block2 = block.analyze();
       // for some reason can't directly analyze a block. block.analyze() throws an error that _terminal is not a function
-      const initializations = block.children.map((initialization) => initialization.analyze());
+      const initializations = [];
+      //const initializations = block.children.map((initialization) => initialization.analyze());
       return core.classInitializer(fieldNamesTypes, initializations);
     },
 
