@@ -2,9 +2,9 @@ export function program(statements) {
   return { kind: "Program", statements };
 }
 
-export function block(statements) {
-  return { kind: "Block", statements };
-}
+// export function block(statements) {
+//   return { kind: "Block", statements };
+// }
 
 export function variableDeclaration(variable, initializer) {
   return { kind: "VariableDeclaration", variable, initializer };
@@ -153,8 +153,8 @@ export function classDeclaration(type) {
   return { kind: "ClassDeclaration", type };
 }
 
-export function classInitializer(fields, body) {
-  return { kind: "ClassInitializer", fields, body };
+export function classInitializer(fields, initializations) {
+  return { kind: "ClassInitializer", fields: fields, initializations };
 }
 
 export function objectType(name, fields, methods) {
@@ -166,7 +166,7 @@ export function objectDefinition(name, fields, methods) {
 }
 
 export function objectCall(callee, args) {
-  return { kind: "ObjectCall", calee, args, type: callee.type.returnType };
+  return { kind: "ObjectCall", callee, args, type: callee.type.returnType };
 }
 
 export function memberExpression(object, op, field) {

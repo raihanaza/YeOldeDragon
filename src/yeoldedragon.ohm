@@ -31,9 +31,11 @@ YeOldeDragon {
     TypeDecl = matter id "{" Field* "}"
     // how to do default parameters? how to require users to initialize parameters in Block?
     ClassDecl = matter id "{" ClassInit ClassBlock "}"
+    ClassInit = init Fields Block
+    Fields = "(" ListOf<Field, ","> ")"
     Field = id ":" Type
-    ClassInit = init "(" ListOf<Field, ","> ")" Block
     ClassBlock = FuncDecl*
+    // ClassInitBlock = "{" VarDecl "}"
 
     Type = Type "?" 												    	--optional
              | "[" Type "]" 													--list
@@ -82,6 +84,7 @@ YeOldeDragon {
     floatLiteral = digit+ "." digit+ (("E"|"e") ("+"|"-")? digit+)?
     mut = ~"==" "=" | "++" | "--"
 
+    // need to change so that proclaim is an intrinsic function
     proclaim = "proclaim" ~idchar
     thine = "thine" ~idchar
     fact = "fact" ~idchar
