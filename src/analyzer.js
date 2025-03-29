@@ -39,22 +39,6 @@ export default function analyze(match) {
     }
   }
 
-  function determineType(str) {
-    if (str == "int") {
-      return INT
-    } else if (str == "string") {
-      return STRING
-    } else if (str == "zilch") {
-      return VOID
-    } else if (str == "bool") {
-      return BOOLEAN
-    } else if (str == "float") {
-      return FLOAT
-    } else {
-      return ANY
-    }
-  }
-
   //utility functions
   function checkNotDeclared(name, at) {
     check(!context.lookup(name), `Identifier ${name} already declared`, at);
@@ -86,7 +70,13 @@ export default function analyze(match) {
   }
 
   function checkHasListType(e, at) {
-    check(e.type.kind === "ListType", `Expected list type but got ${e.type.name}`, at);
+    console.log("LIST ", e)
+    //TODO: add in type check for what's inside brackets
+    check((e.type.startsWith("[") && e.type.endsWith("]")) || e.type === "ListType", `Expected list type but got ${e.type.name}`, at);
+  }
+
+  function checkIsListOrString(e, at) {
+    check((e.type.startsWith("[") && e.type.endsWith("]")) || e.type === STRING, `Expected list or string type but got ${e.type.name}`, at);
   }
 
   function checkHasOptionalType(e, at) {
@@ -114,8 +104,12 @@ export default function analyze(match) {
     check(e.type?.kind === "ObjectType", `Expected an object type but got ${e.type.name}`, at);
   }
 
+  function isMutable(variable) {
+    return variable.mutable || (variable.kind == "SubscriptExpression" && isMutable(variable.list))
+  } 
+
   function checkIsMutable(e, at) {
-    check(e.mutable, `Cannot assign to immutable variable ${e.name}`, at);
+    check(isMutable(e), `Cannot assign to immutable variable ${e.name}`, at);
   }
 
   function checkBothSameType(e1, e2, at) {
@@ -123,7 +117,8 @@ export default function analyze(match) {
   }
 
   function checkVarDecTypeMatchesExpressionType(type, expType, at) {
-    check(type === expType, `Type mismatch in declaration. Expected ${expType} but got ${type}`, at);
+    //TODO: review this later, type==ANY workaround is for empty lists
+    check(type === expType || type === ANY, `Type mismatch in declaration. Expected ${expType} but got ${type}`, at);
   }
 
   function checkAllSameType(elements, at) {
@@ -178,7 +173,6 @@ export default function analyze(match) {
   }
 
   function checkIsAssignable(e, type, at) {
-    console.log("E TYPE: ", e.type)
     check(assignable(type, e.type), `Cannot assign from ${type} to ${e.type}`, at);
   }
 
@@ -235,7 +229,6 @@ export default function analyze(match) {
   }
 
   function checkIfReturnable(e, { from: f }, at) {
-    console.log("RETURN: ", f.type.returnType)
     checkIsAssignable(e, f.type.returnType, at);
   }
 
@@ -310,9 +303,11 @@ export default function analyze(match) {
     Statement_assign(variable, _eq, exp, _semi) {
       const target = variable.analyze();
       const source = exp.analyze();
+      console.log("TARGET: ", target);
+      console.log("SOURCE: ", source);
+      checkBothSameType(target, source, variable)
       checkIsMutable(target, variable);
       checkIsAssignable(source, target.type, source);
-      checkBothSameType(target, source, variable)
       return core.assignmentStatement(target, source);
     },
 
@@ -391,6 +386,7 @@ export default function analyze(match) {
       const collection = exp.analyze();
       checkHasListType(collection, exp);
       const iterator = core.variable(id.sourceString, collection.type.type, false);
+      console.log("ITERATOR: ", iterator)
       context = context.newChildContext({ inLoop: true });
       context.add(iterator.name, iterator);
       const body = block.analyze();
@@ -527,10 +523,12 @@ export default function analyze(match) {
     },
 
     Exp7_subscript(exp1, _open, exp2, _close) {
-      const [array, subscript] = [exp1.analyze(), exp2.analyze()];
-      checkHasListType(array, exp1);
+      checkHasBeenDeclared(exp1, exp1.sourceString, exp1)
+      const [e, subscript] = [exp1.analyze(), exp2.analyze()];
+      console.log("EXPRESSION IS: ", e);
       checkHasIntType(subscript, exp2);
-      return core.subscriptExpression(array, subscript);
+      checkIsListOrString(e, exp1);
+      return core.subscriptExpression(e, subscript);
     },
     Exp7_member(exp, dot, id) {
       //TODO: some error handling here
@@ -560,7 +558,8 @@ export default function analyze(match) {
     Exp7_listExp(_open, args, _close) {
       const elements = args.asIteration().children.map((e) => e.analyze());
       checkAllSameType(elements, args);
-      return core.listExpression(elements, elements[0].type);
+      const elementType = elements.length > 0 ? elements[0].type : "any";
+      return core.listExpression(elements, `[${elementType}]`);
     },
     Exp7_parens(_open, exp, _close) {
       return exp.analyze();
@@ -578,9 +577,9 @@ export default function analyze(match) {
       return BigInt(this.sourceString);
     },
     // TODO: go over this
-    lit(_chars) {
-      return this.sourceString;
-    },
+    // lit(_chars) {
+    //   return this.sourceString;
+    // },
     String(_openQuote, lit1, interp, lit2, _closeQuote) {
       const staticText1 = lit1.sourceString;
       const interpolations = interp.children.map((i) => i.children[1].analyze());
