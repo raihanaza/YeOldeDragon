@@ -123,6 +123,10 @@ export function breakStatement() {
   return { kind: "BreakStatement" };
 }
 
+export function emptyOptional(baseType) {
+  return { kind: "EmptyOptional", baseType, type: optionalType(baseType) };
+}
+
 export function optionalType(baseType) {
   return { kind: "OptionalType", baseType };
 }
@@ -162,8 +166,8 @@ export function classInitializer(fields) {
   return { kind: "ClassInitializer", fields };
 }
 
-export function objectType(name, fields, values, methods) {
-  return { kind: "ObjectType", name, fields, values, methods };
+export function objectType(name, fields, methods) {
+  return { kind: "ObjectType", name, fields, methods };
 }
 
 export function objectDefinition(name, fields, methods) {

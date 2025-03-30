@@ -70,8 +70,6 @@ export default function analyze(match) {
   }
 
   function checkHasListType(e, at) {
-    // console.log("LIST ", e)
-    //TODO: add in type check for what's inside brackets
     check(
       (e.type.startsWith("[") && e.type.endsWith("]")) || e.type === "ListType",
       `Expected list type but got ${e.type.name}`,
@@ -169,6 +167,7 @@ export default function analyze(match) {
   }
 
   function assignable(fromType, toType) {
+    console.log("fromType", fromType, "toType", toType);
     return (
       toType === core.anyType ||
       equivalent(fromType, toType) ||
@@ -176,22 +175,24 @@ export default function analyze(match) {
         toType?.kind === "FunctionType" &&
         assignable(fromType.returnType, toType.returnType) &&
         fromType.paramTypes.length === toType.paramTypes.length &&
-        toType.paramTypes.every((t, i) => assignable(t, fromType.paramTypes[i])))
+        toType.paramTypes.every((t, i) => assignable(t, fromType.paramTypes[i]))
+      ) ||
+      (fromType === toType.baseType)
     );
   }
 
   function typeDescription(type) {
     console.log("type.kind in typedescription", type);
     if (typeof type === "string") return type;
-    console.log('continue after string')
+    console.log("continue after string");
     if (type.kind == "ObjectType") return type.name;
-    console.log('continue after objecttype')
+    console.log("continue after objecttype");
     if (type.kind == "FunctionType") {
       const paramTypes = type.paramTypes.map(typeDescription).join(", ");
       const returnType = typeDescription(type.returnType);
       return `(${paramTypes})->${returnType}`;
     }
-    console.log("continue after functiontype")
+    console.log("continue after functiontype");
     if (type.kind == "ArrayType") return `[${typeDescription(type.baseType)}]`;
     if (type.kind == "OptionalType") return `${typeDescription(type.baseType)}?`;
   }
@@ -203,9 +204,8 @@ export default function analyze(match) {
 
   function checkIsAssignable(e, targetType, at) {
     console.log("**checkIsAssignable** **e**", e, "e.type", e.type, "**target**", targetType);
-    console.log("e.type.kind", e.type.kind);
     const source = typeDescription(e.type);
-    console.log('***trying to check target****')
+    console.log("***trying to check target****");
     console.log("targetType", targetType, "targetType.kind", targetType.kind);
     const target = typeDescription(targetType);
     const message = `Cannot assign a ${source} to a ${target}`;
@@ -300,7 +300,6 @@ export default function analyze(match) {
     FuncDecl(_func, id, parameters, _colons, type, block) {
       console.log("in FuncDecl", id.sourceString);
       checkNotDeclared(id.sourceString, { at: id });
-      // Add immediately so that we can have recursion
       const func = core.func(id.sourceString);
       context.add(id.sourceString, func);
 
@@ -308,9 +307,6 @@ export default function analyze(match) {
       context = context.newChildContext({ inLoop: false, function: func });
       func.params = parameters.analyze();
 
-      // Now that the parameters are known, we compute the function's type.
-      // This is fine; we did not need the type to analyze the parameters,
-      // but we do need to set it before analyzing the body.
       const paramTypes = func.params.map((param) => param.type);
       const paramNames = func.params.map((param) => param.name);
       const returnType = type.children?.[0]?.analyze() ?? core.voidType;
@@ -318,8 +314,6 @@ export default function analyze(match) {
 
       // Analyze body while still in child context
       func.body = block.analyze();
-
-      // Go back up to the outer context before returning
       context = context.parent;
       return core.functionDeclaration(func);
     },
@@ -329,7 +323,6 @@ export default function analyze(match) {
     },
 
     TypeDecl(_matter, id, _left, fields, _right) {
-      console.log("TypeDecl called");
       checkNotDeclared(id.sourceString, { at: id });
       // To allow recursion, enter into context without any fields yet
       const type = core.objectType(id.sourceString, []);
@@ -349,7 +342,7 @@ export default function analyze(match) {
       context.add(id.sourceString, type);
       const classInitRep = classInit.analyze();
       type.fields = classInitRep.fields;
-      type.fieldsAndValues = classInitRep.initialValues;
+      //type.fieldsAndValues = classInitRep.initialValues;
       context = context.newChildContext({ inLoop: false, classDecl: type });
       // check that every value has been initialized?
       checkHasDistinctFields(type, id);
@@ -438,7 +431,7 @@ export default function analyze(match) {
       checkInFunction({ at: returnKeyword });
       checkReturnsSomething(context.function, { at: returnKeyword });
       const returnExpression = exp.analyze();
-      checkIfReturnable(returnExpression, { from: context.function }, returnKeyword);
+      checkIfReturnable(returnExpression, { from: context.function }, { at: returnKeyword });
       return core.returnStatement(returnExpression);
     },
 
