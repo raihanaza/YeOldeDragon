@@ -153,8 +153,8 @@ export function classDeclaration(type) {
   return { kind: "ClassDeclaration", type };
 }
 
-export function classInitializer(fields, initializations) {
-  return { kind: "ClassInitializer", fields: fields, initializations };
+export function classInitializer(fields, initialValues) {
+  return { kind: "ClassInitializer", fields, initialValues };
 }
 
 export function objectType(name, fields, methods) {
