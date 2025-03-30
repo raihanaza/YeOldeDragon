@@ -308,7 +308,7 @@ export default function analyze(match) {
     },
 
     TypeDecl(_matter, id, _left, fields, _right) {
-      console.log("TypeDecl called")
+      console.log("TypeDecl called");
       checkNotDeclared(id.sourceString, { at: id });
       // To allow recursion, enter into context without any fields yet
       const type = core.objectType(id.sourceString, []);
@@ -322,7 +322,7 @@ export default function analyze(match) {
     },
 
     ClassDecl(_object, id, _left, classInit, classBlock, _right) {
-      console.log("classDecl called")
+      console.log("***classDecl called***");
       checkNotDeclared(id.sourceString, id);
       // To allow recursion, enter into context without any fields yet
       const type = core.objectType(id.sourceString, []);
@@ -330,7 +330,13 @@ export default function analyze(match) {
       const classInitRep = classInit.analyze();
       type.fields = classInitRep.fields;
       type.initialValues = classInitRep.initialValues;
-      console.log(classBlock.analyze());
+
+      console.log("try to get type.methods");
+      console.log("classBlock", classBlock);
+      console.log("classBlock.children", classBlock.children);
+      console.log("methods.analyze", classBlock.analyze());
+      //type.methods = classBlock.children.map((method) => method.analyze());
+      console.log("***type.methods***", type.methods);
       //type.methods = classBlock.children.map((method) => method.analyze());
       checkHasDistinctFields(type, id);
       checkIfSelfContaining(type, id);
@@ -340,15 +346,17 @@ export default function analyze(match) {
     },
 
     Methods(methods) {
-      return methods.asIteration().children.map((method) => console.log(method.analyze()));
+      console.log("methods called", methods);
+      console.log("methods.length", methods.length);
+      return methods.asIteration().children.map((method) => method.analyze());
     },
 
-    ClassInit(_init, fields, block) {
+    ClassInit(_init, fields, fieldInitBlock) {
       console.log("***classInit called***");
-      console.log();
       const fieldNamesTypes = fields.analyze();
-      let block2 = block.analyze();
-      console.log("block2", block2);
+      console.log("try to analyze block");
+      let fieldInits = fieldInitBlock.analyze();
+      console.log("fieldInits", fieldInits);
       // for some reason can't directly analyze a block. block.analyze() throws an error that _terminal is not a function
       const initializations = [];
       checkStatementsAreInitializers(initializations);
@@ -356,45 +364,21 @@ export default function analyze(match) {
       return core.classInitializer(fieldNamesTypes, initializations);
     },
 
-    // FuncDecl(_func, id, parameters, _colons, type, block) {
-    //   checkNotDeclared(id.sourceString, { at: id });
-    //   // Add immediately so that we can have recursion
-    //   const func = core.func(id.sourceString);
-    //   context.add(id.sourceString, func);
-
-    //   // Parameters are part of the child context
-    //   context = context.newChildContext({ inLoop: false, function: func });
-    //   func.params = parameters.analyze();
-
-    //   // Now that the parameters are known, we compute the function's type.
-    //   // This is fine; we did not need the type to analyze the parameters,
-    //   // but we do need to set it before analyzing the body.
-    //   const paramTypes = func.params.map((param) => param.type);
-    //   const paramNames = func.params.map((param) => param.name);
-    //   const returnType = type.children?.[0]?.analyze() ?? core.voidType;
-    //   func.type = core.functionType(paramNames, paramTypes, returnType);
-
-    //   // Analyze body while still in child context
-    //   func.body = block.analyze();
-    //   console.log("func.body", func.body);
-
-    //   // Go back up to the outer context before returning
-    //   context = context.parent;
-    //   return core.functionDeclaration(func);
-    // },
-
     Field(id, _colon, type) {
-      const field = core.field(id.sourceString, type.analyze());
-      return field;
+      console.log("field called, id: ", id.sourceString);
+      return core.field(id.sourceString, type.analyze());
     },
 
     Fields(_open, fieldList, _close) {
-      return fieldList.asIteration().children.map((field) => field.analyze());
+      return fieldList.asIteration().children.map((field) => field);
     },
 
     FieldInit(_ye, _dot, id, _eq, exp, _semi) {
+      console.log("in Field Init")
       const fieldName = id.sourceString;
+      console.log("try to get intializer");
       const initializer = exp.analyze();
+      console.log("fieldName", fieldName, "initializer: ", initializer);
       checkHasBeenDeclared(fieldName, { at: id });
       // checkIsMutable(fieldName, { at: id });
       checkIsAssignable(initializer, fieldName, { at: id });
@@ -402,8 +386,8 @@ export default function analyze(match) {
     },
 
     FieldInitBlock(_open, fieldInits, _close) {
-      console.log("fieldInit", fieldInits);
-      return fieldInits.asIteration().children.map((fieldInit) => fieldInit.analyze());
+      console.log("in fieldInitBlock");
+      return fieldInits.children.map((fieldInit) => fieldInit.analyze());
     },
 
     Statement_incdec(exp, incDec, _semi) {
