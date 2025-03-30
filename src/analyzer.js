@@ -9,8 +9,8 @@ const ANY = core.anyType;
 
 class Context {
   //checks if in loop so that it can break
-  constructor({ parent = null, locals = new Map(), inLoop = false, function: f = null }) {
-    Object.assign(this, { parent, locals, inLoop, function: f });
+  constructor({ parent = null, locals = new Map(), inLoop = false, function: f = null, classDecl: c = null }) {
+    Object.assign(this, { parent, locals, inLoop, function: f, classDecl: c });
   }
   add(name, entity) {
     this.locals.set(name, entity);
@@ -70,8 +70,6 @@ export default function analyze(match) {
   }
 
   function checkHasListType(e, at) {
-    // console.log("LIST ", e)
-    //TODO: add in type check for what's inside brackets
     check(
       (e.type.startsWith("[") && e.type.endsWith("]")) || e.type === "ListType",
       `Expected list type but got ${e.type.name}`,
@@ -110,6 +108,10 @@ export default function analyze(match) {
 
   function checkHasObjectType(e, at) {
     check(e.type?.kind === "ObjectType", `Expected an object type but got ${e.type.name}`, at);
+  }
+
+  function checkHasFieldType(e, at) {
+    check(e.type?.kind === "Field", `Expected a field type but got ${e.type.name}`, at);
   }
 
   function checkIsMutable(e, at) {
@@ -165,6 +167,7 @@ export default function analyze(match) {
   }
 
   function assignable(fromType, toType) {
+    console.log("fromType", fromType, "toType", toType);
     return (
       toType === core.anyType ||
       equivalent(fromType, toType) ||
@@ -172,11 +175,14 @@ export default function analyze(match) {
         toType?.kind === "FunctionType" &&
         assignable(fromType.returnType, toType.returnType) &&
         fromType.paramTypes.length === toType.paramTypes.length &&
-        toType.paramTypes.every((t, i) => assignable(t, fromType.paramTypes[i])))
+        toType.paramTypes.every((t, i) => assignable(t, fromType.paramTypes[i]))
+      ) ||
+      (fromType === toType.baseType)
     );
   }
 
   function typeDescription(type) {
+    console.log("type.kind in typedescription", type);
     if (typeof type === "string") return type;
     if (type.kind == "ObjectType") return type.name;
     if (type.kind == "FunctionType") {
@@ -194,7 +200,10 @@ export default function analyze(match) {
   }
 
   function checkIsAssignable(e, targetType, at) {
+    console.log("**checkIsAssignable** **e**", e, "e.type", e.type, "**target**", targetType);
     const source = typeDescription(e.type);
+    console.log("***trying to check target****");
+    console.log("targetType", targetType, "targetType.kind", targetType.kind);
     const target = typeDescription(targetType);
     const message = `Cannot assign a ${source} to a ${target}`;
     check(assignable(e.type, targetType), message, at);
@@ -231,6 +240,14 @@ export default function analyze(match) {
 
   function checkInFunction(at) {
     check(context.function, `Return statement must be inside a function`, at);
+  }
+
+  function checkInClassDecl(at) {
+    check(context.classDecl, `Member expression with \"ye\" must be inside a class`, at);
+  }
+
+  function checkClassFieldExists(id, at) {
+    check(context.lookup(id.sourceString), `Field ${id.sourceString} not declared`, at);
   }
 
   function checkIsCallable(e, at) {
@@ -278,8 +295,8 @@ export default function analyze(match) {
     },
 
     FuncDecl(_func, id, parameters, _colons, type, block) {
+      console.log("in FuncDecl", id.sourceString);
       checkNotDeclared(id.sourceString, { at: id });
-      // Add immediately so that we can have recursion
       const func = core.func(id.sourceString);
       context.add(id.sourceString, func);
 
@@ -287,9 +304,6 @@ export default function analyze(match) {
       context = context.newChildContext({ inLoop: false, function: func });
       func.params = parameters.analyze();
 
-      // Now that the parameters are known, we compute the function's type.
-      // This is fine; we did not need the type to analyze the parameters,
-      // but we do need to set it before analyzing the body.
       const paramTypes = func.params.map((param) => param.type);
       const paramNames = func.params.map((param) => param.name);
       const returnType = type.children?.[0]?.analyze() ?? core.voidType;
@@ -297,8 +311,6 @@ export default function analyze(match) {
 
       // Analyze body while still in child context
       func.body = block.analyze();
-
-      // Go back up to the outer context before returning
       context = context.parent;
       return core.functionDeclaration(func);
     },
@@ -320,71 +332,94 @@ export default function analyze(match) {
       return core.classDeclaration(type);
     },
 
-    ClassDecl(_object, id, _left, classInit, classBlock, _right) {
+    ClassDecl(_object, id, _left, classInit, methods, _right) {
+      console.log("***classDecl called***");
       checkNotDeclared(id.sourceString, id);
-      // To allow recursion, enter into context without any fields yet
-      const type = core.objectType(id.sourceString, []);
+      const type = core.objectType(id.sourceString, [], [], []);
       context.add(id.sourceString, type);
-      //this line below shouldn't work, need to get types and fields from classInit
-      //type.fields = classInit.children.map((field) => field.analyze());
-      type.fields = classInit.children.map((field) => {
-        //field.analyze();
-        //console.log("***field***", field);
-        // console.log("field.sourcestring", field.sourceString);
-        // const fieldType = field.type.analyze();
-        // const fieldName = field.id.sourceString;
-        // console.log("***fieldType***", fieldType);
-        // console.log("***fieldName***", fieldName);
-      });
-      // console.log("***type.fields***", type.fields);
-      type.methods = classBlock.children.map((method) => method.analyze());
+      const classInitRep = classInit.analyze();
+      type.fields = classInitRep.fields;
+      //type.fieldsAndValues = classInitRep.initialValues;
+      context = context.newChildContext({ inLoop: false, classDecl: type });
+      // check that every value has been initialized?
       checkHasDistinctFields(type, id);
       checkIfSelfContaining(type, id);
+      type.methods = methods.analyze();
+
       // checkHadDistinctMethods(type, id);
       // maybe just check if have distinct methods names since don't want to overload?
+      context = context.parent;
       return core.classDeclaration(type);
     },
 
-    ClassInit(_init, _open, fields, block, _close) {
-      // console.log("fields", fields);
-      // fields.map((field) => {
-      //   console.log("field sourceString in classInit", field.sourceString, "field", field);
-      //   // const fieldType = field.type.analyze();
-      //   const fieldName = field.id.sourceString;
-      //   //consol
-      //   // console.log("fieldType", fieldType);
-      //   // console.log("fieldName", fieldName);
-      // });
-      // const fieldList = fields.asIteration().children.map((field) => field.analyze());
-      // const type = core.objectType(this.sourceString, fieldList);
-      // context.add(type.name, type);
-      // return type;
-      const fieldNamesTypes = fields.asIteration().children.map((field) => field.analyze());
-      //return fields.asIteration().children.map((field) => field.analyze());
-      return core.classInitializer(fieldsTypes, block.analyze());
+    Methods(methods) {
+      return methods.children.map((method) => method.analyze());
+    },
+
+    ClassInit(_init, fields, fieldInitBlock) {
+      console.log("***classInit called***");
+      const targetFields = fields.analyze();
+      const classInit = core.classInitializer([], []);
+      context = context.newChildContext({ inLoop: false });
+      classInit.fields = targetFields;
+      const initialValues = fieldInitBlock.analyze();
+      console.log("classInit.initialValues", initialValues);
+      classInit.fields.map((field) => {
+        field.value = initialValues.find((f) => f.target === field.name).source;
+      });
+      console.log("classInit.fields", classInit.fields);
+      context = context.parent;
+      return classInit;
     },
 
     Field(id, _colon, type) {
-      return core.field(id.sourceString, type.analyze());
+      const field = core.field(id.sourceString, type.analyze(), null);
+      context.add(field.name, field);
+      return field;
     },
 
-    Statement_call(exp, _open, argList, _close, _semi) {
-      const callee = exp.analyze();
-      checkIsCallable(callee, { at: exp });
-      const exps = argList.asIteration().children;
-      // TODO: what to do when an objectType? Do we currently store the name of attribute for object?
-      const targetParamNames =
-        callee?.kind === "ObjectType" ? callee.fields.map((f) => f.type) : callee.type.paramNames;
-      const targetTypes = callee?.kind === "ObjectType" ? callee.fields.map((f) => f.type) : callee.type.paramTypes;
-      checkArgumentCount(exps.length, targetTypes.length, { at: open });
-      const args = exps.map((exp, i) => {
-        const arg = exp.analyze();
-        checkIsAssignable(arg, { toType: targetTypes[i] }, { at: exp });
-        checkArgNameMatchesParam(arg, { toName: targetParamNames[i] }, { at: exp });
-        return arg;
-      });
-      return callee?.kind === "ObjectType" ? core.objectCall(callee, args) : core.functionCall(callee, args);
+    Fields(_open, fieldList, _close) {
+      return fieldList.asIteration().children.map((field) => field.analyze());
     },
+
+    FieldInit(_ye, _dot, id, _eq, exp, _semi) {
+      const fieldName = id.sourceString;
+      const initializer = exp.analyze();
+      return core.assignmentStatement(fieldName, initializer);
+    },
+
+    FieldInitBlock(_open, fieldInits, _close) {
+      const initializations = fieldInits.children.map((exp) => {
+        const fieldInit = exp.analyze();
+        const fieldInitTarget = context.lookup(fieldInit.target);
+        checkHasBeenDeclared(fieldInit, fieldInit, { at: exp });
+        // TODO: need to make sure that pass the type correctly for OptionalType
+        console.log("in fieldInitBlock checking if assignable");
+        checkIsAssignable(fieldInit.source, fieldInitTarget.type, { at: exp });
+        // TODO: need to check that EVERY field has been initialized
+        checkArgNameMatchesParam(fieldInit, fieldInit, { at: exp });
+        return fieldInit;
+      });
+      return initializations;
+    },
+
+    // Statement_call(exp, _open, argList, _close, _semi) {
+    //   const callee = exp.analyze();
+    //   checkIsCallable(callee, { at: exp });
+    //   const exps = argList.asIteration().children;
+    //   // TODO: what to do when an objectType? Do we currently store the name of attribute for object?
+    //   const targetParamNames =
+    //     callee?.kind === "ObjectType" ? callee.fields.map((f) => f.type) : callee.type.paramNames;
+    //   const targetTypes = callee?.kind === "ObjectType" ? callee.fields.map((f) => f.type) : callee.type.paramTypes;
+    //   checkArgumentCount(exps.length, targetTypes.length, { at: open });
+    //   const args = exps.map((exp, i) => {
+    //     const arg = exp.analyze();
+    //     checkIsAssignable(arg, { toType: targetTypes[i] }, { at: exp });
+    //     checkArgNameMatchesParam(arg, { toName: targetParamNames[i] }, { at: exp });
+    //     return arg;
+    //   });
+    //   return callee?.kind === "ObjectType" ? core.objectCall(callee, args) : core.functionCall(callee, args);
+    // },
 
     Statement_incdec(id, op, _semi) {
       const variable = id.analyze();
@@ -407,7 +442,7 @@ export default function analyze(match) {
       checkInFunction({ at: returnKeyword });
       checkReturnsSomething(context.function, { at: returnKeyword });
       const returnExpression = exp.analyze();
-      checkIfReturnable(returnExpression, { from: context.function }, returnKeyword);
+      checkIfReturnable(returnExpression, { from: context.function }, { at: returnKeyword });
       return core.returnStatement(returnExpression);
     },
 
@@ -642,19 +677,36 @@ export default function analyze(match) {
       return core.subscriptExpression(e, subscript);
     },
     Exp7_member(exp, dot, id) {
-      //TODO: some error handling here
-      const object = exp.analyze();
-      let objectType;
-      if (dot.sourceString === "?.") {
-        checkHasOptionalObjectType(object, exp);
-        objectType = object.type.baseType;
+      if (exp.sourceString == "ye") {
+        checkInClassDecl({ at: exp });
+        checkClassFieldExists(id, { at: exp });
+        const object = context.lookup(id.sourceString);
+        console.log("object", object);
+        let objectType;
+        if (dot.sourceString === "?.") {
+          // TODO: need to implement optionals checks
+          checkHasOptionalObjectType(object, exp);
+          objectType = object.type.baseType;
+        } else {
+          objectType = object.type;
+        }
+        const field = [];
+        return core.memberExpression(object, dot.sourceString, object);
       } else {
-        checkHasObjectType(object, exp);
-        objectType = object.type;
+        const object = exp.analyze();
+        let objectType;
+        if (dot.sourceString === "?.") {
+          checkHasOptionalObjectType(object, exp);
+          objectType = object.type.baseType;
+        } else {
+          console.log("check member has object type", object);
+          checkHasObjectType(object, exp);
+          objectType = object.type;
+        }
+        checkHasMember(objectType, id.sourceString, id);
+        const field = objectType.fields.find((f) => f.name === id.sourceString);
+        return core.memberExpression(object, dot.sourceString, field);
       }
-      checkHasMember(objectType, id.sourceString, id);
-      const field = objectType.fields.find((f) => f.name === id.sourceString);
-      return core.memberExpression(object, dot.sourceString, field);
     },
 
     Exp7_id(id) {

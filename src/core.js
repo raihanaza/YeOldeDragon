@@ -108,7 +108,7 @@ export function whileStatement(condition, body) {
 }
 
 export function repeatStatement(count, body) {
-    return { kind: "RepeatStatement", count, body }; 
+  return { kind: "RepeatStatement", count, body };
 }
 
 export function forEachStatement(iterator, collection, body) {
@@ -123,8 +123,12 @@ export function breakStatement() {
   return { kind: "BreakStatement" };
 }
 
-export function optionalType(type) {
-  return { kind: "OptionalType", type };
+export function emptyOptional(baseType) {
+  return { kind: "EmptyOptional", baseType, type: optionalType(baseType) };
+}
+
+export function optionalType(baseType) {
+  return { kind: "OptionalType", baseType };
 }
 
 export function listType(type) {
@@ -158,8 +162,8 @@ export function classDeclaration(type) {
   return { kind: "ClassDeclaration", type };
 }
 
-export function classInitializer(fields, body) {
-  return { kind: "ClassInitializer", fields, body };
+export function classInitializer(fields) {
+  return { kind: "ClassInitializer", fields };
 }
 
 export function objectType(name, fields, methods) {
@@ -186,8 +190,8 @@ export function stringExpression(strings) {
   return { kind: "StringExpression", strings, type: stringType };
 }
 
-export function field(name, type) {
-  return { kind: "Field", name, type };
+export function field(name, type, value) {
+  return { kind: "Field", name, type, value };
 }
 
 export const voidType = "void";
@@ -223,3 +227,4 @@ String.prototype.type = stringType;
 Number.prototype.type = floatType;
 BigInt.prototype.type = intType;
 Boolean.prototype.type = booleanType;
+

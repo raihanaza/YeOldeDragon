@@ -1,0 +1,5 @@
+matter Coffee {
+    name: string
+    roast: string
+    seasonal: boolean
+}
