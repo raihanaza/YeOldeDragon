@@ -182,7 +182,7 @@ export default function analyze(match) {
   }
 
   function typeDescription(type) {
-    console.log("type.kind in typedescription", type);
+    console.log("type in typedescription", type);
     if (typeof type === "string") return type;
     if (type.kind == "ObjectType") return type.name;
     if (type.kind == "FunctionType") {
@@ -201,9 +201,10 @@ export default function analyze(match) {
 
   function checkIsAssignable(e, targetType, at) {
     console.log("**checkIsAssignable** **e**", e, "e.type", e.type, "**target**", targetType);
+    console.log("**try to check source**", e.type);
     const source = typeDescription(e.type);
-    console.log("***trying to check target****");
-    console.log("targetType", targetType, "targetType.kind", targetType.kind);
+    console.log("***trying to check target****", targetType);
+    console.log("targetType", targetType);
     const target = typeDescription(targetType);
     const message = `Cannot assign a ${source} to a ${target}`;
     check(assignable(e.type, targetType), message, at);
@@ -438,6 +439,10 @@ export default function analyze(match) {
       return core.shortReturnStatement();
     },
 
+    Statement_call(call, _semicolon) {
+      return call.analyze();
+    },
+
     IfStmt_long(_if, exp, block1, _else, block2) {
       const test = exp.analyze();
       checkHasBoolenType(test, exp);
@@ -637,6 +642,7 @@ export default function analyze(match) {
     },
 
     Exp7_call(exp, open, argList, _close) {
+      console.log("Exp7_call", exp.sourceString);
       const callee = exp.analyze();
       checkIsCallable(callee, { at: exp });
       const exps = argList.asIteration().children;
@@ -647,7 +653,7 @@ export default function analyze(match) {
       checkArgumentCount(exps.length, targetTypes.length, { at: open });
       const args = exps.map((exp, i) => {
         const arg = exp.analyze();
-        checkIsAssignable(arg, { toType: targetTypes[i] }, { at: exp });
+        checkIsAssignable(arg, targetTypes[i], { at: exp });
         checkArgNameMatchesParam(arg, { toName: targetParamNames[i] }, { at: exp });
         return arg;
       });

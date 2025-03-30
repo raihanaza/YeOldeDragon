@@ -4,7 +4,7 @@ YeOldeDragon {
               | PrintStmt
               | FuncDecl
               | ClassDecl
-              // | Exp7_member ";"                                                      --member
+              // | Exp7_member ";"                                                   --member
               | Exp7_call ";"                                                        --call
               | Exp7 ("++"|"--") ";"										--incdec
               | Exp7 "=" Exp0 ";"											--assign

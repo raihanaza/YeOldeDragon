@@ -1,0 +1,5 @@
+don printNum(num: int) -> int {
+    proclaim(num);
+}
+
+printNum(num: 5);

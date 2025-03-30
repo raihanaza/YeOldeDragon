@@ -14,17 +14,17 @@ const semanticChecks = [
   ["true statement", `perchance shant { proclaim("It shan't be"); }`],
   ["empty function", "don addNums(num1: int, num2: int) -> int { return (num1 + num2); } "],
   ["function declaration", "don incrementFunction(num: int) -> int { num++; return num; }"],
-//   //TODO: add function call 
+//   //TODO: add function call
   ["increment statement", "thine x: int = 1; x++;"],
   ["decrement statement", "thine x: float = 3.1; x--;"],
   ["assignment statement", "thine testvar: int = 2; testvar = 1;"],
   ["break statement", `don breakTest(num: int) -> void { whilst num > 5 { proclaim("num is right size"); perchance num == 13 { proclaim("num is unlucky!"); breaketh; } } } `],
   ["long return", "don funcName(num: int) -> int { proclaim(num); return num; }"],
-  // ["function call", "don printNum(num: int) -> int { proclaim(num); } printNum(5);"],
+  ["function call", "don printNum(num: int) -> int { proclaim(num); } printNum(num: 5);"],
   ["short if statement", "thine x: float = 3.45; thine y: float = 8.99; perchance x > y { proclaim(y); }"],
   ["else if statement", "perchance shall { proclaim(1); } else { proclaim(3);}"],
   ["long if statement", `thine x: int = 4; thine y: int = 2; perchance (y > 3) { proclaim("y is greater than 3"); } else perchance y == (x/2) { proclaim("y is half of x");}`],
-// //   TODO: FIX LIST TYPES 
+// //   TODO: FIX LIST TYPES
   ["short loop", "thine num: int = 10; whilst num > 5 { num = num/2; }"],
   ["short for loop", "fortill 5 { proclaim(1); }"],
   ["for in loop", `thine coins: [string] = ["dollar", "fifty cents", "twenty cents"]; fortill coin in coins { proclaim("Thee hath the following coins"); proclaim(coin); } `],
