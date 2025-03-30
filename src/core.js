@@ -162,8 +162,8 @@ export function classInitializer(fields, initialValues) {
   return { kind: "ClassInitializer", fields, initialValues };
 }
 
-export function objectType(name, fields, methods) {
-  return { kind: "ObjectType", name, fields, methods };
+export function objectType(name, fields, values, methods) {
+  return { kind: "ObjectType", name, fields, values, methods };
 }
 
 export function objectDefinition(name, fields, methods) {
@@ -171,7 +171,7 @@ export function objectDefinition(name, fields, methods) {
 }
 
 export function objectCall(callee, args) {
-  return { kind: "ObjectCall", calee, args, type: callee.type.returnType };
+  return { kind: "ObjectCall", callee, args, type: callee.type.returnType };
 }
 
 export function memberExpression(object, op, field) {

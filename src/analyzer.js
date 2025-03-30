@@ -279,7 +279,9 @@ export default function analyze(match) {
     },
 
     FuncDecl(_func, id, parameters, _colons, type, block) {
+      console.log("in FuncDecl", id.sourceString);
       checkNotDeclared(id.sourceString, { at: id });
+      console.log("func not declared", id.sourceString);
       // Add immediately so that we can have recursion
       const func = core.func(id.sourceString);
       context.add(id.sourceString, func);
@@ -325,16 +327,16 @@ export default function analyze(match) {
     ClassDecl(_object, id, _left, classInit, methods, _right) {
       console.log("***classDecl called***");
       checkNotDeclared(id.sourceString, id);
-      const type = core.objectType(id.sourceString, [], []);
+      const type = core.objectType(id.sourceString, [], [], []);
       context.add(id.sourceString, type);
       const classInitRep = classInit.analyze();
       context = context.newChildContext({ inLoop: false, classInit: classInit });
+      console.log("new child context")
       type.fields = classInitRep.fields;
-      type.initialValues = classInitRep;
+      type.values = classInitRep;
       // check that every value has been initialized?
       checkHasDistinctFields(type, id);
       checkIfSelfContaining(type, id);
-      console.log("try to get methods", methods.analyze());
       type.methods = methods.analyze();
 
       // checkHadDistinctMethods(type, id);
@@ -357,8 +359,9 @@ export default function analyze(match) {
       classInit.initialValues = fieldInitBlock.analyze();
       console.log("classInit.initialValues", classInit.initialValues);
       //console.log("child context", context);
+      console.log("set context to parent");
       context = context.parent;
-      //console.log("parent context", context);
+      console.log("now in parent context");
       return classInit;
     },
 
@@ -663,7 +666,6 @@ export default function analyze(match) {
       console.log("exp sourceString", exp.sourceString);
       if (exp.sourceString == "ye") {
         console.log("ye is used");
-
       } else {
         // const object = exp.analyze();
         let objectType;
