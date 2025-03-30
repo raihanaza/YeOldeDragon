@@ -1,5 +1,5 @@
 # Ye Olde Dragon
-![yeoldedragon logo](docs/logo.png)
+![yeoldedragon logo](docs/images/logo.png)
 
 ## Introduction
 Ye Olde Dragon is a statically-typed, object-oriented scripting language whose name was inspired by its parent languages, Python🐉, Javascript 📜, and Swift (like a dragon 🏃‍♂️💨). We intend to bring together the best of all three worlds to create a highly effective and readable language that combines our favorite features and strengths from each. Ye Olde Dragon’s easily understandable syntax makes it an accessible language for beginners and experienced programmers alike, due to its powerful and versatile functionalities.
@@ -18,9 +18,8 @@ Our langauge website can be found at https://raihanaza.github.io/YeOldeDragon/.
 
 
 ## Types
-| Name          | Type           |
+| YeOldeDragon          | JavaScript           |
 |--------------|-----------------|
-| YeOldeDragon | JavaScript      |
 | string       | String          |
 | int          | Number          |
 | float        | Number          |
@@ -29,7 +28,7 @@ Our langauge website can be found at https://raihanaza.github.io/YeOldeDragon/.
 
 
 ## Data Structures
-| Structure  | JavaScript Syntax       | dragonCafe Syntax                  |
+| Structure  | JavaScript Syntax       | YeOldeDragon Syntax                  |
 |------------|------------------------|-------------------------------------|
 | Lists      | `[a, b, c, d]`          | `[dragon, dragin, dragen]`         |
 | Objects    | `{ 'a': 'b', 'c': 'd' }` | `{ "dragon": "a", "drugon": "b" }` |
@@ -75,7 +74,7 @@ Here are some examples, Ye Olde Dragon on the left, JavaScript on the right.
 ### Hello World
 | YeOldeDragon                           | JavaScript                      |
 |----------------------------------------|--------------------------------|
-| `proclaim("Hello, dragons!!!!");`     | `console.log("Hello, world");` |
+| `proclaim("Hello, dragon!");`     | `console.log("Hello, world");` |
 
 
 ### Variable Binding
@@ -101,7 +100,7 @@ Here are some examples, Ye Olde Dragon on the left, JavaScript on the right.
 ```
 thine coins: [string] = [“gold”, “silver”, “bronze”];
 fortill (coin in coins) {
-    proclaim(“We have a “ + coin.length + “ today!”);
+    proclaim(“We have a ${coin} today!”);
 }
 ```
 
@@ -125,7 +124,7 @@ for (coin in coins) {
 ```
 thine dragons: int = 10;
 whilst (dragons > 0) {
-    proclaim(“There are “ + toString(dragons) + “ left in the café”);
+    proclaim(“There are ${toString(dragons)} left in the café”);
     dragons--;
 }
 ```
