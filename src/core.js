@@ -108,7 +108,7 @@ export function whileStatement(condition, body) {
 }
 
 export function repeatStatement(count, body) {
-    return { kind: "RepeatStatement", count, body }; 
+  return { kind: "RepeatStatement", count, body };
 }
 
 export function forEachStatement(iterator, collection, body) {
@@ -158,8 +158,8 @@ export function classDeclaration(type) {
   return { kind: "ClassDeclaration", type };
 }
 
-export function classInitializer(fields, body) {
-  return { kind: "ClassInitializer", fields, body };
+export function classInitializer(fields, initialValues) {
+  return { kind: "ClassInitializer", fields, initialValues };
 }
 
 export function objectType(name, fields, methods) {

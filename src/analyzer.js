@@ -324,15 +324,14 @@ export default function analyze(match) {
     ClassDecl(_object, id, _left, classInit, classBlock, _right) {
       console.log("***classDecl called***");
       checkNotDeclared(id.sourceString, id);
-      // To allow recursion, enter into context without any fields yet
-      const type = core.objectType(id.sourceString, []);
+      const type = core.objectType(id.sourceString, [], []);
       context.add(id.sourceString, type);
       const classInitRep = classInit.analyze();
       type.fields = classInitRep.fields;
-
-      //console.log("fields", fields);
-
-      type.initialValues = classInitRep.initialValues;
+      type.initialValues = classInitRep;
+      // check that every value has been initialized?
+      checkHasDistinctFields(type, id);
+      checkIfSelfContaining(type, id);
 
       // console.log("try to get type.methods");
       // console.log("classBlock", classBlock);
@@ -341,8 +340,7 @@ export default function analyze(match) {
       //type.methods = classBlock.children.map((method) => method.analyze());
       // console.log("***type.methods***", type.methods);
       //type.methods = classBlock.children.map((method) => method.analyze());
-      checkHasDistinctFields(type, id);
-      checkIfSelfContaining(type, id);
+
       // checkHadDistinctMethods(type, id);
       // maybe just check if have distinct methods names since don't want to overload?
       return core.classDeclaration(type);
@@ -361,12 +359,10 @@ export default function analyze(match) {
       context = context.newChildContext({ inLoop: false, classInit: classInit });
 
       classInit.fields = targetFields;
-      console.log("context.lookup");
-      classInit.fields.map((field) => console.log(field.name, field.type));
+      //classInit.fields.map((field) => console.log(field.name, field.type));
 
-      let fieldInits = fieldInitBlock.analyze();
-      console.log("fieldInits", fieldInits);
-      const initializations = [];
+      classInit.initialValues = fieldInitBlock.analyze();
+      console.log("classInit.initialValues", classInit.initialValues);
       //checkStatementsAreInitializers(initializations);
       //const initializations = block.children.map((initialization) => initialization.analyze());
       return classInit;
@@ -390,9 +386,6 @@ export default function analyze(match) {
       console.log("try to get initializer");
       const initializer = exp.analyze();
       console.log("fieldName", fieldName, "initializer: ", initializer);
-      // checkHasBeenDeclared(fieldName, { at: id });
-      // checkIsMutable(fieldName, { at: id });
-      // checkIsAssignable(initializer, fieldName, { at: id });
       return core.assignmentStatement(fieldName, initializer);
     },
 
