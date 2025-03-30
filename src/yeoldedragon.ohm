@@ -2,9 +2,9 @@ YeOldeDragon {
      Program = Statement+
      Statement = VarDecl
               | PrintStmt
-              | ClassDecl
               | FuncDecl
-              | Exp7_member ";"                                                      --member
+              | ClassDecl
+              // | Exp7_member ";"                                                      --member
               | Exp7_call ";"                                                        --call
               | Exp7 ("++"|"--") ";"										--incdec
               | Exp7 "=" Exp0 ";"											--assign
@@ -55,16 +55,16 @@ YeOldeDragon {
     Exp1 = Exp1 "??" Exp2 												    --nilcoalescing
          | Exp2
     Exp2 = Exp3 ("||" Exp3)+										     	--or
-             | Exp3 ("&&" Exp3)+										     	--and
+         | Exp3 ("&&" Exp3)+										     	--and
          | Exp3
     Exp3 = Exp4 relop Exp4 												    --compare
-             | Exp4
+         | Exp4
     Exp4 = Exp4 ("+" | "-") Exp5										    --addsub
-             | Exp5
+         | Exp5
     Exp5 = Exp5 ("*"|"/"|"%") Exp6 										    --multiply
-             | Exp6
+         | Exp6
     Exp6 = Exp7 "^" Exp6												    --power
-             | Exp7
+         | Exp7
          | (ne | "-") Exp7                                                  --unary
     Exp7 = shall ~mut
          | shant ~mut
@@ -75,9 +75,9 @@ YeOldeDragon {
          | (ye | Exp7) ("." | "?.") id                                      --member
          | String ~mut
          | id                                                               --id
-         | "[" "]" ~mut 												    --emptylist
-         | "[" NonemptyListOf<Exp0, ","> "]" ~mut 					        --listExp
-         | "(" Exp0 ")" ~mut 											    --parens
+         | "[" "]" ~mut 										      --emptylist
+         | "[" NonemptyListOf<Exp0, ","> "]" ~mut 					 --listExp
+         | "(" Exp0 ")" ~mut 									      --parens
 
     intLiteral = digit+
     floatLiteral = digit+ "." digit+ (("E"|"e") ("+"|"-")? digit+)?

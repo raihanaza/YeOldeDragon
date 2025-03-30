@@ -184,15 +184,12 @@ export default function analyze(match) {
   function typeDescription(type) {
     console.log("type.kind in typedescription", type);
     if (typeof type === "string") return type;
-    console.log("continue after string");
     if (type.kind == "ObjectType") return type.name;
-    console.log("continue after objecttype");
     if (type.kind == "FunctionType") {
       const paramTypes = type.paramTypes.map(typeDescription).join(", ");
       const returnType = typeDescription(type.returnType);
       return `(${paramTypes})->${returnType}`;
     }
-    console.log("continue after functiontype");
     if (type.kind == "ArrayType") return `[${typeDescription(type.baseType)}]`;
     if (type.kind == "OptionalType") return `${typeDescription(type.baseType)}?`;
   }

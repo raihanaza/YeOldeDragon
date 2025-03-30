@@ -227,3 +227,4 @@ String.prototype.type = stringType;
 Number.prototype.type = floatType;
 BigInt.prototype.type = intType;
 Boolean.prototype.type = booleanType;
+
