@@ -1,7 +1,7 @@
 matter Coffee {
-    init(name: string, roast: string, seasonal: boolean?) {
-        ye.name = name;
+    init(roast: int, name: string, seasonal: boolean?) {
         ye.roast = roast;
+        ye.name = name;
         ye.seasonal = seasonal;
     }
 

@@ -330,16 +330,16 @@ export default function analyze(match) {
       const classInitRep = classInit.analyze();
       type.fields = classInitRep.fields;
 
-      console.log("fields", fields)
+      //console.log("fields", fields);
 
       type.initialValues = classInitRep.initialValues;
 
-      console.log("try to get type.methods");
-      console.log("classBlock", classBlock);
-      console.log("classBlock.children", classBlock.children);
-      console.log("methods.analyze", classBlock.analyze());
+      // console.log("try to get type.methods");
+      // console.log("classBlock", classBlock);
+      // console.log("classBlock.children", classBlock.children);
+      // console.log("methods.analyze", classBlock.analyze());
       //type.methods = classBlock.children.map((method) => method.analyze());
-      console.log("***type.methods***", type.methods);
+      // console.log("***type.methods***", type.methods);
       //type.methods = classBlock.children.map((method) => method.analyze());
       checkHasDistinctFields(type, id);
       checkIfSelfContaining(type, id);
@@ -361,14 +361,13 @@ export default function analyze(match) {
       context = context.newChildContext({ inLoop: false, classInit: classInit });
 
       classInit.fields = targetFields;
-      console.log("context.lookup", )
-      classInit.fields.map((field => console.log(field.name, field.type)));
+      console.log("context.lookup");
+      classInit.fields.map((field) => console.log(field.name, field.type));
 
       let fieldInits = fieldInitBlock.analyze();
       console.log("fieldInits", fieldInits);
-      console.log("fieldInits", fieldInits);
       const initializations = [];
-      checkStatementsAreInitializers(initializations);
+      //checkStatementsAreInitializers(initializations);
       //const initializations = block.children.map((initialization) => initialization.analyze());
       return classInit;
     },
@@ -381,15 +380,14 @@ export default function analyze(match) {
     },
 
     Fields(_open, fieldList, _close) {
-      console.log("FIELDS CALLED")
+      console.log("FIELDS CALLED");
       return fieldList.asIteration().children.map((field) => field.analyze());
     },
 
     FieldInit(_ye, _dot, id, _eq, exp, _semi) {
-      console.log("in Field Init")
+      console.log("in Field Init");
       const fieldName = id.sourceString;
       console.log("try to get initializer");
-      const entity = context.lookup(id.sourceString);
       const initializer = exp.analyze();
       console.log("fieldName", fieldName, "initializer: ", initializer);
       // checkHasBeenDeclared(fieldName, { at: id });
@@ -400,7 +398,16 @@ export default function analyze(match) {
 
     FieldInitBlock(_open, fieldInits, _close) {
       console.log("in fieldInitBlock");
-      return fieldInits.children.map((fieldInit) => fieldInit.analyze());
+      const initializations = fieldInits.children.map((exp) => {
+        console.log("fieldInit sourceString", exp.sourceString);
+        const fieldInit = exp.analyze();
+        console.log("**field init in field Init block**", fieldInit);
+        checkHasBeenDeclared(fieldInit, fieldInit.name, { at: exp });
+        // checkIsAssignable(fieldInit, { toType: fieldInit.type }, { at: exp });
+        checkArgNameMatchesParam(fieldInit, { toName: fieldInit.name }, { at: exp });
+        return fieldInit;
+      });
+      return initializations;
     },
 
     Statement_incdec(exp, incDec, _semi) {
@@ -681,7 +688,7 @@ export default function analyze(match) {
     },
 
     Exp7_id(id) {
-      console.log("***in id***");
+      console.log("***in id***", id.sourceString);
       const entity = context.lookup(id.sourceString);
       checkHasBeenDeclared(entity, id.sourceString, { at: id });
       return entity;
