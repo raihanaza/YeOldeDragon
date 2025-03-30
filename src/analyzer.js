@@ -194,6 +194,7 @@ export default function analyze(match) {
   }
 
   function checkIsAssignable(e, targetType, at) {
+    console.log("checkIsAssignable", e, targetType);
     const source = typeDescription(e.type);
     const target = typeDescription(targetType);
     const message = `Cannot assign a ${source} to a ${target}`;
@@ -357,14 +358,10 @@ export default function analyze(match) {
       const targetFields = fields.analyze();
       const classInit = core.classInitializer([], []);
       context = context.newChildContext({ inLoop: false, classInit: classInit });
-
+      // TODO: need to check that targetFields match source initialValues
       classInit.fields = targetFields;
-      //classInit.fields.map((field) => console.log(field.name, field.type));
-
       classInit.initialValues = fieldInitBlock.analyze();
       console.log("classInit.initialValues", classInit.initialValues);
-      //checkStatementsAreInitializers(initializations);
-      //const initializations = block.children.map((initialization) => initialization.analyze());
       return classInit;
     },
 
@@ -381,9 +378,7 @@ export default function analyze(match) {
     },
 
     FieldInit(_ye, _dot, id, _eq, exp, _semi) {
-      console.log("in Field Init");
       const fieldName = id.sourceString;
-      console.log("try to get initializer");
       const initializer = exp.analyze();
       console.log("fieldName", fieldName, "initializer: ", initializer);
       return core.assignmentStatement(fieldName, initializer);
@@ -394,10 +389,13 @@ export default function analyze(match) {
       const initializations = fieldInits.children.map((exp) => {
         console.log("fieldInit sourceString", exp.sourceString);
         const fieldInit = exp.analyze();
-        console.log("**field init in field Init block**", fieldInit);
-        checkHasBeenDeclared(fieldInit, fieldInit.name, { at: exp });
-        // checkIsAssignable(fieldInit, { toType: fieldInit.type }, { at: exp });
-        checkArgNameMatchesParam(fieldInit, { toName: fieldInit.name }, { at: exp });
+        console.log("**fieldInit**", fieldInit);
+        console.log("**field init in field Init block**", fieldInit.source.type);
+        const fieldInitTarget = context.lookup(fieldInit.target);
+        checkHasBeenDeclared(fieldInit, fieldInit, { at: exp });
+        // TODO: need to check that targetFields match source initialValues
+        checkIsAssignable(fieldInit.source, fieldInitTarget.type, { at: exp });
+        checkArgNameMatchesParam(fieldInit, fieldInit, { at: exp });
         return fieldInit;
       });
       return initializations;
@@ -681,7 +679,6 @@ export default function analyze(match) {
     },
 
     Exp7_id(id) {
-      console.log("***in id***", id.sourceString);
       const entity = context.lookup(id.sourceString);
       checkHasBeenDeclared(entity, id.sourceString, { at: id });
       return entity;

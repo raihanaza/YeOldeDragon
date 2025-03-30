@@ -1,6 +1,22 @@
 matter Coffee {
+    init(roast: int) {
+        ye.roast = "";
+    }
+
+    don brew() -> void {
+        proclaim("This coffee is called ${ye.name} and it is a ${ye.roast}.");
+    }
+
+    don isSeasonal() -> string {
+       ~ need to implement null coalescing operator
+       ~ return this.seasonal?.asString() ?? “Not specified”;
+    }
+
+}
+~~
+matter Coffee {
     init(roast: int, name: string, seasonal: boolean?) {
-        ye.roast = roast;
+        ye.roast = roast + 2;
         ye.name = name;
         ye.seasonal = seasonal;
     }
@@ -15,6 +31,7 @@ matter Coffee {
     }
 
 }
+~~
 
 ~thine pike: Coffee = Coffee(name: “Pike Place”, roast: “medium-roast”);
 ~proclaim(pike.brew());
