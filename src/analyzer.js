@@ -329,6 +329,9 @@ export default function analyze(match) {
       context.add(id.sourceString, type);
       const classInitRep = classInit.analyze();
       type.fields = classInitRep.fields;
+
+      console.log("fields", fields)
+
       type.initialValues = classInitRep.initialValues;
 
       console.log("try to get type.methods");
@@ -353,35 +356,45 @@ export default function analyze(match) {
 
     ClassInit(_init, fields, fieldInitBlock) {
       console.log("***classInit called***");
-      const fieldNamesTypes = fields.analyze();
-      console.log("try to analyze block");
+      const targetFields = fields.analyze();
+      const classInit = core.classInitializer([], []);
+      context = context.newChildContext({ inLoop: false, classInit: classInit });
+
+      classInit.fields = targetFields;
+      console.log("context.lookup", )
+      classInit.fields.map((field => console.log(field.name, field.type)));
+
       let fieldInits = fieldInitBlock.analyze();
       console.log("fieldInits", fieldInits);
-      // for some reason can't directly analyze a block. block.analyze() throws an error that _terminal is not a function
+      console.log("fieldInits", fieldInits);
       const initializations = [];
       checkStatementsAreInitializers(initializations);
       //const initializations = block.children.map((initialization) => initialization.analyze());
-      return core.classInitializer(fieldNamesTypes, initializations);
+      return classInit;
     },
 
     Field(id, _colon, type) {
       console.log("field called, id: ", id.sourceString);
-      return core.field(id.sourceString, type.analyze());
+      const field = core.field(id.sourceString, type.analyze());
+      context.add(field.name, field);
+      return field;
     },
 
     Fields(_open, fieldList, _close) {
-      return fieldList.asIteration().children.map((field) => field);
+      console.log("FIELDS CALLED")
+      return fieldList.asIteration().children.map((field) => field.analyze());
     },
 
     FieldInit(_ye, _dot, id, _eq, exp, _semi) {
       console.log("in Field Init")
       const fieldName = id.sourceString;
-      console.log("try to get intializer");
+      console.log("try to get initializer");
+      const entity = context.lookup(id.sourceString);
       const initializer = exp.analyze();
       console.log("fieldName", fieldName, "initializer: ", initializer);
-      checkHasBeenDeclared(fieldName, { at: id });
+      // checkHasBeenDeclared(fieldName, { at: id });
       // checkIsMutable(fieldName, { at: id });
-      checkIsAssignable(initializer, fieldName, { at: id });
+      // checkIsAssignable(initializer, fieldName, { at: id });
       return core.assignmentStatement(fieldName, initializer);
     },
 
@@ -668,6 +681,7 @@ export default function analyze(match) {
     },
 
     Exp7_id(id) {
+      console.log("***in id***");
       const entity = context.lookup(id.sourceString);
       checkHasBeenDeclared(entity, id.sourceString, { at: id });
       return entity;
