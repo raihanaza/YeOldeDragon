@@ -1,21 +1,20 @@
 YeOldeDragon {
      Program = Statement+
      Statement = VarDecl
-               | PrintStmt
-               | ClassDecl
-               | FuncDecl
-               | Exp7_call ";"                                              --call
-               | Exp7 ("++"|"--") ";"										--incdec
-               | Exp7 "=" Exp0 ";"											--assign
-               | breaketh ";"                                               --break
-               | return Exp0 ";" 											--return
-               | return ";"											        --returnvoid
-               | IfStmt
-               | LoopStmt
-               | TypeDecl
+              | PrintStmt
+              | TypeDecl
+              | FuncDecl
+              | Exp7_call ";"                                                        --call
+              | Exp7 ("++"|"--") ";"										--incdec
+              | Exp7 "=" Exp0 ";"											--assign
+              | breaketh ";"                                                            --break
+              | return Exp0 ";" 											--return
+              | return ";"											     --returnvoid
+              | IfStmt
+              | LoopStmt
 
     PrintStmt = proclaim Exp0 ";"
-    VarDecl = (fact | thine) id ":" Type "=" Exp0 ";"
+    VarDecl = (thine | fact) id ":" Type "=" Exp0 ";"
 
     Block = "{" Statement* "}"
     BreakStmt = breaketh ";"
@@ -30,15 +29,17 @@ YeOldeDragon {
     Field = id ":" Type
     ClassInit = init "(" ListOf<Field, ","> ")" Block
     ClassBlock = FuncDecl*
+    ObjectDec = id "(" ListOf<Arg, ","> ")"
 
     Type = Type "?" 												    	--optional
              | "[" Type "]" 													--list
          | "(" ListOf<Type, ",">")" "->" Type 								--function
          | id 															--id
 
-    IfStmt = perchance Exp0 Block else Block 					            --long
-               | perchance Exp0 Block else IfStmt 						        --elseif
-           | perchance Exp0 Block									        --short
+
+    IfStmt = perchance Exp0 Block else Block 					               --long
+    	      | perchance Exp0 Block else IfStmt 						          --elseif
+           | perchance Exp0 Block									          --short
 
     LoopStmt = whilst Exp0 Block											--while
     		  | fortill Exp0 Block											--for
