@@ -70,13 +70,21 @@ export default function analyze(match) {
   }
 
   function checkHasListType(e, at) {
-    console.log("LIST ", e)
+    // console.log("LIST ", e)
     //TODO: add in type check for what's inside brackets
-    check((e.type.startsWith("[") && e.type.endsWith("]")) || e.type === "ListType", `Expected list type but got ${e.type.name}`, at);
+    check(
+      (e.type.startsWith("[") && e.type.endsWith("]")) || e.type === "ListType",
+      `Expected list type but got ${e.type.name}`,
+      at
+    );
   }
 
   function checkIsListOrString(e, at) {
-    check((e.type.startsWith("[") && e.type.endsWith("]")) || e.type === STRING, `Expected list or string type but got ${e.type.name}`, at);
+    check(
+      (e.type.startsWith("[") && e.type.endsWith("]")) || e.type === STRING,
+      `Expected list or string type but got ${e.type.name}`,
+      at
+    );
   }
 
   function checkHasOptionalType(e, at) {
@@ -185,11 +193,11 @@ export default function analyze(match) {
     check(assignable(e.name, name), `Cannot assign ${e.name} to ${name}`, at);
   }
 
-  function checkIsAssignable(e, { toType: type }, at) {
+  function checkIsAssignable(e, targetType, at) {
     const source = typeDescription(e.type);
-    const target = typeDescription(type);
+    const target = typeDescription(targetType);
     const message = `Cannot assign a ${source} to a ${target}`;
-    check(assignable(e.type, type), message, at);
+    check(assignable(e.type, targetType), message, at);
   }
 
   function isMutable(e) {
@@ -265,7 +273,7 @@ export default function analyze(match) {
       if (mutable) {
         return core.variableDeclaration(variable, initializer);
       } else {
-        return core.constantDeclaration(variable, initializer)
+        return core.constantDeclaration(variable, initializer);
       }
     },
 
@@ -322,14 +330,13 @@ export default function analyze(match) {
       type.fields = classInit.children.map((field) => {
         //field.analyze();
         //console.log("***field***", field);
-        console.log("field.sourcestring", field.sourceString);
-
+        // console.log("field.sourcestring", field.sourceString);
         // const fieldType = field.type.analyze();
         // const fieldName = field.id.sourceString;
         // console.log("***fieldType***", fieldType);
         // console.log("***fieldName***", fieldName);
       });
-      console.log("***type.fields***", type.fields);
+      // console.log("***type.fields***", type.fields);
       type.methods = classBlock.children.map((method) => method.analyze());
       checkHasDistinctFields(type, id);
       checkIfSelfContaining(type, id);
@@ -339,7 +346,7 @@ export default function analyze(match) {
     },
 
     ClassInit(_init, _open, fields, block, _close) {
-      console.log("fields", fields);
+      // console.log("fields", fields);
       // fields.map((field) => {
       //   console.log("field sourceString in classInit", field.sourceString, "field", field);
       //   // const fieldType = field.type.analyze();
@@ -363,18 +370,22 @@ export default function analyze(match) {
 
     Statement_incdec(_inc, id, _semi) {
       const variable = id.analyze();
-      checkHasNumericType(variable, id)
+      checkHasNumericType(variable, id);
       //TODO: check if there's a cleaner way to check this
-      if (op.sourceString === "++") { return core.incrementStatement(variable); }
-      if (op.sourceString === "--") { return core.decrementStatement(variable); }
+      if (op.sourceString === "++") {
+        return core.incrementStatement(variable);
+      }
+      if (op.sourceString === "--") {
+        return core.decrementStatement(variable);
+      }
     },
 
     Statement_assign(variable, _eq, exp, _semi) {
       const target = variable.analyze();
       const source = exp.analyze();
-      console.log("TARGET: ", target);
-      console.log("SOURCE: ", source);
-      checkBothSameType(target, source, variable)
+      // console.log("TARGET: ", target);
+      // console.log("SOURCE: ", source);
+      checkBothSameType(target, source, variable);
       checkIsMutable(target, variable);
       checkIsAssignable(source, target.type, source);
       return core.assignmentStatement(target, source);
@@ -459,7 +470,7 @@ export default function analyze(match) {
       const collection = exp.analyze();
       checkHasListType(collection, exp);
       const iterator = core.variable(id.sourceString, collection.type.type, false);
-      console.log("ITERATOR: ", iterator)
+      // console.log("ITERATOR: ", iterator)
       context = context.newChildContext({ inLoop: true });
       context.add(iterator.name, iterator);
       const body = block.analyze();
@@ -561,7 +572,7 @@ export default function analyze(match) {
       const [left, op, right] = [exp1.analyze(), addOp.sourceString, exp2.analyze()];
       checkHasNumericType(left, exp1);
       checkHasNumericType(right, exp2);
-      checkBothSameType(left, right, exp1)
+      checkBothSameType(left, right, exp1);
       return core.binaryExpression(op, left, right, left.type);
     },
 
@@ -611,9 +622,9 @@ export default function analyze(match) {
     },
 
     Exp7_subscript(exp1, _open, exp2, _close) {
-      checkHasBeenDeclared(exp1, exp1.sourceString, exp1)
+      checkHasBeenDeclared(exp1, exp1.sourceString, exp1);
       const [e, subscript] = [exp1.analyze(), exp2.analyze()];
-      console.log("EXPRESSION IS: ", e);
+      // console.log("EXPRESSION IS: ", e);
       checkHasIntType(subscript, exp2);
       checkIsListOrString(e, exp1);
       return core.subscriptExpression(e, subscript);

@@ -41,7 +41,7 @@ const syntaxErrors = [
     "perchance { proclaim 'It's true!'; } else { proclaim 'It's false!'; }",
     /Line 1, col 11/,
   ],
-  ["invalid function call", "add(1 2 3);", /Line 1, col 7/],
+  ["invalid function call", "add(1 2 3);", /Line 1, col 5/],
   ["incomplete number", "thine x: num = 10.", /Line 1, col 19/],
   ["number with incomplete floating point", "thine x: num = 5E * 3;", /Line 1, col 17/],
   ["bad array literal", "proclaim([1, 2,];", /Line 1, col 16/],
