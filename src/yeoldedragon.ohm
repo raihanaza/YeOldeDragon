@@ -23,7 +23,6 @@ YeOldeDragon {
 
     Block = "{" Statement* "}"
     BreakStmt = breaketh ";"
-
     Params      = "(" ListOf<Param, ","> ")"
     Param       = id ":" Type
     FuncDecl    = don id Params "->" Type Block
@@ -31,10 +30,7 @@ YeOldeDragon {
 
     TypeDecl = matter id "{" Field* "}"
     // how to do default parameters? how to require users to initialize parameters in Block?
-    ClassDecl = matter id "{" ClassInit Methods "}"
-    ClassInit = init Fields FieldInitBlock
-    // I will need to make checks to make sure Exp0 in scope? Or Exp0 just literals?
-    //Field = id ":" Type ("=" Exp0)?
+    ClassDecl = matter id "{" ClassInit ClassBlock "}"
     Field = id ":" Type
     Fields = "(" ListOf<Field, ","> ")"
     FieldInitBlock = "{" FieldInit* "}"
@@ -46,9 +42,9 @@ YeOldeDragon {
          | "(" ListOf<Type, ",">")" "->" Type                               --function
          | id                                                               --id
 
-    IfStmt = perchance Exp0 Block else Block                                --long
-               | perchance Exp0 Block else IfStmt                           --elseif
-           | perchance Exp0 Block                                           --short
+    IfStmt = perchance Exp0 Block else Block 					               --long
+    	      | perchance Exp0 Block else IfStmt 						          --elseif
+           | perchance Exp0 Block									          --short
 
     LoopStmt = whilst Exp0 Block                                            --while
              | fortill Exp0 Block                                           --for
