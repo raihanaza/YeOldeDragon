@@ -368,14 +368,12 @@ export default function analyze(match) {
       return core.field(id.sourceString, type.analyze());
     },
 
-    Statement_incdec(_inc, id, _semi) {
-      const variable = id.analyze();
-      checkHasNumericType(variable, id);
-      //TODO: check if there's a cleaner way to check this
-      if (op.sourceString === "++") {
+    Statement_incdec(exp, incDec, _semi) {
+      const variable = exp.analyze();
+      checkHasNumericType(variable, exp);
+      if (incDec.sourceString === "++") {
         return core.incrementStatement(variable);
-      }
-      if (op.sourceString === "--") {
+      } else if (incDec.sourceString === "--") {
         return core.decrementStatement(variable);
       }
     },
