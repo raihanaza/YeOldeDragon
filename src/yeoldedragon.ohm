@@ -1,38 +1,44 @@
 YeOldeDragon {
      Program = Statement+
      Statement = VarDecl
-              | PrintStmt
-              | TypeDecl
-              | FuncDecl
-              | Exp7_call ";"                                                        --call
-              | Exp7 ("++"|"--") ";"										--incdec
-              | Exp7 "=" Exp0 ";"											--assign
-              | breaketh ";"                                                            --break
-              | return Exp0 ";" 											--return
-              | return ";"											     --returnvoid
-              | IfStmt
-              | LoopStmt
+               | PrintStmt
+               | ClassDecl
+               | FuncDecl
+               | Exp7_call ";"                                              --call
+               | Exp7 ("++"|"--") ";"										--incdec
+               | Exp7 "=" Exp0 ";"											--assign
+               | breaketh ";"                                               --break
+               | return Exp0 ";" 											--return
+               | return ";"											        --returnvoid
+               | IfStmt
+               | LoopStmt
+               | TypeDecl
+
+    PrintStmt = proclaim Exp0 ";"
+    VarDecl = (fact | thine) id ":" Type "=" Exp0 ";"
 
     Block = "{" Statement* "}"
     BreakStmt = breaketh ";"
     Params      = "(" ListOf<Param, ","> ")"
     Param       = id ":" Type
+    FuncDecl    = don id Params "->" Type Block
+    Arg         = id ":" Exp0
 
-    FuncDecl = don id Params "->" Type Block
-    FuncCall = id "(" ListOf<Exp0, ",">")" ~mut
-    TypeDecl = matter id "{" ListOf<Param, ","> "}"
+    TypeDecl = matter id "{" Field* "}"
+    // how to do default parameters? how to require users to initialize parameters in Block?
+    ClassDecl = matter id "{" ClassInit ClassBlock "}"
+    Field = id ":" Type
+    ClassInit = init "(" ListOf<Field, ","> ")" Block
+    ClassBlock = FuncDecl*
 
-    Type = Type "?" 													--optional
-    	    | "[" Type "]" 													--list
+    Type = Type "?" 												    	--optional
+             | "[" Type "]" 													--list
          | "(" ListOf<Type, ",">")" "->" Type 								--function
          | id 															--id
 
-    PrintStmt = proclaim Exp0 ";"
-    VarDecl = (thine | fact) id ":" Type "=" Exp0 ";"
-    
-    IfStmt = perchance Exp0 Block else Block 					               --long
-    	      | perchance Exp0 Block else IfStmt 						          --elseif
-           | perchance Exp0 Block									          --short
+    IfStmt = perchance Exp0 Block else Block 					            --long
+               | perchance Exp0 Block else IfStmt 						        --elseif
+           | perchance Exp0 Block									        --short
 
     LoopStmt = whilst Exp0 Block											--while
     		  | fortill Exp0 Block											--for
@@ -59,16 +65,14 @@ YeOldeDragon {
     	    | shant ~mut
          | floatLiteral ~mut
          | intLiteral ~mut
-         | Exp7 "(" ListOf<Exp0, ","> ")" ~mut                                   --call
-        // | FuncCall
-        // | Exp7 (("(" | "?(") ListOf<Exp0, ","> ")") ~mut   				     --call
-         | Exp7 "[" Exp0 "]"                                                    --subscript
-         | Exp7 ("." | "?.") id                                                 --member
+         | Exp7 "(" ListOf<Arg, ","> ")" ~mut                               --call
+         | Exp7 "[" Exp0 "]"                                                --subscript
+         | Exp7 ("." | "?.") id                                             --member
          | String ~mut
-         | id                                                                   --id
-         | "[" "]" ~mut 												--emptylist
-         | "[" NonemptyListOf<Exp0, ","> "]" ~mut 						--listExp
-         | "(" Exp0 ")" ~mut 											--parens
+         | id                                                               --id
+         | "[" "]" ~mut 												    --emptylist
+         | "[" NonemptyListOf<Exp0, ","> "]" ~mut 					        --listExp
+         | "(" Exp0 ")" ~mut 											    --parens
 
     intLiteral = digit+
     floatLiteral = digit+ "." digit+ (("E"|"e") ("+"|"-")? digit+)?
@@ -84,6 +88,7 @@ YeOldeDragon {
     in = "in" ~idchar
     don = "don" ~idchar
     matter = "matter" ~idchar
+    init = "init" ~idchar
     changeth = "changeth" ~idchar
     breaketh = "breaketh" ~idchar
     spell = "spell" ~idchar
@@ -95,7 +100,7 @@ YeOldeDragon {
 
     id = ~keyword letter idchar*
     keyword = proclaim | thine | fact | fortill | whilst | perchance | else | don
-            | matter | changeth | spell | defaulte | shall | shant | in | return
+            | matter | init | changeth | spell | defaulte | shall | shant | in | return
             | breaketh | ne
     idchar = letter | digit | "_"
     numeral = digit+ ("." digit+)? (("E"|"e") ("+"|"-")? digit+)?
