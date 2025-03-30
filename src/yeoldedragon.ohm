@@ -23,10 +23,14 @@ YeOldeDragon {
     TypeDecl = matter id "{" Field* "}"
     // how to do default parameters? how to require users to initialize parameters in Block?
     ClassDecl = matter id "{" ClassInit ClassBlock "}"
-    Field = id ":" Type
-    ClassInit = init "(" ListOf<Field, ","> ")" Block
+    ClassInit = init Fields FieldInitBlock
     ClassBlock = FuncDecl*
-    ObjectDec = id "(" ListOf<Arg, ","> ")"
+    // _init, fields, block
+    Field = id ":" Type
+    Fields = "(" ListOf<Field, ","> ")"
+    FieldInitBlock = "{" FieldInit* "}"
+    FieldInit = ye "." id "=" Exp0 ";"
+    Methods = FuncDecl*
 
     Type = Type "?" 												    	--optional
              | "[" Type "]" 													--list
@@ -97,11 +101,12 @@ YeOldeDragon {
     shall = "shall" ~idchar
     shant = "shant" ~idchar
     ne = "ne" ~idchar
+    ye = "ye" ~idchar
 
     id = ~keyword letter idchar*
     keyword = proclaim | thine | fact | fortill | whilst | perchance | else | don
             | matter | init | changeth | spell | defaulte | shall | shant | in | return
-            | breaketh | ne
+            | breaketh | ne | ye
     idchar = letter | digit | "_"
     numeral = digit+ ("." digit+)? (("E"|"e") ("+"|"-")? digit+)?
 

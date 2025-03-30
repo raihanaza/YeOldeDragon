@@ -325,19 +325,10 @@ export default function analyze(match) {
       // To allow recursion, enter into context without any fields yet
       const type = core.objectType(id.sourceString, []);
       context.add(id.sourceString, type);
-      //this line below shouldn't work, need to get types and fields from classInit
-      //type.fields = classInit.children.map((field) => field.analyze());
-      type.fields = classInit.children.map((field) => {
-        //field.analyze();
-        //console.log("***field***", field);
-        // console.log("field.sourcestring", field.sourceString);
-        // const fieldType = field.type.analyze();
-        // const fieldName = field.id.sourceString;
-        // console.log("***fieldType***", fieldType);
-        // console.log("***fieldName***", fieldName);
-      });
-      // console.log("***type.fields***", type.fields);
-      type.methods = classBlock.children.map((method) => method.analyze());
+      const classInitRep = classInit.analyze();
+      type.fields = classInitRep.fields;
+      type.initialValues = classInitRep.initialValues;
+      //type.methods = classBlock.children.map((method) => method.analyze());
       checkHasDistinctFields(type, id);
       checkIfSelfContaining(type, id);
       // checkHadDistinctMethods(type, id);
@@ -345,27 +336,71 @@ export default function analyze(match) {
       return core.classDeclaration(type);
     },
 
-    ClassInit(_init, _open, fields, block, _close) {
-      // console.log("fields", fields);
-      // fields.map((field) => {
-      //   console.log("field sourceString in classInit", field.sourceString, "field", field);
-      //   // const fieldType = field.type.analyze();
-      //   const fieldName = field.id.sourceString;
-      //   //consol
-      //   // console.log("fieldType", fieldType);
-      //   // console.log("fieldName", fieldName);
-      // });
-      // const fieldList = fields.asIteration().children.map((field) => field.analyze());
-      // const type = core.objectType(this.sourceString, fieldList);
-      // context.add(type.name, type);
-      // return type;
-      const fieldNamesTypes = fields.asIteration().children.map((field) => field.analyze());
-      //return fields.asIteration().children.map((field) => field.analyze());
-      return core.classInitializer(fieldsTypes, block.analyze());
+    Methods(methods) {
+      return methods.asIteration().children.map((method) => console.log(method.analyze()));
     },
 
+    ClassInit(_init, fields, block) {
+      console.log("***classInit called***");
+      console.log();
+      const fieldNamesTypes = fields.analyze();
+      let block2 = block.analyze();
+      console.log("block2", block2);
+      // for some reason can't directly analyze a block. block.analyze() throws an error that _terminal is not a function
+      const initializations = [];
+      checkStatementsAreInitializers(initializations);
+      //const initializations = block.children.map((initialization) => initialization.analyze());
+      return core.classInitializer(fieldNamesTypes, initializations);
+    },
+
+    // FuncDecl(_func, id, parameters, _colons, type, block) {
+    //   checkNotDeclared(id.sourceString, { at: id });
+    //   // Add immediately so that we can have recursion
+    //   const func = core.func(id.sourceString);
+    //   context.add(id.sourceString, func);
+
+    //   // Parameters are part of the child context
+    //   context = context.newChildContext({ inLoop: false, function: func });
+    //   func.params = parameters.analyze();
+
+    //   // Now that the parameters are known, we compute the function's type.
+    //   // This is fine; we did not need the type to analyze the parameters,
+    //   // but we do need to set it before analyzing the body.
+    //   const paramTypes = func.params.map((param) => param.type);
+    //   const paramNames = func.params.map((param) => param.name);
+    //   const returnType = type.children?.[0]?.analyze() ?? core.voidType;
+    //   func.type = core.functionType(paramNames, paramTypes, returnType);
+
+    //   // Analyze body while still in child context
+    //   func.body = block.analyze();
+    //   console.log("func.body", func.body);
+
+    //   // Go back up to the outer context before returning
+    //   context = context.parent;
+    //   return core.functionDeclaration(func);
+    // },
+
     Field(id, _colon, type) {
-      return core.field(id.sourceString, type.analyze());
+      const field = core.field(id.sourceString, type.analyze());
+      return field;
+    },
+
+    Fields(_open, fieldList, _close) {
+      return fieldList.asIteration().children.map((field) => field.analyze());
+    },
+
+    FieldInit(_ye, _dot, id, _eq, exp, _semi) {
+      const fieldName = id.sourceString;
+      const initializer = exp.analyze();
+      checkHasBeenDeclared(fieldName, { at: id });
+      // checkIsMutable(fieldName, { at: id });
+      checkIsAssignable(initializer, fieldName, { at: id });
+      return core.assignmentStatement(fieldName, initializer);
+    },
+
+    FieldInitBlock(_open, fieldInits, _close) {
+      console.log("fieldInit", fieldInits);
+      return fieldInits.asIteration().children.map((fieldInit) => fieldInit.analyze());
     },
 
     Statement_incdec(exp, incDec, _semi) {
