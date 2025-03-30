@@ -368,6 +368,24 @@ export default function analyze(match) {
       return core.field(id.sourceString, type.analyze());
     },
 
+    Statement_call(exp, _open, argList, _close, _semi) {
+      const callee = exp.analyze();
+      checkIsCallable(callee, { at: exp });
+      const exps = argList.asIteration().children;
+      // TODO: what to do when an objectType? Do we currently store the name of attribute for object?
+      const targetParamNames =
+        callee?.kind === "ObjectType" ? callee.fields.map((f) => f.type) : callee.type.paramNames;
+      const targetTypes = callee?.kind === "ObjectType" ? callee.fields.map((f) => f.type) : callee.type.paramTypes;
+      checkArgumentCount(exps.length, targetTypes.length, { at: open });
+      const args = exps.map((exp, i) => {
+        const arg = exp.analyze();
+        checkIsAssignable(arg, { toType: targetTypes[i] }, { at: exp });
+        checkArgNameMatchesParam(arg, { toName: targetParamNames[i] }, { at: exp });
+        return arg;
+      });
+      return callee?.kind === "ObjectType" ? core.objectCall(callee, args) : core.functionCall(callee, args);
+    },
+
     Statement_incdec(id, op, _semi) {
       const variable = id.analyze();
       checkHasNumericType(variable, id)
@@ -676,9 +694,9 @@ export default function analyze(match) {
       return BigInt(this.sourceString);
     },
 
-    lit(_chars) {
-      return this.sourceString;
-    },
+    // lit(_chars) {
+    //   return this.sourceString;
+    // },
 
     String(_openQuote, firstLit, interps, restOfLits, _closeQuote) {
       const litText1 = firstLit.sourceString;

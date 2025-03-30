@@ -4,7 +4,7 @@ YeOldeDragon {
               | PrintStmt
               | TypeDecl
               | FuncDecl
-              | Exp7_call ";"                                                        --call
+              | Exp7"(" ListOf<Arg, ","> ")" ~mut ";"                                                        --call
               | Exp7 ("++"|"--") ";"										--incdec
               | Exp7 "=" Exp0 ";"											--assign
               | breaketh ";"                                                            --break
@@ -35,7 +35,6 @@ YeOldeDragon {
              | "[" Type "]" 													--list
          | "(" ListOf<Type, ",">")" "->" Type 								--function
          | id 															--id
-
 
     IfStmt = perchance Exp0 Block else Block 					               --long
     	      | perchance Exp0 Block else IfStmt 						          --elseif

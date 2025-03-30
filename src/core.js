@@ -171,7 +171,7 @@ export function objectDefinition(name, fields, methods) {
 }
 
 export function objectCall(callee, args) {
-  return { kind: "ObjectCall", calee, args, type: callee.type.returnType };
+  return { kind: "ObjectCall", callee, args, type: callee.type.returnType };
 }
 
 export function memberExpression(object, op, field) {
