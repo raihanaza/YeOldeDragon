@@ -344,32 +344,32 @@ export default function analyze(match) {
       return core.classInitializer(fieldNamesTypes, initializations);
     },
 
-    FuncDecl(_func, id, parameters, _colons, type, block) {
-      checkNotDeclared(id.sourceString, { at: id });
-      // Add immediately so that we can have recursion
-      const func = core.func(id.sourceString);
-      context.add(id.sourceString, func);
+    // FuncDecl(_func, id, parameters, _colons, type, block) {
+    //   checkNotDeclared(id.sourceString, { at: id });
+    //   // Add immediately so that we can have recursion
+    //   const func = core.func(id.sourceString);
+    //   context.add(id.sourceString, func);
 
-      // Parameters are part of the child context
-      context = context.newChildContext({ inLoop: false, function: func });
-      func.params = parameters.analyze();
+    //   // Parameters are part of the child context
+    //   context = context.newChildContext({ inLoop: false, function: func });
+    //   func.params = parameters.analyze();
 
-      // Now that the parameters are known, we compute the function's type.
-      // This is fine; we did not need the type to analyze the parameters,
-      // but we do need to set it before analyzing the body.
-      const paramTypes = func.params.map((param) => param.type);
-      const paramNames = func.params.map((param) => param.name);
-      const returnType = type.children?.[0]?.analyze() ?? core.voidType;
-      func.type = core.functionType(paramNames, paramTypes, returnType);
+    //   // Now that the parameters are known, we compute the function's type.
+    //   // This is fine; we did not need the type to analyze the parameters,
+    //   // but we do need to set it before analyzing the body.
+    //   const paramTypes = func.params.map((param) => param.type);
+    //   const paramNames = func.params.map((param) => param.name);
+    //   const returnType = type.children?.[0]?.analyze() ?? core.voidType;
+    //   func.type = core.functionType(paramNames, paramTypes, returnType);
 
-      // Analyze body while still in child context
-      func.body = block.analyze();
-      console.log("func.body", func.body);
+    //   // Analyze body while still in child context
+    //   func.body = block.analyze();
+    //   console.log("func.body", func.body);
 
-      // Go back up to the outer context before returning
-      context = context.parent;
-      return core.functionDeclaration(func);
-    },
+    //   // Go back up to the outer context before returning
+    //   context = context.parent;
+    //   return core.functionDeclaration(func);
+    // },
 
     Field(id, _colon, type) {
       const field = core.field(id.sourceString, type.analyze());
