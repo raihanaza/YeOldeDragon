@@ -4,10 +4,11 @@ YeOldeDragon {
               | PrintStmt
               | ClassDecl
               | FuncDecl
+              | Exp7_member ";"                                                      --member
               | Exp7_call ";"                                                        --call
               | Exp7 ("++"|"--") ";"										--incdec
               | Exp7 "=" Exp0 ";"											--assign
-              | breaketh ";"                                                            --break
+              | breaketh ";"                                                         --break
               | return Exp0 ";" 											--return
               | return ";"											     --returnvoid
               | IfStmt
@@ -23,14 +24,13 @@ YeOldeDragon {
 
     TypeDecl = matter id "{" Field* "}"
     // how to do default parameters? how to require users to initialize parameters in Block?
-    ClassDecl = matter id "{" ClassInit ClassBlock "}"
+    ClassDecl = matter id "{" ClassInit Methods "}"
     ClassInit = init Fields FieldInitBlock
-    ClassBlock = FuncDecl*
     Field = id ":" Type
     Fields = "(" ListOf<Field, ","> ")"
     FieldInitBlock = "{" FieldInit* "}"
     FieldInit = ye "." id "=" Exp0 ";"
-    // MemberExpression = ye "." id "=" Exp0
+    ClassMemberExpression = ye "." id
     Methods = FuncDecl*
 
     Type = Type "?" 												    	--optional
@@ -72,8 +72,7 @@ YeOldeDragon {
          | intLiteral ~mut
          | Exp7 "(" ListOf<Arg, ","> ")" ~mut                               --call
          | Exp7 "[" Exp0 "]"                                                --subscript
-         // | MemberExpression
-         | (ye | Exp7) ("." | "?.") id                                             --member
+         | (ye | Exp7) ("." | "?.") id                                      --member
          | String ~mut
          | id                                                               --id
          | "[" "]" ~mut 												    --emptylist

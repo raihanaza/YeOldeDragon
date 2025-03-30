@@ -194,7 +194,7 @@ export default function analyze(match) {
   }
 
   function checkIsAssignable(e, targetType, at) {
-    console.log("checkIsAssignable", e, targetType);
+    console.log("**checkIsAssignable**", e, targetType);
     const source = typeDescription(e.type);
     const target = typeDescription(targetType);
     const message = `Cannot assign a ${source} to a ${target}`;
@@ -322,35 +322,30 @@ export default function analyze(match) {
       return core.classDeclaration(type);
     },
 
-    ClassDecl(_object, id, _left, classInit, classBlock, _right) {
+    ClassDecl(_object, id, _left, classInit, methods, _right) {
       console.log("***classDecl called***");
       checkNotDeclared(id.sourceString, id);
       const type = core.objectType(id.sourceString, [], []);
       context.add(id.sourceString, type);
       const classInitRep = classInit.analyze();
+      context = context.newChildContext({ inLoop: false, classInit: classInit });
       type.fields = classInitRep.fields;
       type.initialValues = classInitRep;
       // check that every value has been initialized?
       checkHasDistinctFields(type, id);
       checkIfSelfContaining(type, id);
-
-      // console.log("try to get type.methods");
-      // console.log("classBlock", classBlock);
-      // console.log("classBlock.children", classBlock.children);
-      // console.log("methods.analyze", classBlock.analyze());
-      //type.methods = classBlock.children.map((method) => method.analyze());
-      // console.log("***type.methods***", type.methods);
-      //type.methods = classBlock.children.map((method) => method.analyze());
+      console.log("try to get methods", methods.analyze());
+      type.methods = methods.analyze();
 
       // checkHadDistinctMethods(type, id);
       // maybe just check if have distinct methods names since don't want to overload?
+      context = context.parent;
       return core.classDeclaration(type);
     },
 
     Methods(methods) {
-      console.log("methods called", methods);
-      console.log("methods.length", methods.length);
-      return methods.asIteration().children.map((method) => method.analyze());
+      console.log("**Methods called**");
+      return methods.children.map((method) => method.analyze());
     },
 
     ClassInit(_init, fields, fieldInitBlock) {
@@ -358,43 +353,45 @@ export default function analyze(match) {
       const targetFields = fields.analyze();
       const classInit = core.classInitializer([], []);
       context = context.newChildContext({ inLoop: false, classInit: classInit });
-      // TODO: need to check that targetFields match source initialValues
       classInit.fields = targetFields;
       classInit.initialValues = fieldInitBlock.analyze();
       console.log("classInit.initialValues", classInit.initialValues);
+      //console.log("child context", context);
+      context = context.parent;
+      //console.log("parent context", context);
       return classInit;
     },
 
     Field(id, _colon, type) {
-      console.log("field called, id: ", id.sourceString);
+      //console.log("field called, id: ", id.sourceString);
       const field = core.field(id.sourceString, type.analyze());
       context.add(field.name, field);
       return field;
     },
 
     Fields(_open, fieldList, _close) {
-      console.log("FIELDS CALLED");
       return fieldList.asIteration().children.map((field) => field.analyze());
     },
 
     FieldInit(_ye, _dot, id, _eq, exp, _semi) {
       const fieldName = id.sourceString;
       const initializer = exp.analyze();
-      console.log("fieldName", fieldName, "initializer: ", initializer);
+      //console.log("fieldName", fieldName, "initializer: ", initializer);
       return core.assignmentStatement(fieldName, initializer);
     },
 
     FieldInitBlock(_open, fieldInits, _close) {
       console.log("in fieldInitBlock");
       const initializations = fieldInits.children.map((exp) => {
-        console.log("fieldInit sourceString", exp.sourceString);
+        //console.log("fieldInit sourceString", exp.sourceString);
         const fieldInit = exp.analyze();
-        console.log("**fieldInit**", fieldInit);
-        console.log("**field init in field Init block**", fieldInit.source.type);
+        //console.log("**fieldInit**", fieldInit);
+        //console.log("**field init in field Init block**", fieldInit.source.type);
         const fieldInitTarget = context.lookup(fieldInit.target);
         checkHasBeenDeclared(fieldInit, fieldInit, { at: exp });
-        // TODO: need to check that targetFields match source initialValues
+        // TODO: need to make sure that pass the type correctly for OptionalType
         checkIsAssignable(fieldInit.source, fieldInitTarget.type, { at: exp });
+        // TODO: need to check that EVERY field has been initialized
         checkArgNameMatchesParam(fieldInit, fieldInit, { at: exp });
         return fieldInit;
       });
@@ -663,19 +660,25 @@ export default function analyze(match) {
     Exp7_member(exp, dot, id) {
       //TODO: some error handling here
       console.log("call exp7_member");
-      const object = exp.analyze();
-      let objectType;
-      if (dot.sourceString === "?.") {
-        checkHasOptionalObjectType(object, exp);
-        objectType = object.type.baseType;
+      console.log("exp sourceString", exp.sourceString);
+      if (exp.sourceString == "ye") {
+        console.log("ye is used");
+
       } else {
-        console.log("check member has object type", object);
-        checkHasObjectType(object, exp);
-        objectType = object.type;
+        // const object = exp.analyze();
+        let objectType;
+        if (dot.sourceString === "?.") {
+          checkHasOptionalObjectType(object, exp);
+          objectType = object.type.baseType;
+        } else {
+          console.log("check member has object type", object);
+          checkHasObjectType(object, exp);
+          objectType = object.type;
+        }
+        checkHasMember(objectType, id.sourceString, id);
+        const field = objectType.fields.find((f) => f.name === id.sourceString);
+        return core.memberExpression(object, dot.sourceString, field);
       }
-      checkHasMember(objectType, id.sourceString, id);
-      const field = objectType.fields.find((f) => f.name === id.sourceString);
-      return core.memberExpression(object, dot.sourceString, field);
     },
 
     Exp7_id(id) {
