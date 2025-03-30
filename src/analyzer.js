@@ -9,8 +9,8 @@ const ANY = core.anyType;
 
 class Context {
   //checks if in loop so that it can break
-  constructor({ parent = null, locals = new Map(), inLoop = false, function: f = null }) {
-    Object.assign(this, { parent, locals, inLoop, function: f });
+  constructor({ parent = null, locals = new Map(), inLoop = false, function: f = null, classDecl: c = null }) {
+    Object.assign(this, { parent, locals, inLoop, function: f, classDecl: c });
   }
   add(name, entity) {
     this.locals.set(name, entity);
@@ -110,6 +110,10 @@ export default function analyze(match) {
 
   function checkHasObjectType(e, at) {
     check(e.type?.kind === "ObjectType", `Expected an object type but got ${e.type.name}`, at);
+  }
+
+  function checkHasFieldType(e, at) {
+    check(e.type?.kind === "Field", `Expected a field type but got ${e.type.name}`, at);
   }
 
   function checkIsMutable(e, at) {
@@ -234,6 +238,14 @@ export default function analyze(match) {
     check(context.function, `Return statement must be inside a function`, at);
   }
 
+  function checkInClassDecl(at) {
+    check(context.classDecl, `Member expression with \"ye\" must be inside a class`, at);
+  }
+
+  function checkClassFieldExists(id, at) {
+    check(context.lookup(id.sourceString), `Field ${id.sourceString} not declared`, at);
+  }
+
   function checkIsCallable(e, at) {
     const callable = e?.kind === "ObjectType" || e?.kind === "FunctionType";
     check(callable, `Expression is not callable. Can only call functions or objects`, at);
@@ -281,7 +293,6 @@ export default function analyze(match) {
     FuncDecl(_func, id, parameters, _colons, type, block) {
       console.log("in FuncDecl", id.sourceString);
       checkNotDeclared(id.sourceString, { at: id });
-      console.log("func not declared", id.sourceString);
       // Add immediately so that we can have recursion
       const func = core.func(id.sourceString);
       context.add(id.sourceString, func);
@@ -330,10 +341,9 @@ export default function analyze(match) {
       const type = core.objectType(id.sourceString, [], [], []);
       context.add(id.sourceString, type);
       const classInitRep = classInit.analyze();
-      context = context.newChildContext({ inLoop: false, classInit: classInit });
-      console.log("new child context")
       type.fields = classInitRep.fields;
-      type.values = classInitRep;
+      type.fieldsAndValues = classInitRep.initialValues;
+      context = context.newChildContext({ inLoop: false, classDecl: type });
       // check that every value has been initialized?
       checkHasDistinctFields(type, id);
       checkIfSelfContaining(type, id);
@@ -346,7 +356,6 @@ export default function analyze(match) {
     },
 
     Methods(methods) {
-      console.log("**Methods called**");
       return methods.children.map((method) => method.analyze());
     },
 
@@ -354,20 +363,20 @@ export default function analyze(match) {
       console.log("***classInit called***");
       const targetFields = fields.analyze();
       const classInit = core.classInitializer([], []);
-      context = context.newChildContext({ inLoop: false, classInit: classInit });
+      context = context.newChildContext({ inLoop: false });
       classInit.fields = targetFields;
-      classInit.initialValues = fieldInitBlock.analyze();
-      console.log("classInit.initialValues", classInit.initialValues);
-      //console.log("child context", context);
-      console.log("set context to parent");
+      const initialValues = fieldInitBlock.analyze();
+      console.log("classInit.initialValues", initialValues);
+      classInit.fields.map((field) => {
+        field.value = initialValues.find((f) => f.target === field.name).source;
+      });
+      console.log("classInit.fields", classInit.fields);
       context = context.parent;
-      console.log("now in parent context");
       return classInit;
     },
 
     Field(id, _colon, type) {
-      //console.log("field called, id: ", id.sourceString);
-      const field = core.field(id.sourceString, type.analyze());
+      const field = core.field(id.sourceString, type.analyze(), null);
       context.add(field.name, field);
       return field;
     },
@@ -379,17 +388,12 @@ export default function analyze(match) {
     FieldInit(_ye, _dot, id, _eq, exp, _semi) {
       const fieldName = id.sourceString;
       const initializer = exp.analyze();
-      //console.log("fieldName", fieldName, "initializer: ", initializer);
       return core.assignmentStatement(fieldName, initializer);
     },
 
     FieldInitBlock(_open, fieldInits, _close) {
-      console.log("in fieldInitBlock");
       const initializations = fieldInits.children.map((exp) => {
-        //console.log("fieldInit sourceString", exp.sourceString);
         const fieldInit = exp.analyze();
-        //console.log("**fieldInit**", fieldInit);
-        //console.log("**field init in field Init block**", fieldInit.source.type);
         const fieldInitTarget = context.lookup(fieldInit.target);
         checkHasBeenDeclared(fieldInit, fieldInit, { at: exp });
         // TODO: need to make sure that pass the type correctly for OptionalType
@@ -661,13 +665,23 @@ export default function analyze(match) {
       return core.subscriptExpression(e, subscript);
     },
     Exp7_member(exp, dot, id) {
-      //TODO: some error handling here
-      console.log("call exp7_member");
-      console.log("exp sourceString", exp.sourceString);
       if (exp.sourceString == "ye") {
-        console.log("ye is used");
+        checkInClassDecl({ at: exp });
+        checkClassFieldExists(id, { at: exp });
+        const object = context.lookup(id.sourceString);
+        console.log("object", object);
+        let objectType;
+        if (dot.sourceString === "?.") {
+          // TODO: need to implement optionals checks
+          checkHasOptionalObjectType(object, exp);
+          objectType = object.type.baseType;
+        } else {
+          objectType = object.type;
+        }
+        const field = [];
+        return core.memberExpression(object, dot.sourceString, object);
       } else {
-        // const object = exp.analyze();
+        const object = exp.analyze();
         let objectType;
         if (dot.sourceString === "?.") {
           checkHasOptionalObjectType(object, exp);

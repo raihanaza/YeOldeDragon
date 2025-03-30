@@ -1,7 +1,7 @@
 
 matter Coffee {
     init(roast: int) {
-        ye.roast = 1;
+        ye.roast = roast + 1;
     }
 
     don brew() -> void {

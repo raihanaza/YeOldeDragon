@@ -158,8 +158,8 @@ export function classDeclaration(type) {
   return { kind: "ClassDeclaration", type };
 }
 
-export function classInitializer(fields, initialValues) {
-  return { kind: "ClassInitializer", fields, initialValues };
+export function classInitializer(fields) {
+  return { kind: "ClassInitializer", fields };
 }
 
 export function objectType(name, fields, values, methods) {
@@ -186,8 +186,8 @@ export function stringExpression(strings) {
   return { kind: "StringExpression", strings, type: stringType };
 }
 
-export function field(name, type) {
-  return { kind: "Field", name, type };
+export function field(name, type, value) {
+  return { kind: "Field", name, type, value };
 }
 
 export const voidType = "void";
