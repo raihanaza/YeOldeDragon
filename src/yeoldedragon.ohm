@@ -2,7 +2,7 @@ YeOldeDragon {
      Program = Statement+
      Statement = VarDecl
               | PrintStmt
-              | TypeDecl
+              | ClassDecl
               | FuncDecl
               | Exp7_call ";"                                                        --call
               | Exp7 ("++"|"--") ";"										--incdec
@@ -12,6 +12,7 @@ YeOldeDragon {
               | return ";"											     --returnvoid
               | IfStmt
               | LoopStmt
+              | TypeDecl
 
     Block = "{" Statement* "}"
     BreakStmt = breaketh ";"
@@ -25,15 +26,15 @@ YeOldeDragon {
     ClassDecl = matter id "{" ClassInit ClassBlock "}"
     ClassInit = init Fields FieldInitBlock
     ClassBlock = FuncDecl*
-    // _init, fields, block
     Field = id ":" Type
     Fields = "(" ListOf<Field, ","> ")"
     FieldInitBlock = "{" FieldInit* "}"
     FieldInit = ye "." id "=" Exp0 ";"
+    // MemberExpression = ye "." id "=" Exp0
     Methods = FuncDecl*
 
     Type = Type "?" 												    	--optional
-             | "[" Type "]" 													--list
+         | "[" Type "]" 													--list
          | "(" ListOf<Type, ",">")" "->" Type 								--function
          | id 															--id
 
@@ -45,8 +46,8 @@ YeOldeDragon {
            | perchance Exp0 Block									          --short
 
     LoopStmt = whilst Exp0 Block											--while
-                     | fortill Exp0 Block											--for
-             | fortill id in Exp0 ("..." | "..<") Exp0 Block 	   	        --range
+             | fortill Exp0 Block											--for
+             | fortill id in Exp0 ("..." | "..<") Exp0 Block                         --range
              | fortill id in Exp0 Block 									--forEach
 
     Exp0 = Exp1 "?" Exp1 ":" Exp0 										    --ternary
@@ -66,12 +67,13 @@ YeOldeDragon {
              | Exp7
          | (ne | "-") Exp7                                                  --unary
     Exp7 = shall ~mut
-             | shant ~mut
+         | shant ~mut
          | floatLiteral ~mut
          | intLiteral ~mut
          | Exp7 "(" ListOf<Arg, ","> ")" ~mut                               --call
          | Exp7 "[" Exp0 "]"                                                --subscript
-         | Exp7 ("." | "?.") id                                             --member
+         // | MemberExpression
+         | (ye | Exp7) ("." | "?.") id                                             --member
          | String ~mut
          | id                                                               --id
          | "[" "]" ~mut 												    --emptylist

@@ -308,6 +308,7 @@ export default function analyze(match) {
     },
 
     TypeDecl(_matter, id, _left, fields, _right) {
+      console.log("TypeDecl called")
       checkNotDeclared(id.sourceString, { at: id });
       // To allow recursion, enter into context without any fields yet
       const type = core.objectType(id.sourceString, []);
@@ -321,6 +322,7 @@ export default function analyze(match) {
     },
 
     ClassDecl(_object, id, _left, classInit, classBlock, _right) {
+      console.log("classDecl called")
       checkNotDeclared(id.sourceString, id);
       // To allow recursion, enter into context without any fields yet
       const type = core.objectType(id.sourceString, []);
@@ -328,6 +330,7 @@ export default function analyze(match) {
       const classInitRep = classInit.analyze();
       type.fields = classInitRep.fields;
       type.initialValues = classInitRep.initialValues;
+      console.log(classBlock.analyze());
       //type.methods = classBlock.children.map((method) => method.analyze());
       checkHasDistinctFields(type, id);
       checkIfSelfContaining(type, id);
@@ -664,12 +667,14 @@ export default function analyze(match) {
     },
     Exp7_member(exp, dot, id) {
       //TODO: some error handling here
+      console.log("call exp7_member");
       const object = exp.analyze();
       let objectType;
       if (dot.sourceString === "?.") {
         checkHasOptionalObjectType(object, exp);
         objectType = object.type.baseType;
       } else {
+        console.log("check member has object type", object);
         checkHasObjectType(object, exp);
         objectType = object.type;
       }
