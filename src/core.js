@@ -123,8 +123,8 @@ export function breakStatement() {
   return { kind: "BreakStatement" };
 }
 
-export function optionalType(type) {
-  return { kind: "OptionalType", type };
+export function optionalType(baseType) {
+  return { kind: "OptionalType", baseType };
 }
 
 export function listType(type) {

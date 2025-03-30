@@ -181,13 +181,17 @@ export default function analyze(match) {
   }
 
   function typeDescription(type) {
+    console.log("type.kind in typedescription", type);
     if (typeof type === "string") return type;
+    console.log('continue after string')
     if (type.kind == "ObjectType") return type.name;
+    console.log('continue after objecttype')
     if (type.kind == "FunctionType") {
       const paramTypes = type.paramTypes.map(typeDescription).join(", ");
       const returnType = typeDescription(type.returnType);
       return `(${paramTypes})->${returnType}`;
     }
+    console.log("continue after functiontype")
     if (type.kind == "ArrayType") return `[${typeDescription(type.baseType)}]`;
     if (type.kind == "OptionalType") return `${typeDescription(type.baseType)}?`;
   }
@@ -198,8 +202,11 @@ export default function analyze(match) {
   }
 
   function checkIsAssignable(e, targetType, at) {
-    console.log("**checkIsAssignable**", e, targetType);
+    console.log("**checkIsAssignable** **e**", e, "e.type", e.type, "**target**", targetType);
+    console.log("e.type.kind", e.type.kind);
     const source = typeDescription(e.type);
+    console.log('***trying to check target****')
+    console.log("targetType", targetType, "targetType.kind", targetType.kind);
     const target = typeDescription(targetType);
     const message = `Cannot assign a ${source} to a ${target}`;
     check(assignable(e.type, targetType), message, at);
@@ -397,6 +404,7 @@ export default function analyze(match) {
         const fieldInitTarget = context.lookup(fieldInit.target);
         checkHasBeenDeclared(fieldInit, fieldInit, { at: exp });
         // TODO: need to make sure that pass the type correctly for OptionalType
+        console.log("in fieldInitBlock checking if assignable");
         checkIsAssignable(fieldInit.source, fieldInitTarget.type, { at: exp });
         // TODO: need to check that EVERY field has been initialized
         checkArgNameMatchesParam(fieldInit, fieldInit, { at: exp });
