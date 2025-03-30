@@ -70,7 +70,13 @@ export default function analyze(match) {
   }
 
   function checkHasListType(e, at) {
-    check(e.type.kind === "ListType", `Expected list type but got ${e.type.name}`, at);
+    console.log("LIST ", e)
+    //TODO: add in type check for what's inside brackets
+    check((e.type.startsWith("[") && e.type.endsWith("]")) || e.type === "ListType", `Expected list type but got ${e.type.name}`, at);
+  }
+
+  function checkIsListOrString(e, at) {
+    check((e.type.startsWith("[") && e.type.endsWith("]")) || e.type === STRING, `Expected list or string type but got ${e.type.name}`, at);
   }
 
   function checkHasOptionalType(e, at) {
@@ -99,16 +105,16 @@ export default function analyze(match) {
   }
 
   function checkIsMutable(e, at) {
-    check(e.mutable, `Cannot assign to immutable variable ${e.name}`, at);
+    check(isMutable(e), `Cannot assign to immutable variable ${e.name}`, at);
   }
 
-  // TODO for Lauren
-  function checkBothSameType(type1, type2, at) {
-    check(type1 === type2, `Operands must have the same type`, at);
+  function checkBothSameType(e1, e2, at) {
+    check(e1.type === e2.type, `Operands must have the same type`, at);
   }
 
   function checkVarDecTypeMatchesExpressionType(type, expType, at) {
-    check(type === expType, `Type mismatch. Expected ${type} but got ${expType}`, at);
+    //TODO: review this later, type==ANY workaround is for empty lists
+    check(type === expType || type === ANY, `Type mismatch in declaration. Expected ${expType} but got ${type}`, at);
   }
 
   function checkAllSameType(elements, at) {
@@ -121,7 +127,7 @@ export default function analyze(match) {
   }
 
   function checkIsType(e, at) {
-    const isBasicType = /int|float|string|boolean|void|any/.test(e);
+    const isBasicType = /int|float|string|boolean|void|any/.test(e.name);
     const isCompositeType = /ObjectType|FunctionType|ListType|OptionalType/.test(e?.kind);
     check(isBasicType || isCompositeType, "Type expected", at);
   }
@@ -239,7 +245,7 @@ export default function analyze(match) {
   }
 
   function checkIfReturnable(e, { from: f }, at) {
-    checkIsAssignable(e, { toType: f.type.returnType }, at);
+    checkIsAssignable(e, f.type.returnType, at);
   }
 
   //TODO: the name of this var should be builder, and .addOperation("rep",
@@ -254,9 +260,13 @@ export default function analyze(match) {
       const typeName = type.sourceString;
       const variable = core.variable(id.sourceString, typeName, mutable);
       const initializer = exp.analyze();
-      checkVarDecTypeMatchesExpressionType(typeName, initializer.type, type);
+      checkVarDecTypeMatchesExpressionType(initializer.type, typeName, exp);
       context.add(id.sourceString, variable);
-      return core.variableDeclaration(variable, initializer);
+      if (mutable) {
+        return core.variableDeclaration(variable, initializer);
+      } else {
+        return core.constantDeclaration(variable, initializer)
+      }
     },
 
     FuncDecl(_func, id, parameters, _colons, type, block) {
@@ -353,14 +363,20 @@ export default function analyze(match) {
 
     Statement_incdec(_inc, id, _semi) {
       const variable = id.analyze();
-      return core.incrementStatement(variable);
+      checkHasNumericType(variable, id)
+      //TODO: check if there's a cleaner way to check this
+      if (op.sourceString === "++") { return core.incrementStatement(variable); }
+      if (op.sourceString === "--") { return core.decrementStatement(variable); }
     },
 
     Statement_assign(variable, _eq, exp, _semi) {
       const target = variable.analyze();
       const source = exp.analyze();
+      console.log("TARGET: ", target);
+      console.log("SOURCE: ", source);
+      checkBothSameType(target, source, variable)
       checkIsMutable(target, variable);
-      checkIsAssignable(source, target, variable);
+      checkIsAssignable(source, target.type, source);
       return core.assignmentStatement(target, source);
     },
 
@@ -368,7 +384,7 @@ export default function analyze(match) {
       checkInFunction({ at: returnKeyword });
       checkReturnsSomething(context.function, { at: returnKeyword });
       const returnExpression = exp.analyze();
-      checkIfReturnable(returnExpression, { from: context.function }, { at: exp });
+      checkIfReturnable(returnExpression, { from: context.function }, returnKeyword);
       return core.returnStatement(returnExpression);
     },
 
@@ -391,7 +407,7 @@ export default function analyze(match) {
     },
 
     IfStmt_elseif(_if, exp, block1, _else, trailingIfStatement) {
-      const text = exp.analyze();
+      const test = exp.analyze();
       checkHasBoolenType(test, exp);
       context = context.newChildContext();
       const consequent = block1.analyze();
@@ -424,7 +440,7 @@ export default function analyze(match) {
       context = context.newChildContext({ inLoop: true });
       const body = block.analyze();
       context = context.parent;
-      return core.forStatement(count, body);
+      return core.repeatStatement(count, body);
     },
 
     LoopStmt_range(forKeyword, id, _in, exp1, op, exp2, block) {
@@ -443,6 +459,7 @@ export default function analyze(match) {
       const collection = exp.analyze();
       checkHasListType(collection, exp);
       const iterator = core.variable(id.sourceString, collection.type.type, false);
+      console.log("ITERATOR: ", iterator)
       context = context.newChildContext({ inLoop: true });
       context.add(iterator.name, iterator);
       const body = block.analyze();
@@ -491,7 +508,6 @@ export default function analyze(match) {
     Type_id(id) {
       const entity = context.lookup(id.sourceString);
       checkHasBeenDeclared(entity, id.sourceString, { at: id });
-      checkIsType(entity, { at: id });
       return entity;
     },
 
@@ -499,7 +515,7 @@ export default function analyze(match) {
       const test = exp1.analyze();
       checkHasBoolenType(test, exp1);
       const [consequence, alternate] = [exp2.analyze(), exp3.analyze()];
-      checkBothSameType(consequence.type, alternate.type, exp2);
+      checkBothSameType(consequence, alternate, exp2);
       return core.ternaryExpression(test, consequence, alternate);
     },
 
@@ -513,7 +529,7 @@ export default function analyze(match) {
     Exp2_or(exp1, _or, exp2) {
       let left = exp1.analyze();
       checkHasBoolenType(left, exp1);
-      for (let e of exps.children) {
+      for (let e of exp2.children) {
         let right = e.analyze();
         checkHasBoolenType(right, e);
         left = core.binaryExpression("||", left, right, BOOLEAN);
@@ -523,7 +539,7 @@ export default function analyze(match) {
     Exp2_and(exp1, _and, exp2) {
       let left = exp1.analyze();
       checkHasBoolenType(left, exp1);
-      for (let e of exps.children) {
+      for (let e of exp2.children) {
         let right = e.analyze();
         checkHasBoolenType(right, e);
         left = core.binaryExpression("&&", left, right, BOOLEAN);
@@ -532,7 +548,7 @@ export default function analyze(match) {
     },
     Exp3_compare(exp1, relop, exp2) {
       const [left, op, right] = [exp1.analyze(), relop.sourceString, exp2.analyze()];
-      checkBothSameType(left.type, right.type, exp1);
+      checkBothSameType(left, right, exp1);
       if (["==", "!="].includes(op)) {
         return core.binaryExpression(op, left, right, BOOLEAN);
       } else if (["<", "<=", ">", ">="].includes(op)) {
@@ -543,27 +559,23 @@ export default function analyze(match) {
 
     Exp4_addsub(exp1, addOp, exp2) {
       const [left, op, right] = [exp1.analyze(), addOp.sourceString, exp2.analyze()];
-      checkBothSameType(left.type, right.type, exp1);
-      if (op === "+") {
-        checkIsStringOrNumericType(left, exp1);
-      } else {
-        checkHasNumericType(left, exp1);
-      }
-      checkBothSameType(left.type, right.type, exp1);
+      checkHasNumericType(left, exp1);
+      checkHasNumericType(right, exp2);
+      checkBothSameType(left, right, exp1)
       return core.binaryExpression(op, left, right, left.type);
     },
 
     Exp5_multiply(exp1, mulOp, exp2) {
       const [left, op, right] = [exp1.analyze(), mulOp.sourceString, exp2.analyze()];
       checkHasNumericType(left, exp1);
-      checkBothSameType(left.type, right.type, exp1);
+      checkBothSameType(left, right, exp1);
       return core.binaryExpression(op, left, right, left.type);
     },
 
     Exp6_power(exp1, powerOp, exp2) {
       const [left, op, right] = [exp1.analyze(), powerOp.sourceString, exp2.analyze()];
       checkHasNumericType(left, exp1);
-      checkBothSameType(left.type, right.type, exp1);
+      checkBothSameType(left, right, exp1);
       return core.binaryExpression(op, left, right, left.type);
     },
 
@@ -599,10 +611,12 @@ export default function analyze(match) {
     },
 
     Exp7_subscript(exp1, _open, exp2, _close) {
-      const [array, subscript] = [exp1.analyze(), exp2.analyze()];
-      checkHasListType(array, exp1);
+      checkHasBeenDeclared(exp1, exp1.sourceString, exp1)
+      const [e, subscript] = [exp1.analyze(), exp2.analyze()];
+      console.log("EXPRESSION IS: ", e);
       checkHasIntType(subscript, exp2);
-      return core.subscriptExpression(array, subscript);
+      checkIsListOrString(e, exp1);
+      return core.subscriptExpression(e, subscript);
     },
     Exp7_member(exp, dot, id) {
       //TODO: some error handling here
@@ -633,7 +647,8 @@ export default function analyze(match) {
     Exp7_listExp(_open, args, _close) {
       const elements = args.asIteration().children.map((e) => e.analyze());
       checkAllSameType(elements, args);
-      return core.listExpression(elements);
+      const elementType = elements.length > 0 ? elements[0].type : "any";
+      return core.listExpression(elements, `[${elementType}]`);
     },
 
     Exp7_parens(_open, exp, _close) {

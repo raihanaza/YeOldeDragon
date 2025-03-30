@@ -107,6 +107,10 @@ export function whileStatement(condition, body) {
   return { kind: "LoopStatement", condition, body };
 }
 
+export function repeatStatement(count, body) {
+    return { kind: "RepeatStatement", count, body }; 
+}
+
 export function forEachStatement(iterator, collection, body) {
   return { kind: "ForEachStatement", iterator, collection, body };
 }
@@ -131,8 +135,8 @@ export function emptyListType(type) {
   return { kind: "EmptyListType", type };
 }
 
-export function listExpression(elements) {
-  return { kind: "ListExpression", elements };
+export function listExpression(elements, type) {
+  return { kind: "ListExpression", elements, type };
 }
 
 export function emptyListExpression(type) {
@@ -140,7 +144,8 @@ export function emptyListExpression(type) {
 }
 
 export function subscriptExpression(list, index) {
-  return { kind: "SubscriptExpression", list, index, type: list.type.baseType };
+  //TODO: revisit this type if there's a better way to do it
+  return { kind: "SubscriptExpression", list, index, type: list.type.replace("[", "").replace("]", "") };
 }
 
 export function call(callee, args) {
