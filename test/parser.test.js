@@ -10,12 +10,12 @@ const syntaxChecks = [
   ["constant declaration", `fact name: string = "romeo";`],
   ["print statement", `proclaim "Hello, world!";`],
   ["function declaration", `don add(a: num, b: num) -> num { return a + b; }`],
-  ["function call", `fact result: num = add(1, 2);`],
+  ["function call", `fact result: num = add(num1: 1, num2: 2);`],
   ["if statement", `perchance shall { proclaim "It's true!"; } else { proclaim "It's false!"; }`],
   ["loop statement", `thine x: num = 1; whilst x < 10 { x = x + 1; }`],
   ["for each loop", `fortill item in [1, 2, 3] { proclaim item; }`],
-  ["object constructor", `matter Person {name: string, age: num}`],
-  ["object instantiation", `fact romeo: Person = Person("Romeo", 16);`],
+  ["object constructor", `matter Person {name: string age: num}`],
+  ["object instantiation", `fact romeo: Person = Person(name: "Romeo", age: 16);`],
   ["array declaration", `thine numbers: [num] = [1, 2, 3];`],
   ["addsub expression", `thine result: num = (4 + 2) * 2 - 1;`],
   ["muldiv expression", `thine result: num = 4 + (2 * 2) / 2;`],
@@ -47,6 +47,7 @@ const syntaxErrors = [
   ["bad array literal", "proclaim([1, 2,];", /Line 1, col 16/],
   ["shall is not assignable", "shall = 1;", /Line 1, col 6/],
   ["shant is not assignable", "shant = 1;", /Line 1, col 6/],
+  ["function call", `fact result: num = add(1, 2);`, /Line 1, col 24/],
 ];
 
 describe("The parser", () => {

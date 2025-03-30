@@ -26,6 +26,7 @@ YeOldeDragon {
     Field = id ":" Type
     ClassInit = init "(" ListOf<Field, ","> ")" Block
     ClassBlock = FuncDecl*
+    ObjectDec = id "(" ListOf<Arg, ","> ")"
 
     Type = Type "?" 												    	--optional
              | "[" Type "]" 													--list
