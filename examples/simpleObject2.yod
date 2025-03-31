@@ -9,8 +9,5 @@ matter Coffee {
 
     don isSeasonal() -> string {
         return "hello world!";
-       ~ need to implement null coalescing operator
-       ~ return this.seasonal?.asString() ?? “Not specified”;
     }
-
 }

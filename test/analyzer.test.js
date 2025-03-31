@@ -15,24 +15,39 @@ const semanticChecks = [
   ["empty function", "don addNums(num1: int, num2: int) -> int { return (num1 + num2); } "],
   ["function declaration", "don incrementFunction(num: int) -> int { num++; return num; }"],
   ["function call", `don incNum(num: int) -> int { num++; return num; } incNum(num: 5);`],
-//   //TODO: add function call
+  //   //TODO: add function call
   ["increment statement", "thine x: int = 1; x++;"],
   ["decrement statement", "thine x: float = 3.1; x--;"],
   ["assignment statement", "thine testvar: int = 2; testvar = 1;"],
-  ["break statement", `don breakTest(num: int) -> void { whilst num > 5 { proclaim("num is right size"); perchance num == 13 { proclaim("num is unlucky!"); breaketh; } } } `],
+  [
+    "break statement",
+    `don breakTest(num: int) -> void { whilst num > 5 { proclaim("num is right size"); perchance num == 13 { proclaim("num is unlucky!"); breaketh; } } } `,
+  ],
   ["long return", "don funcName(num: int) -> int { proclaim(num); return num; }"],
   ["function call", "don printNum(num: int) -> int { proclaim(num); } printNum(num: 5);"],
   ["short if statement", "thine x: float = 3.45; thine y: float = 8.99; perchance x > y { proclaim(y); }"],
   ["else if statement", "perchance shall { proclaim(1); } else { proclaim(3);}"],
-  ["long if statement", `thine x: int = 4; thine y: int = 2; perchance (y > 3) { proclaim("y is greater than 3"); } else perchance y == (x/2) { proclaim("y is half of x");}`],
-// //   TODO: FIX LIST TYPES
+  [
+    "long if statement",
+    `thine x: int = 4; thine y: int = 2; perchance (y > 3) { proclaim("y is greater than 3"); } else perchance y == (x/2) { proclaim("y is half of x");}`,
+  ],
+  // //   TODO: FIX LIST TYPES
   ["short loop", "thine num: int = 10; whilst num > 5 { num = num/2; }"],
   ["short for loop", "fortill 5 { proclaim(1); }"],
-  ["for in loop", `thine coins: [string] = ["dollar", "fifty cents", "twenty cents"]; fortill coin in coins { proclaim("Thee hath the following coins"); proclaim(coin); } `],
+  [
+    "for in loop",
+    `thine coins: [string] = ["dollar", "fifty cents", "twenty cents"]; fortill coin in coins { proclaim("Thee hath the following coins"); proclaim(coin); } `,
+  ],
   ["ternary with ints", `thine num: int = 5; proclaim(num == 5 ? "it is" : "it is not"); `],
-  ["or operator", `thine num1: int = 2; thine num2: int = 6; perchance (num1 == 2 || num2 % 2 == 0) { proclaim("yipee"); } `],
-  ["and operator", `thine num1: int = 2; thine num2: int = 6; perchance (num1 == 2 && num2 % 2 != 0) { proclaim("yipee"); } `],
-//   TODO: add objects, nilcoalescing, and membership tests
+  [
+    "or operator",
+    `thine num1: int = 2; thine num2: int = 6; perchance (num1 == 2 || num2 % 2 == 0) { proclaim("yipee"); } `,
+  ],
+  [
+    "and operator",
+    `thine num1: int = 2; thine num2: int = 6; perchance (num1 == 2 && num2 % 2 != 0) { proclaim("yipee"); } `,
+  ],
+  //   TODO: add objects, nilcoalescing, and membership tests
   ["exponents", "thine num: float = 4.2; thine num_sqrd: float = num^2.0;"],
   ["negative numbers", "thine num: int = -23; num = num + 24;"],
   ["not value", `thine isNot: boolean = shall; perchance ne isNot { proclaim("It is!"); }`],
@@ -44,10 +59,27 @@ const semanticChecks = [
   ["reassigning value at subscript in list", "thine numList: [int] = [1, 2, 3]; numList[1] = 5;"],
   //types
   ["struct declaration", `matter Person { name: string age: int }`],
-  ["class declaration", `matter car { init (make: string, model: string, year: int) { ye.make = make; ye.model = model; ye.year = year; } }`],
-  ["member check", `matter car { init (color: string, model: string, year: int) { ye.color = color; ye.model = model; ye.year = year; } } proclaim("This car is a \${car.model} in the color \${car.color}.");`],
+  [
+    "class declaration",
+    `matter car { init (make: string, model: string, year: int) { ye.make = make; ye.model = model; ye.year = year; } }`,
+  ],
+  [
+    "member check",
+    `matter Car {
+      init (color: string, model: string, year: int) {
+        ye.color = color; ye.model = model;
+        ye.year = year;
+      }
+    }
+    thine car: Car = Car(color: "blue", model: "ford", year: 2025);
+    proclaim("This car is a \${car.model} in the color \${car.color}.");
+    `,
+  ],
   ["empty return", `don addNums(a: int, b: int) -> void { perchance (a + b) > 5 { return; }}`],
-  ["string interpolation", `thine bankBalance: int = 5234; proclaim("Your current balance is \${bankBalance}. This is the end of your transaction.");`],
+  [
+    "string interpolation",
+    `thine bankBalance: int = 5234; proclaim("Your current balance is \${bankBalance}. This is the end of your transaction.");`,
+  ],
 ];
 
 const semanticErrors = [

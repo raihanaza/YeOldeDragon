@@ -336,7 +336,6 @@ export default function analyze(match) {
       context.add(id.sourceString, type);
       const classInitRep = classInit.analyze();
       type.fields = classInitRep.fields;
-      //type.fieldsAndValues = classInitRep.initialValues;
       context = context.newChildContext({ inLoop: false, classDecl: type });
       // check that every value has been initialized?
       checkHasDistinctFields(type, id);
@@ -634,22 +633,13 @@ export default function analyze(match) {
 
     Exp7_call(exp, open, argList, _close) {
       const callee = exp.analyze();
-      console.log("***callee***", callee);
       checkIsCallable(callee, { at: exp });
       const exps = argList.asIteration().children;
       // TODO: what to do when an objectType? Do we currently store the name of attribute for object?
-      console.log(
-        "callee.fields",
-        callee.fields,
-        callee.fields.map((f) => f.name)
-      );
       const targetParamNames =
         callee?.kind === "ObjectType" ? callee.fields.map((f) => f.name) : callee.type.paramNames;
       const targetTypes = callee?.kind === "ObjectType" ? callee.fields.map((f) => f.type) : callee.type.paramTypes;
-      console.log("targetTypes", targetTypes);
-      console.log("targetParamNames", targetParamNames);
       checkArgumentCount(exps.length, targetTypes.length, { at: open });
-      //console.log("callee", callee)
       const args = exps.map((exp, i) => {
         const arg = exp.analyze();
         console.log("**in exp7_call: **");
@@ -682,7 +672,6 @@ export default function analyze(match) {
         checkInClassDecl({ at: exp });
         checkClassFieldExists(id, { at: exp });
         const object = context.lookup(id.sourceString);
-        let objectType;
         if (dot.sourceString === "?.") {
           // TODO: need to implement optionals checks
           checkHasOptionalObjectType(object, exp);
@@ -690,7 +679,6 @@ export default function analyze(match) {
         } else {
           objectType = object.type;
         }
-        const field = [];
         return core.memberExpression(object, dot.sourceString, object);
       } else {
         const object = exp.analyze();
@@ -702,9 +690,9 @@ export default function analyze(match) {
           checkHasObjectType(object, exp);
           objectType = object.type;
         }
-        console.log("check has member: ", objectType, id.sourceString);
+        console.log("objectType", objectType);
+
         checkHasMember(objectType, id.sourceString, id);
-        console.log("FIELD: ", objectType.fields);
         const field = objectType.fields.find((f) => f.name === id.sourceString);
         return core.memberExpression(object, dot.sourceString, field);
       }
