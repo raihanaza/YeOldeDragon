@@ -1,5 +1,5 @@
 import { describe, it } from "node:test";
-import assert from "node:assert/strict"
+import assert from "node:assert/strict";
 import { ok, deepEqual, throws } from "node:assert/strict";
 import parse from "../src/parser.js";
 import analyze from "../src/analyzer.js";
@@ -104,12 +104,7 @@ describe("The analyzer", () => {
   it("produces the expected representation for a trivial program", () => {
     assert.deepEqual(
       analyze(parse("thine x: float = 3.1 + 2.2;")),
-      program([
-        variableDeclaration(
-          variable("x", floatType, true),
-          binaryExpression("+", 3.1, 2.2, floatType)
-        ),
-      ])
-    )
-  })
+      program([variableDeclaration(variable("x", floatType, true), binaryExpression("+", 3.1, 2.2, floatType))])
+    );
+  });
 });

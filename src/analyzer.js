@@ -187,12 +187,12 @@ export default function analyze(match) {
   }
 
   function checkIsAssignable(e, targetType, at) {
-    console.log("**in checkIsAssignable** e: ", e.type, "target: ", targetType);
+    // console.log("**in checkIsAssignable** e: ", e.type, "target: ", targetType);
 
     const source = typeDescription(e.type);
     const target = typeDescription(targetType);
     const message = `Cannot assign a ${source} to a ${target}`;
-    console.log("**in checkIsAssignable** source: ", source, "target: ", target);
+    // console.log("**in checkIsAssignable** source: ", source, "target: ", target);
     check(assignable(e.type, targetType), message, { at: at });
   }
 
@@ -214,8 +214,9 @@ export default function analyze(match) {
   }
 
   function checkHasMember(object, field, at) {
+
     check(
-      object.type.fields.map((field) => field.name).includes(field),
+      object.fields.map((field) => field.name).includes(field),
       `Object type ${object.name} does not have a field ${field}`,
       at
     );
@@ -674,6 +675,7 @@ export default function analyze(match) {
         return core.memberExpression(object, dot.sourceString, object);
       } else {
         const object = exp.analyze();
+        console.log("***object***", object);
         let objectType;
         if (dot.sourceString === "?.") {
           checkHasOptionalObjectType(object, exp);
@@ -682,8 +684,7 @@ export default function analyze(match) {
           checkHasObjectType(object, exp);
           objectType = object.type;
         }
-        console.log("objectType", objectType);
-
+        console.log("***objectType***", objectType);
         checkHasMember(objectType, id.sourceString, id);
         const field = objectType.fields.find((f) => f.name === id.sourceString);
         return core.memberExpression(object, dot.sourceString, field);
