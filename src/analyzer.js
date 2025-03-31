@@ -161,6 +161,7 @@ export default function analyze(match) {
   }
 
   function assignable(fromType, toType) {
+    console.log('**assignable** **fromType**', fromType, "**toType**", toType);
     return (
       toType === core.anyType ||
       equivalent(fromType, toType) ||
@@ -169,13 +170,13 @@ export default function analyze(match) {
         assignable(fromType.returnType, toType.returnType) &&
         fromType.paramTypes.length === toType.paramTypes.length &&
         toType.paramTypes.every((t, i) => assignable(t, fromType.paramTypes[i]))) ||
+      (fromType == core.anyType && toType?.kind === "ListType") ||
       fromType === toType.baseType
     );
   }
 
   function typeDescription(type) {
     console.log("**type in typedescription**", type);
-    console.log();
     if (typeof type === "string") return type;
     if (type.kind == "ObjectType") return type.name;
     if (type.kind == "FunctionType") {
@@ -183,7 +184,7 @@ export default function analyze(match) {
       const returnType = typeDescription(type.returnType);
       return `(${paramTypes})->${returnType}`;
     }
-    if (type.kind == "ArrayType") return `[${typeDescription(type.baseType)}]`;
+    if (type.kind == "ListType") return `[${typeDescription(type.baseType)}]`;
     if (type.kind == "OptionalType") return `${typeDescription(type.baseType)}?`;
   }
 
@@ -199,6 +200,7 @@ export default function analyze(match) {
     console.log("***trying to check target****", targetType);
     console.log("targetType", targetType);
     const target = typeDescription(targetType);
+    console.log("source", source, "target", target);
     const message = `Cannot assign a ${source} to a ${target}`;
     check(assignable(e.type, targetType), message, at);
   }
@@ -693,6 +695,7 @@ export default function analyze(match) {
     },
 
     Exp7_emptylist(_open, _close) {
+      console.log("getting empty list");
       return core.emptyListExpression(core.anyType);
     },
 
@@ -702,7 +705,7 @@ export default function analyze(match) {
       checkAllSameType(elements, args);
       const elementType = elements.length > 0 ? elements[0].type : "any";
       console.log("elementType", elementType);
-      return core.listExpression(elements, core.listType(elementType), `[${elementType}]`);
+      return core.listExpression(elements, core.listType(elementType));
     },
 
     Exp7_parens(_open, exp, _close) {

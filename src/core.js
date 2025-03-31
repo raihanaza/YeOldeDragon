@@ -139,8 +139,8 @@ export function emptyListType(type) {
   return { kind: "EmptyListType", type };
 }
 
-export function listExpression(elements, type, stringRep) {
-  return { kind: "ListExpression", elements, type, stringRep };
+export function listExpression(elements, type) {
+  return { kind: "ListExpression", elements, type };
 }
 
 export function emptyListExpression(type) {
