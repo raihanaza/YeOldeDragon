@@ -1,2 +1,2 @@
 thine x: string? = "hi";
-thine y: string? = zilch;
+thine y: string? = zilch string;

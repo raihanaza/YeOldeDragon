@@ -176,9 +176,8 @@ export default function analyze(match) {
         toType?.kind === "FunctionType" &&
         assignable(fromType.returnType, toType.returnType) &&
         fromType.paramTypes.length === toType.paramTypes.length &&
-        toType.paramTypes.every((t, i) => assignable(t, fromType.paramTypes[i]))
-      ) ||
-      (fromType === toType.baseType)
+        toType.paramTypes.every((t, i) => assignable(t, fromType.paramTypes[i]))) ||
+      fromType === toType.baseType
     );
   }
 
@@ -291,7 +290,7 @@ export default function analyze(match) {
       console.log("initialValue", initialValue);
       console.log("targetType", targetType);
       //checkVarDecTypeMatchesExpressionType(initializer.type, typeName, exp);
-      checkIsAssignable(initialValue, targetType, exp)
+      checkIsAssignable(initialValue, targetType, exp);
       context.add(id.sourceString, variable);
       if (mutable) {
         return core.variableDeclaration(variable, initialValue);
@@ -728,16 +727,16 @@ export default function analyze(match) {
       return exp.analyze();
     },
 
+    Exp7_zilch(_zilch, type) {
+      return core.emptyOptional(type.analyze());
+    },
+
     shall(_) {
       return true;
     },
 
     shant(_) {
       return false;
-    },
-
-    zilch(_) {
-      return core.zilchType;
     },
 
     floatLiteral(_whole, _point, _fraction, _e, _sign, _exponent) {

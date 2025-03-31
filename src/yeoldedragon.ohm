@@ -70,7 +70,7 @@ YeOldeDragon {
          | shant ~mut
          | floatLiteral ~mut
          | intLiteral ~mut
-         | zilch ~mut
+         | zilch Type ~mut                                                  --zilch
          | Exp7 "(" ListOf<Arg, ","> ")" ~mut                               --call
          | Exp7 "[" Exp0 "]"                                                --subscript
          | (ye | Exp7) ("." | "?.") id                                      --member
