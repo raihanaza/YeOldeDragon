@@ -70,13 +70,10 @@ export default function analyze(match) {
   }
 
   function checkHasListType(e, at) {
-    console.log("check list type is called", e);
     check((e.type.kind === "ListType", `Expected list type but got ${e.type.name}`, at));
   }
 
   function checkIsListOrString(e, at) {
-    console.log("check is list or string is called", e);
-    console.log("**e in checkListOrString**", e);
     check((e.kind == "ListType" || e.type === STRING, `Expected list or string type but got ${e.type.name}`, at));
   }
 
@@ -118,7 +115,6 @@ export default function analyze(match) {
   }
 
   function checkAllSameType(elements, at) {
-    console.log("check all same type called", elements);
     if (elements.length > 0) {
       const type = elements[0].type;
       for (const e of elements) {
@@ -158,7 +154,6 @@ export default function analyze(match) {
   }
 
   function assignable(fromType, toType) {
-    console.log("**assignable** **fromType**", fromType, "**toType**", toType);
     return (
       toType === core.anyType ||
       equivalent(fromType, toType) ||
@@ -173,7 +168,6 @@ export default function analyze(match) {
   }
 
   function typeDescription(type) {
-    console.log("**type in typedescription**", type);
     if (typeof type === "string") return type;
     if (type.kind == "ObjectType") return type.name;
     if (type.kind == "FunctionType") {
@@ -191,13 +185,8 @@ export default function analyze(match) {
   }
 
   function checkIsAssignable(e, targetType, at) {
-    console.log("**checkIsAssignable** **e**", e, "e.type", e.type, "**target**", targetType);
-    console.log("**try to check source**", e.type);
     const source = typeDescription(e.type);
-    console.log("***trying to check target****", targetType);
-    console.log("targetType", targetType);
     const target = typeDescription(targetType);
-    console.log("source", source, "target", target);
     const message = `Cannot assign a ${source} to a ${target}`;
     check(assignable(e.type, targetType), message, at);
   }
@@ -278,8 +267,6 @@ export default function analyze(match) {
       const targetType = type.analyze();
       const variable = core.variable(id.sourceString, targetType, mutable);
       const initialValue = exp.analyze();
-      console.log("**initialValue:**", initialValue);
-      console.log("**targetType: in VarDecl**", targetType);
       checkIsAssignable(initialValue, targetType, exp);
       context.add(id.sourceString, variable);
       if (mutable) {
@@ -492,7 +479,6 @@ export default function analyze(match) {
 
     LoopStmt_forEach(_fortill, id, _in, exp, block) {
       const collection = exp.analyze();
-      console.log("**collection in loopstmt_forEach**", collection);
       checkHasListType(collection, exp);
       const iterator = core.variable(id.sourceString, collection.type.type, false);
       context = context.newChildContext({ inLoop: true });
@@ -531,7 +517,6 @@ export default function analyze(match) {
     },
 
     Type_list(_open, type, _close) {
-      console.log("**type in Type_list**", type.analyze());
       return core.listType(type.analyze());
     },
 
@@ -650,7 +635,6 @@ export default function analyze(match) {
       checkHasBeenDeclared(exp1, exp1.sourceString, exp1);
       const [e, subscript] = [exp1.analyze(), exp2.analyze()];
       checkHasIntType(subscript, exp2);
-      console.log("**subscript in Exp7_subscript**", subscript);
       checkIsListOrString(e, exp1);
       return core.subscriptExpression(e, subscript);
     },
@@ -692,16 +676,13 @@ export default function analyze(match) {
     },
 
     Exp7_emptylist(_open, _close) {
-      console.log("getting empty list");
       return core.emptyListExpression(core.anyType);
     },
 
     Exp7_listExp(_open, args, _close) {
       const elements = args.asIteration().children.map((e) => e.analyze());
-      console.log("**elements in Exp7_listExp**", elements);
       checkAllSameType(elements, args);
       const elementType = elements.length > 0 ? elements[0].type : "any";
-      console.log("elementType", elementType);
       return core.listExpression(elements, core.listType(elementType));
     },
 
