@@ -15,7 +15,6 @@ const semanticChecks = [
   ["empty function", "don addNums(num1: int, num2: int) -> int { return (num1 + num2); } "],
   ["function declaration", "don incrementFunction(num: int) -> int { num++; return num; }"],
   ["function call", `don incNum(num: int) -> int { num++; return num; } incNum(num: 5);`],
-//   //TODO: add function call 
   ["increment statement", "thine x: int = 1; x++;"],
   ["decrement statement", "thine x: float = 3.1; x--;"],
   ["assignment statement", "thine testvar: int = 2; testvar = 1;"],
@@ -29,6 +28,7 @@ const semanticChecks = [
   ["short loop", "thine num: int = 10; whilst num > 5 { num = num/2; }"],
   ["short for loop", "fortill 5 { proclaim(1); }"],
   ["for in loop", `thine coins: [string] = ["dollar", "fifty cents", "twenty cents"]; fortill coin in coins { proclaim("Thee hath the following coins"); proclaim(coin); } `],
+  ["range loop", `fortill i in 3...10 { proclaim("writing"); }`],
   ["ternary with ints", `thine num: int = 5; proclaim(num == 5 ? "it is" : "it is not"); `],
   ["or operator", `thine num1: int = 2; thine num2: int = 6; perchance (num1 == 2 || num2 % 2 == 0) { proclaim("yipee"); } `],
   ["and operator", `thine num1: int = 2; thine num2: int = 6; perchance (num1 == 2 && num2 % 2 != 0) { proclaim("yipee"); } `],
@@ -42,18 +42,30 @@ const semanticChecks = [
   ["declare list elements", "thine numList: [int] = [1, 2, 3];"],
   ["printing from subscript", "thine numList: [int] = [1, 2, 3]; proclaim(numList[1]);"],
   ["reassigning value at subscript in list", "thine numList: [int] = [1, 2, 3]; numList[1] = 5;"],
-  //types
   ["struct declaration", `matter Person { name: string age: int }`],
   ["class declaration", `matter car { init (make: string, model: string, year: int) { ye.make = make; ye.model = model; ye.year = year; } }`],
-  // ["member check", `matter car { init (color: string, model: string, year: int) { ye.color = color; ye.model = model; ye.year = year; } } proclaim("This car is a \${car.model} in the color \${car.color}.");`],
+  // ["member check", `matter Car { init (color: string, model: string, year: int) { ye.color = color; ye.model = model; ye.year = year; } } thine car: Car = Car(color: "blue", model: "Ford", year: 2022); proclaim("This car is a \${car.model} in the color \${car.color}.");`],
   ["empty return", `don addNums(a: int, b: int) -> void { perchance (a + b) > 5 { return; }}`],
   ["string interpolation", `thine bankBalance: int = 5234; proclaim("Your current balance is \${bankBalance}. This is the end of your transaction.");`],
+  // ["nil-coalescing operator", `thine maybe: string? = zilch string; proclaim(maybe ?? "nil coalesced");`],
 ];
 
 const semanticErrors = [
-  //["variable declaration with mismatched types", "thine x: bool = 1;", /Type mismatch. Expected type bool but got int/],
-  //["variable declaration with mismatched types", "thine x: bool = 1;",],
-  //["don addNums(num1: int, yes: boolean) -> int { return num1 + yes; }",],
+  ["calling an undeclared id", "proclaim(x);", /x not declared/],
+  // ["re-declaring constant", "thine x: int = 1; thine x: int = 5;", /Variable already declared/],
+  // ["assigning value to constant", "fact x: int = 1; x = 2;", /Cannot assign to immutable variable/],
+  // ["assigning value to constant list element", "fact x: [int] = [1, 2, 3]; x[1] = 4;", /Cannot assign to immutable variable/],
+  // ["break outside of loop", "breaketh;", /Break can only appear in a loop/],
+
+  // ["incrementing non-number", "thine x: boolean = shant; x++;", /Expected numeric value/],
+  // ["decrementing non-number", "thine x: boolean = shant; x--;", /Expected numeric value/],
+
+
+  // ["non-distinct fields in struct", `matter strc { x: int x: boolean }`, /Fields must be distinct/],
+
+  
+  // ["variable declaration with mismatched types", "thine x: bool = shall; x = 5;", /Type mismatch. Expected type bool but got int/],
+  // ["don addNums(num1: int, yes: boolean) -> int { return num1 + yes; }", /Cannot add int and boolean/],
 ];
 
 describe("The analyzer", () => {

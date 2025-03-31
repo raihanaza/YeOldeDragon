@@ -41,6 +41,10 @@ export default function analyze(match) {
 
   //utility functions
   function checkNotDeclared(name, at) {
+    console.log(name)
+    console.log("CONTEXT: ", context)
+    context.lookup
+    console.log(context.lookup(name))
     check(!context.lookup(name), `Identifier ${name} already declared`, at);
   }
 
@@ -177,8 +181,8 @@ export default function analyze(match) {
         assignable(fromType.returnType, toType.returnType) &&
         fromType.paramTypes.length === toType.paramTypes.length &&
         toType.paramTypes.every((t, i) => assignable(t, fromType.paramTypes[i]))
-      ) ||
-      (fromType === toType.baseType)
+      ) 
+      // || (fromType === toType.baseType)
     );
   }
 
@@ -191,7 +195,7 @@ export default function analyze(match) {
       const returnType = typeDescription(type.returnType);
       return `(${paramTypes})->${returnType}`;
     }
-    if (type.kind == "ArrayType") return `[${typeDescription(type.baseType)}]`;
+    if (type.kind == "ListType") return `[${typeDescription(type.baseType)}]`;
     if (type.kind == "OptionalType") return `${typeDescription(type.baseType)}?`;
   }
 
