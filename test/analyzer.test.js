@@ -50,7 +50,7 @@ const semanticChecks = [
   ["negative numbers", "thine num: int = -23; num = num + 24;"],
   ["not value", `thine isNot: boolean = shall; perchance ne isNot { proclaim("It is!"); }`],
   //TODO: add ne operator tests with lists
-  // ["creating empty optional", "thine studentAge: float?"],
+  ["creating empty optional", "thine studentAge: int? = zilch int;"],
   ["declare empty list", "thine nums: [int] = [];"],
   ["declare list elements", "thine numList: [int] = [1, 2, 3];"],
   ["printing from subscript", "thine numList: [int] = [1, 2, 3]; proclaim(numList[1]);"],

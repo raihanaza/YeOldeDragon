@@ -39,7 +39,7 @@ export function functionType(paramNames, paramTypes, returnType) {
 }
 
 export function functionCall(name, args) {
-  //TODO: investigate hwy this is showing up as uncovered even though it's called in the analyzer
+  //TODO: investigate why this is showing up as uncovered even though it's called in the analyzer
   if (name.instrinsic) {
     if (name.type.returnType === voidType) {
       return { kind: name.name.replace(/^\p{L}/u, (c) => c.toUpperCase()), args };

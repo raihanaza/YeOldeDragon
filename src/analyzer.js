@@ -101,7 +101,8 @@ export default function analyze(match) {
 
   function includesAsField(objectType, type) {
     return objectType.fields.some(
-      (field) => field.type === type || (field.type?.kind === "ObjectType" && includesAsField(field.type, type))
+      (field) => field.type === type 
+      // || (field.type?.kind === "ObjectType" && includesAsField(field.type, type))
     );
   }
 
@@ -275,7 +276,8 @@ export default function analyze(match) {
 
       const paramTypes = func.params.map((param) => param.type);
       const paramNames = func.params.map((param) => param.name);
-      const returnType = type.children?.[0]?.analyze() ?? core.voidType;
+      const returnType = type.children?.[0]?.analyze()
+      // const returnType = type.children?.[0]?.analyze() ?? core.voidType;
       func.type = core.functionType(paramNames, paramTypes, returnType);
 
       // Analyze body while still in child context
@@ -678,7 +680,8 @@ export default function analyze(match) {
     Exp7_listExp(_open, args, _close) {
       const elements = args.asIteration().children.map((e) => e.analyze());
       checkAllSameType(elements, args);
-      const elementType = elements.length > 0 ? elements[0].type : "any";
+      const elementType = elements[0].type;
+      // const elementType = elements.length > 0 ? elements[0].type : "any";
       return core.listExpression(elements, core.listType(elementType));
     },
 
