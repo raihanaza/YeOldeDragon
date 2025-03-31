@@ -123,8 +123,6 @@ export default function analyze(match) {
   }
 
   function assignable(fromType, toType) {
-    console.log("FROM TYPE", fromType);
-    console.log("TO TYPE", toType);
     return (
       toType === core.anyType ||
       equivalent(fromType, toType) ||
@@ -257,8 +255,6 @@ export default function analyze(match) {
       if (targetType.kind === "ObjectType") {
         targetType = targetType.name;
       }
-      console.log("initialValue", initialValue);
-      console.log("targetType", targetType);
       checkIsAssignable(initialValue, targetType, exp);
       context.add(id.sourceString, variable);
       if (mutable) {
@@ -657,7 +653,6 @@ export default function analyze(match) {
         const object = exp.analyze();
         let objectType;
         if (dot.sourceString === "?.") {
-          console.log("ACCESSING OPTIONAL OBJECT");
           checkHasOptionalObjectType(object, exp);
           objectType = object.type.baseType;
         } else {
