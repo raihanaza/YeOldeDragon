@@ -64,8 +64,8 @@ export function decrementStatement(variable) {
   return { kind: "DecrementStatement", variable };
 }
 
-export function assignmentStatement(target, source) {
-  return { kind: "AssignmentStatement", target, source };
+export function assignmentStatement(target, source, type) {
+  return { kind: "AssignmentStatement", target, source, type };
 }
 
 export function returnStatement(expression) {

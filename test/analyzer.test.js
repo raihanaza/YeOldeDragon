@@ -120,8 +120,20 @@ const semanticChecks = [
       }
     }`,
   ],
-  //TO ADD: optional member check for classes in initializer
-  //TO ADD: optional member check for classes when called
+  [
+    `optional member check`,
+    `matter Car {
+        init (color: string, model: string, year: int, yearsOwned: int?) {
+          ye.color = color;
+          ye.model = model;
+          ye.year = year;
+          ye.yearsOwned = 0;
+        }
+      }
+      thine car: Car? = Car(color: "blue", model: "ford", year: 2025, yearsOwned: zilch int);
+      proclaim("This \${car?.model} in \${car?.color} has been owned for \${car?.yearsOwned} years.");`,
+    //TO ADD: optional member check for classes when called
+  ],
 ];
 
 const semanticErrors = [
@@ -172,6 +184,19 @@ const semanticErrors = [
     `,
   ],
   ["assigning to a constant", "fact x: int = 1; x = 5;"],
+  [
+    "accessing a field that was not included in the class init parameters",
+    `matter Car {
+        init (color: string, model: string, year: int) {
+          ye.color = color;
+          ye.model = model;
+          ye.year = year;
+          ye.yearsOwned = 0;
+        }
+      }
+    thine car: Car = Car(color: "blue", model: "ford", year: 2025);`,
+    /Line 6, col 14/,
+  ],
 ];
 
 describe("The analyzer", () => {

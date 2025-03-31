@@ -1,9 +1,10 @@
 matter Car {
-      init (color: string, model: string, year: int) {
+      init (color: string, model: string, year: int, yearsOwned: int?) {
         ye.color = color;
         ye.model = model;
         ye.year = year;
+        ye.yearsOwned = 0;
       }
 }
-thine car: Car = Car(color: "blue", model: "ford", year: 2025);
-~proclaim("This car is a \${car.model} in the color \${car.color}.");
+thine car: Car? = Car(color: "blue", model: "ford", year: 2025, yearsOwned: zilch int);
+proclaim("This ${car?.model} in ${car?.color} has been owned for ${car?.yearsOwned} years.");
