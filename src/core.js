@@ -39,21 +39,8 @@ export function functionType(paramNames, paramTypes, returnType) {
 }
 
 export function functionCall(name, args) {
-  //TODO: investigate why this is showing up as uncovered even though it's called in the analyzer
-  if (name.instrinsic) {
-    if (name.type.returnType === voidType) {
-      return { kind: name.name.replace(/^\p{L}/u, (c) => c.toUpperCase()), args };
-    } else if (name.type.paramTypes.lenth === 1) {
-      return unaryExpression(name.name, args[0], name.type.returnType);
-    } else {
-      return binaryExpression(name.name, args[0], args[1], name.type.returnType);
-    }
-  }
+  // TODO: Long term add standard functions, does not have to be for the class
   return { kind: "FunctionCall", name, args };
-}
-
-export function intrinsicFunction(name, type) {
-  return { kind: "Function", name, type, intrinsic: true };
 }
 
 export function incrementStatement(variable) {
@@ -85,7 +72,13 @@ export function binaryExpression(op, left, right, type) {
 }
 
 export function ternaryExpression(op, consequence, alternate) {
-  return { kind: "TernaryExpression", op, consequence, alternate, type: consequence.type };
+  return {
+    kind: "TernaryExpression",
+    op,
+    consequence,
+    alternate,
+    type: consequence.type,
+  };
 }
 
 export function nilCoalescingExpression(op, left, right, type) {
@@ -215,14 +208,6 @@ export const standardLibrary = Object.freeze({
   any: anyType,
   zilch: zilchType,
   π: variable("π", false, floatType),
-  proclaim: intrinsicFunction("proclaim", anyToVoidType),
-  exp: intrinsicFunction("exp", floatToFloatType),
-  sin: intrinsicFunction("sin", floatToFloatType),
-  cos: intrinsicFunction("cos", floatToFloatType),
-  exp: intrinsicFunction("exp", floatToFloatType),
-  ln: intrinsicFunction("ln", floatToFloatType),
-  hypot: intrinsicFunction("hypot", floatToFloatType),
-  bytes: intrinsicFunction("bytes", stringToIntType),
 });
 
 String.prototype.type = stringType;
