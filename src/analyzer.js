@@ -141,17 +141,10 @@ export default function analyze(match) {
   }
 
   function checkArgIsAField(argName, fieldNames, at) {
-    console.log("argName", argName, "fieldNames", fieldNames);
     check(fieldNames.includes(argName), `Argument ${argName} not found in Object Fields`, at);
   }
 
   function equivalent(t1, t2) {
-    console.log(
-      "equivalent run",
-      t1 === t2 ||
-        (t1?.kind === "OptionalType" && t2?.kind == "OptionalType" && equivalent(t1.type, t2.type)) ||
-        (t1?.kind === "ListType" && t2?.kind === "ListType" && equivalent(t1.type, t2.type))
-    );
     return (
       t1 === t2 ||
       (t1?.kind === "OptionalType" && t2?.kind == "OptionalType" && equivalent(t1.type, t2.type)) ||
@@ -160,7 +153,7 @@ export default function analyze(match) {
   }
 
   function assignable(fromType, toType) {
-    console.log("**in assignable** FROM: ", fromType, "TO: ", toType);
+    // console.log("**in assignable** FROM: ", fromType, "TO: ", toType);
     return (
       toType === core.anyType ||
       equivalent(fromType, toType) ||
@@ -175,7 +168,7 @@ export default function analyze(match) {
   }
 
   function typeDescription(type) {
-    console.log("type in typeDescription", type);
+    // console.log("type in typeDescription", type);
     if (typeof type === "string") return type;
     if (type.kind == "ObjectType") return type.name;
     if (type.kind == "FunctionType") {
@@ -189,7 +182,7 @@ export default function analyze(match) {
 
   // TODO: still need to work on throwing error if missing arg name?
   function checkArgNameMatchesParam(e, name, at) {
-    console.log("**in checkArgNameMatchesParam** e: ", e, "name: ", name);
+    // console.log("**in checkArgNameMatchesParam** e: ", e, "name: ", name);
     check(assignable(e.name, name), `Cannot assign ${e.name} to ${name}`, at);
   }
 
@@ -279,8 +272,8 @@ export default function analyze(match) {
       let targetType = type.analyze();
       const variable = core.variable(id.sourceString, targetType, mutable);
       const initialValue = exp.analyze();
-      console.log("initialvalue.type", initialValue.type);
-      console.log("targetType", targetType);
+      // console.log("initialvalue.type", initialValue.type);
+      // console.log("targetType", targetType);
       if (targetType.kind === "ObjectType") {
         targetType = targetType.name;
       }
@@ -649,8 +642,7 @@ export default function analyze(match) {
           checkIsAssignable(arg, targetTypes[i], { at: exp });
         } else {
           checkIsAssignable(arg, targetTypes[i], { at: exp });
-          checkIsAssignable(arg, targetParamNames[i], { at: exp });
-          //checkArgNameMatchesParam(arg, targetParamNames[i], { at: exp });
+          checkArgNameMatchesParam(arg, targetParamNames[i], { at: exp });
         }
 
         return arg;
