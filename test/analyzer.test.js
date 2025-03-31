@@ -102,6 +102,8 @@ const semanticChecks = [
     }
     `,
   ],
+  //TO ADD: optional member check for classes in initializer
+  //TO ADD: optional member check for classes when called
 ];
 
 const semanticErrors = [
@@ -167,10 +169,10 @@ describe("The analyzer", () => {
     });
   }
 
-  // it("produces the expected representation for a trivial program", () => {
-  //   assert.deepEqual(
-  //     analyze(parse("thine x: float = 3.1 + 2.2;")),
-  //     program([variableDeclaration(variable("x", floatType, true), binaryExpression("+", 3.1, 2.2, floatType))])
-  //   );
-  // });
+  it("produces the expected representation for a trivial program", () => {
+    assert.deepEqual(
+      analyze(parse("thine x: float = 3.1 + 2.2;")),
+      program([variableDeclaration(variable("x", floatType, true), binaryExpression("+", 3.1, 2.2, floatType))])
+    );
+  });
 });

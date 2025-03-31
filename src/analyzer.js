@@ -91,7 +91,7 @@ export default function analyze(match) {
   //   check(expectedTypes.includes(e.type), `Expected string or numeric type but got ${e.type.name}`, at);
   // }
 
-  function checkHasOptionalObjectType(e, at) {
+  function checkHasOptionalObjectType(e, field, at) {
     check(
       e.type?.kind === "OptionalType" && e.type.baseType?.kind === "ObjectType",
       `Expected an optional object but got ${e.type.name}`,
@@ -107,9 +107,9 @@ export default function analyze(match) {
   //   check(e.type?.kind === "Field", `Expected a field type but got ${e.type.name}`, at);
   // }
 
-  function checkIsMutable(e, at) {
-    check(isMutable(e), `Cannot assign to immutable variable ${e.name}`, at);
-  }
+  // function checkIsMutable(e, at) {
+  //   check(isMutable(e), `Cannot assign to immutable variable ${e.name}`, at);
+  // }
 
   function checkBothSameType(e1, e2, at) {
     check(e1.type === e2.type, `Operands must have the same type`, at);
@@ -216,9 +216,6 @@ export default function analyze(match) {
   }
 
   function checkHasMember(object, givenField, at) {
-    console.log("OBJECT: ", object)
-    console.log("FIELD ", givenField)
-    console.log("fields map: ", object.fields)
     check(
       object.fields.map((field) => field.name).includes(givenField),
       `Object type ${object.name} does not have a field ${givenField}`,
@@ -536,11 +533,11 @@ export default function analyze(match) {
       return core.listType(type.analyze());
     },
 
-    Type_function(_open, types, _close, _arrow, type) {
-      const paramTypes = types.asIteration().children.map((t) => t.analyze());
-      const returnType = type.analyze();
-      return core.functionType(paramTypes, returnType);
-    },
+    // Type_function(_open, types, _close, _arrow, type) {
+    //   const paramTypes = types.asIteration().children.map((t) => t.analyze());
+    //   const returnType = type.analyze();
+    //   return core.functionType(paramTypes, returnType);
+    // },
 
     Type_id(id) {
       const entity = context.lookup(id.sourceString);
@@ -684,6 +681,7 @@ export default function analyze(match) {
         let objectType;
         if (dot.sourceString === "?.") {
           checkHasOptionalObjectType(object, exp);
+          console.log("OBJECT TYPE:", object)
           objectType = object.type.baseType;
         } else {
           checkHasObjectType(object, exp);
