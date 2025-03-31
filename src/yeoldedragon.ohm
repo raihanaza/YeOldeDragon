@@ -70,6 +70,7 @@ YeOldeDragon {
          | shant ~mut
          | floatLiteral ~mut
          | intLiteral ~mut
+         | zilch ~mut
          | Exp7 "(" ListOf<Arg, ","> ")" ~mut                               --call
          | Exp7 "[" Exp0 "]"                                                --subscript
          | (ye | Exp7) ("." | "?.") id                                      --member
@@ -103,11 +104,12 @@ YeOldeDragon {
     shant = "shant" ~idchar
     ne = "ne" ~idchar
     ye = "ye" ~idchar
+    zilch = "zilch" ~idchar
 
     id = ~keyword letter idchar*
     keyword = proclaim | thine | fact | fortill | whilst | perchance | else | don
             | matter | init | changeth | spell | defaulte | shall | shant | in | return
-            | breaketh | ne | ye
+            | breaketh | ne | ye | zilch
     idchar = letter | digit | "_"
     numeral = digit+ ("." digit+)? (("E"|"e") ("+"|"-")? digit+)?
 

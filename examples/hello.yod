@@ -1,1 +1,2 @@
+thine x: string = "hello";
 proclaim("Good morrow, ${x} fair world!");

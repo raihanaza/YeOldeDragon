@@ -200,6 +200,7 @@ export const booleanType = "boolean";
 export const floatType = "float";
 export const intType = "int";
 export const stringType = "string";
+export const zilchType = "zilch";
 
 const floatToFloatType = functionType([floatType], floatType);
 const anyToVoidType = functionType([anyType], voidType);
@@ -212,6 +213,7 @@ export const standardLibrary = Object.freeze({
   boolean: booleanType,
   void: voidType,
   any: anyType,
+  zilch: zilchType,
   π: variable("π", false, floatType),
   proclaim: intrinsicFunction("proclaim", anyToVoidType),
   exp: intrinsicFunction("exp", floatToFloatType),
@@ -227,4 +229,3 @@ String.prototype.type = stringType;
 Number.prototype.type = floatType;
 BigInt.prototype.type = intType;
 Boolean.prototype.type = booleanType;
-

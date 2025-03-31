@@ -124,6 +124,7 @@ export default function analyze(match) {
 
   function checkVarDecTypeMatchesExpressionType(type, expType, at) {
     //TODO: review this later, type==ANY workaround is for empty lists
+    console.log("checkVarDecTypeMatchesExpressionType", type, expType);
     check(type === expType || type === ANY, `Type mismatch in declaration. Expected ${expType} but got ${type}`, at);
   }
 
@@ -137,7 +138,7 @@ export default function analyze(match) {
   }
 
   function checkIsType(e, at) {
-    const isBasicType = /int|float|string|boolean|void|any/.test(e.name);
+    const isBasicType = /int|float|string|boolean|void|any|zilch/.test(e.name);
     const isCompositeType = /ObjectType|FunctionType|ListType|OptionalType/.test(e?.kind);
     check(isBasicType || isCompositeType, "Type expected", at);
   }
@@ -283,15 +284,19 @@ export default function analyze(match) {
     VarDecl(qualifier, id, _colon, type, _eq, exp, _semi) {
       checkNotDeclared(id.sourceString, id);
       const mutable = qualifier.sourceString === "thine";
-      const typeName = type.sourceString;
-      const variable = core.variable(id.sourceString, typeName, mutable);
-      const initializer = exp.analyze();
-      checkVarDecTypeMatchesExpressionType(initializer.type, typeName, exp);
+      const targetType = type.analyze();
+      const variable = core.variable(id.sourceString, targetType, mutable);
+      const initialValue = exp.analyze();
+      console.log("varDecl called", id.sourceString);
+      console.log("initialValue", initialValue);
+      console.log("targetType", targetType);
+      //checkVarDecTypeMatchesExpressionType(initializer.type, typeName, exp);
+      checkIsAssignable(initialValue, targetType, exp)
       context.add(id.sourceString, variable);
       if (mutable) {
-        return core.variableDeclaration(variable, initializer);
+        return core.variableDeclaration(variable, initialValue);
       } else {
-        return core.constantDeclaration(variable, initializer);
+        return core.constantDeclaration(variable, initialValue);
       }
     },
 
@@ -415,10 +420,11 @@ export default function analyze(match) {
     },
 
     Statement_assign(variable, _eq, exp, _semi) {
+      console.log("in statement_assign");
       const target = variable.analyze();
       const source = exp.analyze();
-      // console.log("TARGET: ", target);
-      // console.log("SOURCE: ", source);
+      console.log("TARGET: ", target);
+      console.log("SOURCE: ", source);
       checkBothSameType(target, source, variable);
       checkIsMutable(target, variable);
       checkIsAssignable(source, target.type, source);
@@ -728,6 +734,10 @@ export default function analyze(match) {
 
     shant(_) {
       return false;
+    },
+
+    zilch(_) {
+      return core.zilchType;
     },
 
     floatLiteral(_whole, _point, _fraction, _e, _sign, _exponent) {
