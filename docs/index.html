@@ -88,21 +88,16 @@
         <div class="code-block">
           <pre><code>thine gold_cups: int = 8;
 
-fact pi: float = 3.14159;	</code></pre>
-        </div>
+fact pi: float = 3.14159;	
 
-        <div class="code-title">Type Conversions</div>
-        <div class="code-block">
-          <pre><code>thine beverages: int = 5;
-
-thine beveragesButAString: string = toString(beverages);</code></pre>
+thine maybe: string? = zilch string;</code></pre>
         </div>
 
         <div class="code-title">While Loops</div>
         <div class="code-block">
           <pre><code>thine dragons: int = 10;
 whilst (dragons > 0) {
-    proclaim(“There are “ + toString(dragons) + “ left in the café”);
+    proclaim(“There are still dragons left in the café”);
     dragons--;
 }</code></pre>
         </div>
@@ -111,7 +106,7 @@ whilst (dragons > 0) {
         <div class="code-block">
           <pre><code>thine coins: [string] = [“gold”, “silver”, “bronze”];
 fortill (coin in coins) {
-    proclaim(“We have a “ + coin.length + “ today!”);
+    proclaim(“We have a ${coin} coin today!”);
 }</code></pre>
         </div>
 
@@ -123,22 +118,6 @@ fortill (coin in coins) {
     proclaim(“It is closed!);
 } else {
     proclaim(“Lowkey, we don’t know what happened here…”);
-}</code></pre>
-        </div>
-
-        <div class="code-title">Switch Statements</div>
-        <div class="code-block">
-          <pre><code>thine earnings: string = “gold coin”;
-
-changeth (earnings) {
-    spell “gold coin”:
-        console.log(“You earned a gold coin!”);
-    spell “silver coin”: 
-        console.log(“You earned a silver coin!”);
-    spell “bronze coin”: 
-        console.log(“You earned a bronze coin!”);
-    defaulte:
-        console.log(“I’m not sure what this coin is…”);
 }</code></pre>
         </div>
 
