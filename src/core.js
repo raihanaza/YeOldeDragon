@@ -131,16 +131,16 @@ export function optionalType(baseType) {
   return { kind: "OptionalType", baseType };
 }
 
-export function listType(type) {
-  return { kind: "ListType", type };
+export function listType(baseType) {
+  return { kind: "ListType", baseType };
 }
 
 export function emptyListType(type) {
   return { kind: "EmptyListType", type };
 }
 
-export function listExpression(elements, type) {
-  return { kind: "ListExpression", elements, type };
+export function listExpression(elements, type, stringRep) {
+  return { kind: "ListExpression", elements, type, stringRep };
 }
 
 export function emptyListExpression(type) {

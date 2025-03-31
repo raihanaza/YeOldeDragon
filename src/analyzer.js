@@ -70,14 +70,12 @@ export default function analyze(match) {
   }
 
   function checkHasListType(e, at) {
-    check(
-      (e.type.startsWith("[") && e.type.endsWith("]")) || e.type === "ListType",
-      `Expected list type but got ${e.type.name}`,
-      at
-    );
+    console.log("check list type is called", e);
+    check((e.type.kind === "ListType", `Expected list type but got ${e.type.name}`, at));
   }
 
   function checkIsListOrString(e, at) {
+    console.log("check is list or string is called", e);
     check(
       (e.type.startsWith("[") && e.type.endsWith("]")) || e.type === STRING,
       `Expected list or string type but got ${e.type.name}`,
@@ -122,13 +120,8 @@ export default function analyze(match) {
     check(e1.type === e2.type, `Operands must have the same type`, at);
   }
 
-  function checkVarDecTypeMatchesExpressionType(type, expType, at) {
-    //TODO: review this later, type==ANY workaround is for empty lists
-    console.log("checkVarDecTypeMatchesExpressionType", type, expType);
-    check(type === expType || type === ANY, `Type mismatch in declaration. Expected ${expType} but got ${type}`, at);
-  }
-
   function checkAllSameType(elements, at) {
+    console.log("check all same type called", elements);
     if (elements.length > 0) {
       const type = elements[0].type;
       for (const e of elements) {
@@ -168,7 +161,6 @@ export default function analyze(match) {
   }
 
   function assignable(fromType, toType) {
-    console.log("fromType", fromType, "toType", toType);
     return (
       toType === core.anyType ||
       equivalent(fromType, toType) ||
@@ -182,7 +174,8 @@ export default function analyze(match) {
   }
 
   function typeDescription(type) {
-    console.log("type in typedescription", type);
+    console.log("**type in typedescription**", type);
+    console.log();
     if (typeof type === "string") return type;
     if (type.kind == "ObjectType") return type.name;
     if (type.kind == "FunctionType") {
@@ -286,10 +279,8 @@ export default function analyze(match) {
       const targetType = type.analyze();
       const variable = core.variable(id.sourceString, targetType, mutable);
       const initialValue = exp.analyze();
-      console.log("varDecl called", id.sourceString);
-      console.log("initialValue", initialValue);
-      console.log("targetType", targetType);
-      //checkVarDecTypeMatchesExpressionType(initializer.type, typeName, exp);
+      console.log("**initialValue:**", initialValue);
+      console.log("**targetType: in VarDecl**", targetType);
       checkIsAssignable(initialValue, targetType, exp);
       context.add(id.sourceString, variable);
       if (mutable) {
@@ -300,7 +291,6 @@ export default function analyze(match) {
     },
 
     FuncDecl(_func, id, parameters, _colons, type, block) {
-      console.log("in FuncDecl", id.sourceString);
       checkNotDeclared(id.sourceString, { at: id });
       const func = core.func(id.sourceString);
       context.add(id.sourceString, func);
@@ -338,7 +328,6 @@ export default function analyze(match) {
     },
 
     ClassDecl(_object, id, _left, classInit, methods, _right) {
-      console.log("***classDecl called***");
       checkNotDeclared(id.sourceString, id);
       const type = core.objectType(id.sourceString, [], [], []);
       context.add(id.sourceString, type);
@@ -362,17 +351,14 @@ export default function analyze(match) {
     },
 
     ClassInit(_init, fields, fieldInitBlock) {
-      console.log("***classInit called***");
       const targetFields = fields.analyze();
       const classInit = core.classInitializer([], []);
       context = context.newChildContext({ inLoop: false });
       classInit.fields = targetFields;
       const initialValues = fieldInitBlock.analyze();
-      console.log("classInit.initialValues", initialValues);
       classInit.fields.map((field) => {
         field.value = initialValues.find((f) => f.target === field.name).source;
       });
-      console.log("classInit.fields", classInit.fields);
       context = context.parent;
       return classInit;
     },
@@ -399,7 +385,6 @@ export default function analyze(match) {
         const fieldInitTarget = context.lookup(fieldInit.target);
         checkHasBeenDeclared(fieldInit, fieldInit, { at: exp });
         // TODO: need to make sure that pass the type correctly for OptionalType
-        console.log("in fieldInitBlock checking if assignable");
         checkIsAssignable(fieldInit.source, fieldInitTarget.type, { at: exp });
         // TODO: need to check that EVERY field has been initialized
         checkArgNameMatchesParam(fieldInit, fieldInit, { at: exp });
@@ -419,11 +404,8 @@ export default function analyze(match) {
     },
 
     Statement_assign(variable, _eq, exp, _semi) {
-      console.log("in statement_assign");
       const target = variable.analyze();
       const source = exp.analyze();
-      console.log("TARGET: ", target);
-      console.log("SOURCE: ", source);
       checkBothSameType(target, source, variable);
       checkIsMutable(target, variable);
       checkIsAssignable(source, target.type, source);
@@ -509,11 +491,11 @@ export default function analyze(match) {
       return core.forRangeStatement(iterator, low, op.sourceString, high, body);
     },
 
-    LoopStmt_forEach(forKeyword, id, _in, exp, block) {
+    LoopStmt_forEach(_fortill, id, _in, exp, block) {
       const collection = exp.analyze();
+      console.log("**collection in loopstmt_forEach**", collection);
       checkHasListType(collection, exp);
       const iterator = core.variable(id.sourceString, collection.type.type, false);
-      // console.log("ITERATOR: ", iterator)
       context = context.newChildContext({ inLoop: true });
       context.add(iterator.name, iterator);
       const body = block.analyze();
@@ -550,6 +532,7 @@ export default function analyze(match) {
     },
 
     Type_list(_open, type, _close) {
+      console.log("**type in Type_list**", type.analyze());
       return core.listType(type.analyze());
     },
 
@@ -647,7 +630,6 @@ export default function analyze(match) {
     },
 
     Exp7_call(exp, open, argList, _close) {
-      console.log("Exp7_call", exp.sourceString);
       const callee = exp.analyze();
       checkIsCallable(callee, { at: exp });
       const exps = argList.asIteration().children;
@@ -668,8 +650,8 @@ export default function analyze(match) {
     Exp7_subscript(exp1, _open, exp2, _close) {
       checkHasBeenDeclared(exp1, exp1.sourceString, exp1);
       const [e, subscript] = [exp1.analyze(), exp2.analyze()];
-      // console.log("EXPRESSION IS: ", e);
       checkHasIntType(subscript, exp2);
+      console.log("**subscript in Exp7_subscript**", subscript);
       checkIsListOrString(e, exp1);
       return core.subscriptExpression(e, subscript);
     },
@@ -678,7 +660,6 @@ export default function analyze(match) {
         checkInClassDecl({ at: exp });
         checkClassFieldExists(id, { at: exp });
         const object = context.lookup(id.sourceString);
-        console.log("object", object);
         let objectType;
         if (dot.sourceString === "?.") {
           // TODO: need to implement optionals checks
@@ -696,7 +677,6 @@ export default function analyze(match) {
           checkHasOptionalObjectType(object, exp);
           objectType = object.type.baseType;
         } else {
-          console.log("check member has object type", object);
           checkHasObjectType(object, exp);
           objectType = object.type;
         }
@@ -718,9 +698,11 @@ export default function analyze(match) {
 
     Exp7_listExp(_open, args, _close) {
       const elements = args.asIteration().children.map((e) => e.analyze());
+      console.log("**elements in Exp7_listExp**", elements);
       checkAllSameType(elements, args);
       const elementType = elements.length > 0 ? elements[0].type : "any";
-      return core.listExpression(elements, `[${elementType}]`);
+      console.log("elementType", elementType);
+      return core.listExpression(elements, core.listType(elementType), `[${elementType}]`);
     },
 
     Exp7_parens(_open, exp, _close) {
