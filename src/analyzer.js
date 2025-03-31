@@ -76,11 +76,8 @@ export default function analyze(match) {
 
   function checkIsListOrString(e, at) {
     console.log("check is list or string is called", e);
-    check(
-      (e.type.startsWith("[") && e.type.endsWith("]")) || e.type === STRING,
-      `Expected list or string type but got ${e.type.name}`,
-      at
-    );
+    console.log("**e in checkListOrString**", e);
+    check((e.kind == "ListType" || e.type === STRING, `Expected list or string type but got ${e.type.name}`, at));
   }
 
   function checkHasOptionalType(e, at) {
@@ -161,7 +158,7 @@ export default function analyze(match) {
   }
 
   function assignable(fromType, toType) {
-    console.log('**assignable** **fromType**', fromType, "**toType**", toType);
+    console.log("**assignable** **fromType**", fromType, "**toType**", toType);
     return (
       toType === core.anyType ||
       equivalent(fromType, toType) ||

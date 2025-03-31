@@ -149,7 +149,8 @@ export function emptyListExpression(type) {
 
 export function subscriptExpression(list, index) {
   //TODO: revisit this type if there's a better way to do it
-  return { kind: "SubscriptExpression", list, index, type: list.type.replace("[", "").replace("]", "") };
+  console.log("list in subscriptExpression", list, "index", index);
+  return { kind: "SubscriptExpression", list, index, type: list.type.baseType };
 }
 
 export function call(callee, args) {
