@@ -1,8 +1,9 @@
 
 matter Coffee {
-    init(roast: int, name: string, seasonal: boolean?) {
+    init(roast: int, name: string, origin: string?, seasonal: boolean?) {
         ye.roast = roast + 2;
         ye.name = name;
+        ye.origin = zilch string;
         ye.seasonal = seasonal;
     }
 
@@ -10,10 +11,12 @@ matter Coffee {
         proclaim("This coffee is called ${ye.name} and it is a ${ye.roast}.");
     }
 
-    don isSeasonal() -> string {
-        return "hello world";
-       ~ need to implement null coalescing operator
-       ~ return this.seasonal?.asString() ?? “Not specified”;
+    don countryOfOrigin() -> string? {
+        return ye?.origin ?? "unknown";
+    }
+
+    don isSeasonal() -> boolean? {
+        return ye?.seasonal ?? shant;
     }
 
 }

@@ -32,7 +32,10 @@ const semanticChecks = [
   ],
   ["short loop", "thine num: int = 10; whilst num > 5 { num = num/2; }"],
   ["short for loop", "fortill 5 { proclaim(1); }"],
-  ["for in loop", `thine coins: [string] = ["dollar", "fifty cents", "twenty cents"]; fortill coin in coins { proclaim("Thee hath the following coins"); proclaim(coin); } `],
+  [
+    "for in loop",
+    `thine coins: [string] = ["dollar", "fifty cents", "twenty cents"]; fortill coin in coins { proclaim("Thee hath the following coins"); proclaim(coin); } `,
+  ],
   ["range loop", `fortill i in 3...10 { proclaim("writing"); }`],
   ["ternary with ints", `thine num: int = 5; proclaim(num == 5 ? "it is" : "it is not"); `],
   [
@@ -91,7 +94,7 @@ const semanticChecks = [
     "checking if field exists",
     `matter Car {
       init (color: string, model: string, year: int) {
-        ye.color = color; 
+        ye.color = color;
         ye.model = model;
         ye.year = year;
       }
@@ -101,6 +104,21 @@ const semanticChecks = [
       }
     }
     `,
+  ],
+  [
+    "checking if optional member in class",
+    `matter Coffee {
+      init(roast: int, name: string, origin: string?, seasonal: boolean?) {
+          ye.roast = roast + 2;
+          ye.name = name;
+          ye.origin = zilch string;
+          ye.seasonal = seasonal;
+      }
+
+      don countryOfOrigin() -> string? {
+          return ye?.origin ?? "unknown";
+      }
+    }`,
   ],
   //TO ADD: optional member check for classes in initializer
   //TO ADD: optional member check for classes when called
@@ -125,7 +143,7 @@ const semanticErrors = [
     }
     thine car: Car = Car(color: "blue", model: "ford", year: 2025);
     car.refuel();
-    `, 
+    `,
     ///Object type car does not have a field refuel()/
   ],
   [
@@ -138,7 +156,7 @@ const semanticErrors = [
     }
     thine car: Car = Car(color: "blue", model: "ford", year: 2025);
     proclaim("This car is of make \${car.make}.");
-    `, 
+    `,
     ///Object type car does not have a field make/
   ],
   [
@@ -151,7 +169,7 @@ const semanticErrors = [
     }
     thine car: Car = Car(color: "blue", model: "ford", year: 2025);
     proclaim("This car is of make \${ye.make}.");
-    `, 
+    `,
   ],
   ["assigning to a constant", "fact x: int = 1; x = 5;"],
 ];

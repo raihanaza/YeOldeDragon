@@ -41,7 +41,7 @@ export default function analyze(match) {
 
   //utility functions
   function checkNotDeclared(name, at) {
-    context.lookup
+    context.lookup;
     check(!context.lookup(name), `Identifier ${name} already declared`, at);
   }
 
@@ -58,17 +58,9 @@ export default function analyze(match) {
     check(e.type === core.intType, `Expected int type but got ${e.type.name}`, at);
   }
 
-  // function checkHasFloatType(e, at) {
-  //   check(e.type === core.floatType, `Expected float type but got ${e.type.name}`, at);
-  // }
-
   function checkHasBoolenType(e, at) {
     check(e.type === core.booleanType, `Expected boolean type but got ${e.type.name}`, at);
   }
-
-  // function checkHasStringType(e, at) {
-  //   check(e.type === core.stringType, `Expected string type but got ${e.type.name}`, at);
-  // }
 
   function checkHasListType(e, at) {
     check((e.type.kind === "ListType", `Expected list type but got ${e.type.name}`, at));
@@ -82,34 +74,18 @@ export default function analyze(match) {
     check(e.type.kind === "OptionalType", `Expected optional type but got ${e.type.name}`, at);
   }
 
-  // function checkHasFunctionType(e, at) {
-  //   check(e.type.kind === "FunctionType", `Expected function type but got ${e.type.name}`, at);
-  // }
-
-  // function checkIsStringOrNumericType(e, at) {
-  //   const expectedTypes = [core.intType, core.floatType, core.stringType];
-  //   check(expectedTypes.includes(e.type), `Expected string or numeric type but got ${e.type.name}`, at);
-  // }
-
-  function checkHasOptionalObjectType(e, field, at) {
+  function checkHasOptionalObjectType(e, at) {
+    console.log("e", e);
     check(
-      e.type?.kind === "OptionalType" && e.type.baseType?.kind === "ObjectType",
+      e.type?.kind === "OptionalType" && (e.kind === "Field" || e.type.baseType?.kind === "ObjectType"),
       `Expected an optional object but got ${e.type.name}`,
-      at
+      { at: at }
     );
   }
 
   function checkHasObjectType(e, at) {
     check(e.type?.kind === "ObjectType", `Expected an object type but got ${e.type.name}`, at);
   }
-
-  // function checkHasFieldType(e, at) {
-  //   check(e.type?.kind === "Field", `Expected a field type but got ${e.type.name}`, at);
-  // }
-
-  // function checkIsMutable(e, at) {
-  //   check(isMutable(e), `Cannot assign to immutable variable ${e.name}`, at);
-  // }
 
   function checkBothSameType(e1, e2, at) {
     check(e1.type === e2.type, `Operands must have the same type`, at);
@@ -123,12 +99,6 @@ export default function analyze(match) {
       }
     }
   }
-
-  // function checkIsType(e, at) {
-  //   const isBasicType = /int|float|string|boolean|void|any|zilch/.test(e.name);
-  //   const isCompositeType = /ObjectType|FunctionType|ListType|OptionalType/.test(e?.kind);
-  //   check(isBasicType || isCompositeType, "Type expected", at);
-  // }
 
   function includesAsField(objectType, type) {
     return objectType.fields.some(
@@ -154,7 +124,6 @@ export default function analyze(match) {
   }
 
   function assignable(fromType, toType) {
-    // console.log("**in assignable** FROM: ", fromType, "TO: ", toType);
     return (
       toType === core.anyType ||
       equivalent(fromType, toType) ||
@@ -169,32 +138,26 @@ export default function analyze(match) {
   }
 
   function typeDescription(type) {
-    // console.log("type in typeDescription", type);
     if (typeof type === "string") return type;
     if (type.kind == "ObjectType") return type.name;
-    // if (type.kind == "FunctionType") {
-    //   const paramTypes = type.paramTypes.map(typeDescription).join(", ");
-    //   const returnType = typeDescription(type.returnType);
-    //   return `(${paramTypes})->${returnType}`;
-    // }
+    if (type.kind == "FunctionType") {
+      const paramTypes = type.paramTypes.map(typeDescription).join(", ");
+      const returnType = typeDescription(type.returnType);
+      return `(${paramTypes})->${returnType}`;
+    }
     if (type.kind == "ListType") return `[${typeDescription(type.baseType)}]`;
     if (type.kind == "OptionalType") return `${typeDescription(type.baseType)}?`;
   }
 
   // TODO: still need to work on throwing error if missing arg name?
   function checkArgNameMatchesParam(e, name, at) {
-    // console.log("**in checkArgNameMatchesParam** e: ", e, "name: ", name);
     check(assignable(e.name, name), `Cannot assign ${e.name} to ${name}`, at);
   }
 
   function checkIsAssignable(e, targetType, at) {
-    // console.log("**in checkIsAssignable** e: ", e.type, "target: ", targetType);
-    // console.log("E: ", e)
-    // console.log("TARGET TYPE: ", targetType)
     const source = typeDescription(e.type);
     const target = typeDescription(targetType);
     const message = `Cannot assign a ${source} to a ${target}`;
-    // console.log("**in checkIsAssignable** source: ", source, "target: ", target);
     check(assignable(e.type, targetType), message, { at: at });
   }
 
@@ -256,6 +219,16 @@ export default function analyze(match) {
 
   function checkArgumentCount(argCount, paramCount, at) {
     check(argCount === paramCount, `Expected ${paramCount} arguments but got ${argCount}`, at);
+  }
+
+  function checkAllFieldsInitialized(fields, initialValues, at) {
+    const fieldNames = fields.map((f) => f.name);
+    const initialValueNames = initialValues.map((f) => f.target);
+    check(
+      fieldNames.every((name) => initialValueNames.includes(name)),
+      `Not all fields have been initialized`,
+      at
+    );
   }
 
   function checkIfReturnable(e, { from: f }, at) {
@@ -353,6 +326,8 @@ export default function analyze(match) {
       context = context.newChildContext({ inLoop: false });
       classInit.fields = targetFields;
       const initialValues = fieldInitBlock.analyze();
+      console.log("initialValues", initialValues);
+      checkAllFieldsInitialized(classInit.fields, initialValues, { at: fields });
       classInit.fields.map((field) => {
         field.value = initialValues.find((f) => f.target === field.name).source;
       });
@@ -556,7 +531,7 @@ export default function analyze(match) {
     Exp1_nilcoalescing(exp1, elseOp, exp2) {
       const [optional, op, alternate] = [exp1.analyze(), elseOp.sourceString, exp2.analyze()];
       checkHasOptionalType(optional, exp1);
-      checkIsAssignable(alternate, optional.type.baseType, exp2);
+      checkIsAssignable(alternate, optional.type.baseType, { at: exp2 });
       return core.nilCoalescingExpression(op, optional, alternate, optional.type);
     },
 
@@ -667,6 +642,14 @@ export default function analyze(match) {
         checkClassFieldExists(id, { at: exp });
         const object = context.lookup(id.sourceString);
         let objectType;
+        //  if (exp.kind === "Field") {
+        //    checkInClassDecl({ at: exp });
+        //    objectType = context.classDecl.fields.find((f) => f.name === id.sourceString).type;
+        //    console.log("objectType", objectType);
+        //    checkHasOptionalObjectType(object, exp);
+        //  } else {
+        //    checkHasOptionalObjectType(object, exp);
+        //  }
         if (dot.sourceString === "?.") {
           // TODO: need to implement optionals checks
           checkHasOptionalObjectType(object, exp);
@@ -681,13 +664,12 @@ export default function analyze(match) {
         let objectType;
         if (dot.sourceString === "?.") {
           checkHasOptionalObjectType(object, exp);
-          console.log("OBJECT TYPE:", object)
+          console.log("OBJECT TYPE:", object);
           objectType = object.type.baseType;
         } else {
           checkHasObjectType(object, exp);
           objectType = object.type;
         }
-        // console.log("***objectType***", objectType);
         checkHasMember(objectType, id.sourceString, id);
         const field = objectType.fields.find((f) => f.name === id.sourceString);
         return core.memberExpression(object, dot.sourceString, field);
