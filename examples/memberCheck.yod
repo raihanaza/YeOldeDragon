@@ -1,0 +1,9 @@
+matter Car {
+      init (color: string, model: string, year: int) {
+        ye.color = color;
+        ye.model = model;
+        ye.year = year;
+      }
+}
+thine car: Car = Car(color: "blue", model: "ford", year: 2025);
+~proclaim("This car is a \${car.model} in the color \${car.color}.");

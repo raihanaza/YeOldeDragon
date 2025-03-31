@@ -5,7 +5,6 @@ YeOldeDragon {
               | FuncDecl
               | StructDecl
               | ClassDecl
-              // | Exp7_member ";"                                                   --member
               | Exp7_call ";"                                                        --call
               | Exp7 ("++"|"--") ";"										--incdec
               | Exp7 "=" Exp0 ";"											--assign
@@ -18,7 +17,7 @@ YeOldeDragon {
     PrintStmt = proclaim Exp0 ";"
     VarDecl = (thine | fact) id ":" Type "=" Exp0 ";"
     StructDecl = matter id "{" Field* "}"
-    
+
     Block = "{" Statement* "}"
     BreakStmt = breaketh ";"
     Params      = "(" ListOf<Param, ","> ")"
@@ -26,7 +25,7 @@ YeOldeDragon {
     FuncDecl    = don id Params "->" Type Block
     Arg         = id ":" Exp0
 
-    
+
     // how to do default parameters? how to require users to initialize parameters in Block?
     ClassDecl = matter id "{" ClassInit Methods "}"
     ClassInit = init Fields FieldInitBlock
@@ -71,6 +70,7 @@ YeOldeDragon {
          | shant ~mut
          | floatLiteral ~mut
          | intLiteral ~mut
+         | zilch Type ~mut                                                  --zilch
          | Exp7 "(" ListOf<Arg, ","> ")" ~mut                               --call
          | Exp7 "[" Exp0 "]"                                                --subscript
          | (ye | Exp7) ("." | "?.") id                                      --member
@@ -104,11 +104,12 @@ YeOldeDragon {
     shant = "shant" ~idchar
     ne = "ne" ~idchar
     ye = "ye" ~idchar
+    zilch = "zilch" ~idchar
 
     id = ~keyword letter idchar*
     keyword = proclaim | thine | fact | fortill | whilst | perchance | else | don
             | matter | init | changeth | spell | defaulte | shall | shant | in | return
-            | breaketh | ne | ye
+            | breaketh | ne | ye | zilch
     idchar = letter | digit | "_"
     numeral = digit+ ("." digit+)? (("E"|"e") ("+"|"-")? digit+)?
 

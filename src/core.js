@@ -87,8 +87,8 @@ export function ternaryExpression(op, consequence, alternate) {
   return { kind: "TernaryExpression", op, consequence, alternate, type: consequence.type };
 }
 
-export function nilCoalescingExpression(left, right) {
-  return { kind: "NilCoalescingExpression", left, right, type: left.type };
+export function nilCoalescingExpression(op, left, right, type) {
+  return { kind: "NilCoalescingExpression", op, left, right, type };
 }
 
 export function ifStatement(condition, consequence, alternate) {
@@ -131,8 +131,8 @@ export function optionalType(baseType) {
   return { kind: "OptionalType", baseType };
 }
 
-export function listType(type) {
-  return { kind: "ListType", type };
+export function listType(baseType) {
+  return { kind: "ListType", baseType };
 }
 
 export function emptyListType(type) {
@@ -148,8 +148,7 @@ export function emptyListExpression(type) {
 }
 
 export function subscriptExpression(list, index) {
-  //TODO: revisit this type if there's a better way to do it
-  return { kind: "SubscriptExpression", list, index, type: list.type.replace("[", "").replace("]", "") };
+  return { kind: "SubscriptExpression", list, index, type: list.type.baseType };
 }
 
 export function call(callee, args) {
@@ -174,8 +173,8 @@ export function objectDefinition(name, fields, methods) {
   return { kind: "ObjectDefinition", name, fields, methods };
 }
 
-export function objectCall(callee, args) {
-  return { kind: "ObjectCall", callee, args, type: callee.type.returnType };
+export function objectCall(callee, args, type) {
+  return { kind: "ObjectCall", callee, args, type };
 }
 
 export function memberExpression(object, op, field) {
@@ -200,6 +199,7 @@ export const booleanType = "boolean";
 export const floatType = "float";
 export const intType = "int";
 export const stringType = "string";
+export const zilchType = "zilch";
 
 const floatToFloatType = functionType([floatType], floatType);
 const anyToVoidType = functionType([anyType], voidType);
@@ -212,6 +212,7 @@ export const standardLibrary = Object.freeze({
   boolean: booleanType,
   void: voidType,
   any: anyType,
+  zilch: zilchType,
   π: variable("π", false, floatType),
   proclaim: intrinsicFunction("proclaim", anyToVoidType),
   exp: intrinsicFunction("exp", floatToFloatType),
@@ -227,4 +228,3 @@ String.prototype.type = stringType;
 Number.prototype.type = floatType;
 BigInt.prototype.type = intType;
 Boolean.prototype.type = booleanType;
-
