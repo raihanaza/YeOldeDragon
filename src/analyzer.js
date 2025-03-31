@@ -136,11 +136,11 @@ export default function analyze(match) {
     }
   }
 
-  function checkIsType(e, at) {
-    const isBasicType = /int|float|string|boolean|void|any/.test(e.name);
-    const isCompositeType = /ObjectType|FunctionType|ListType|OptionalType/.test(e?.kind);
-    check(isBasicType || isCompositeType, "Type expected", at);
-  }
+  // function checkIsType(e, at) {
+  //   const isBasicType = /int|float|string|boolean|void|any/.test(e.name);
+  //   const isCompositeType = /ObjectType|FunctionType|ListType|OptionalType/.test(e?.kind);
+  //   check(isBasicType || isCompositeType, "Type expected", at);
+  // }
 
   function includesAsField(objectType, type) {
     return objectType.fields.some(
@@ -157,12 +157,13 @@ export default function analyze(match) {
     return (
       t1 === t2 ||
       (t1?.kind === "OptionalType" && t2?.kind == "OptionalType" && equivalent(t1.type, t2.type)) ||
-      (t1?.kind === "ListType" && t2?.kind === "ListType" && equivalent(t1.type, t2.type)) ||
-      (t1?.kind === "FunctionType" &&
-        t2?.kind === "FunctionType" &&
-        equivalent(t1.returnType === t2.returnType) &&
-        t1.paramTypes.length === t2.paramTypes.length &&
-        t1.paramTypes.every((t, i) => equivalent(t, t2.paramTypes[i])))
+      (t1?.kind === "ListType" && t2?.kind === "ListType" && equivalent(t1.type, t2.type)) 
+      // ||
+      // (t1?.kind === "FunctionType" &&
+      //   t2?.kind === "FunctionType" &&
+      //   equivalent(t1.returnType === t2.returnType) &&
+      //   t1.paramTypes.length === t2.paramTypes.length &&
+      //   t1.paramTypes.every((t, i) => equivalent(t, t2.paramTypes[i])))
     );
   }
 
@@ -182,7 +183,7 @@ export default function analyze(match) {
   }
 
   function typeDescription(type) {
-    console.log("type.kind in typedescription", type);
+    console.log("type in typedescription", type);
     if (typeof type === "string") return type;
     if (type.kind == "ObjectType") return type.name;
     if (type.kind == "FunctionType") {
@@ -201,9 +202,10 @@ export default function analyze(match) {
 
   function checkIsAssignable(e, targetType, at) {
     console.log("**checkIsAssignable** **e**", e, "e.type", e.type, "**target**", targetType);
+    console.log("**try to check source**", e.type);
     const source = typeDescription(e.type);
-    console.log("***trying to check target****");
-    console.log("targetType", targetType, "targetType.kind", targetType.kind);
+    console.log("***trying to check target****", targetType);
+    console.log("targetType", targetType);
     const target = typeDescription(targetType);
     const message = `Cannot assign a ${source} to a ${target}`;
     check(assignable(e.type, targetType), message, at);
@@ -319,7 +321,7 @@ export default function analyze(match) {
       return core.printStatement(exp.analyze());
     },
 
-    TypeDecl(_matter, id, _left, fields, _right) {
+    StructDecl(_matter, id, _left, fields, _right) {
       checkNotDeclared(id.sourceString, { at: id });
       // To allow recursion, enter into context without any fields yet
       const type = core.objectType(id.sourceString, []);
@@ -363,11 +365,11 @@ export default function analyze(match) {
       context = context.newChildContext({ inLoop: false });
       classInit.fields = targetFields;
       const initialValues = fieldInitBlock.analyze();
-      console.log("classInit.initialValues", initialValues);
+      // console.log("classInit.initialValues", initialValues);
       classInit.fields.map((field) => {
         field.value = initialValues.find((f) => f.target === field.name).source;
       });
-      console.log("classInit.fields", classInit.fields);
+      // console.log("classInit.fields", classInit.fields);
       context = context.parent;
       return classInit;
     },
@@ -394,7 +396,7 @@ export default function analyze(match) {
         const fieldInitTarget = context.lookup(fieldInit.target);
         checkHasBeenDeclared(fieldInit, fieldInit, { at: exp });
         // TODO: need to make sure that pass the type correctly for OptionalType
-        console.log("in fieldInitBlock checking if assignable");
+        // console.log("in fieldInitBlock checking if assignable");
         checkIsAssignable(fieldInit.source, fieldInitTarget.type, { at: exp });
         // TODO: need to check that EVERY field has been initialized
         checkArgNameMatchesParam(fieldInit, fieldInit, { at: exp });
@@ -450,6 +452,10 @@ export default function analyze(match) {
       checkInFunction(returnKeyword);
       checkReturnsNothing(context.function, returnKeyword);
       return core.shortReturnStatement();
+    },
+
+    Statement_call(call, _semicolon) {
+      return call.analyze();
     },
 
     IfStmt_long(_if, exp, block1, _else, block2) {
@@ -651,6 +657,7 @@ export default function analyze(match) {
     },
 
     Exp7_call(exp, open, argList, _close) {
+      console.log("Exp7_call", exp.sourceString);
       const callee = exp.analyze();
       checkIsCallable(callee, { at: exp });
       const exps = argList.asIteration().children;
@@ -661,7 +668,7 @@ export default function analyze(match) {
       checkArgumentCount(exps.length, targetTypes.length, { at: open });
       const args = exps.map((exp, i) => {
         const arg = exp.analyze();
-        checkIsAssignable(arg, { toType: targetTypes[i] }, { at: exp });
+        checkIsAssignable(arg, targetTypes[i], { at: exp });
         checkArgNameMatchesParam(arg, { toName: targetParamNames[i] }, { at: exp });
         return arg;
       });
@@ -704,6 +711,7 @@ export default function analyze(match) {
           objectType = object.type;
         }
         checkHasMember(objectType, id.sourceString, id);
+        console.log("FIELD: ", objectType.fields)
         const field = objectType.fields.find((f) => f.name === id.sourceString);
         return core.memberExpression(object, dot.sourceString, field);
       }
