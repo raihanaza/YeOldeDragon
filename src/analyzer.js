@@ -200,7 +200,7 @@ export default function analyze(match) {
     const target = typeDescription(targetType);
     const message = `Cannot assign a ${source} to a ${target}`;
     console.log("**in checkIsAssignable** source: ", source, "target: ", target);
-    check(assignable(source, target), message, { at: at });
+    check(assignable(e.type, targetType), message, { at: at });
   }
 
   function isMutable(e) {
@@ -276,12 +276,14 @@ export default function analyze(match) {
     VarDecl(qualifier, id, _colon, type, _eq, exp, _semi) {
       checkNotDeclared(id.sourceString, id);
       const mutable = qualifier.sourceString === "thine";
-      const targetType = type.analyze();
+      let targetType = type.analyze();
       const variable = core.variable(id.sourceString, targetType, mutable);
       const initialValue = exp.analyze();
       console.log("initialvalue.type", initialValue.type);
-
-      console.log("**in VarDecl** initialValue: ", initialValue, "targetType: ", targetType);
+      console.log("targetType", targetType);
+      if (targetType.kind === "ObjectType") {
+        targetType = targetType.name;
+      }
       checkIsAssignable(initialValue, targetType, exp);
       context.add(id.sourceString, variable);
       if (mutable) {
