@@ -144,12 +144,13 @@ export default function analyze(match) {
     return (
       t1 === t2 ||
       (t1?.kind === "OptionalType" && t2?.kind == "OptionalType" && equivalent(t1.type, t2.type)) ||
-      (t1?.kind === "ListType" && t2?.kind === "ListType" && equivalent(t1.type, t2.type)) ||
-      (t1?.kind === "FunctionType" &&
-        t2?.kind === "FunctionType" &&
-        equivalent(t1.returnType === t2.returnType) &&
-        t1.paramTypes.length === t2.paramTypes.length &&
-        t1.paramTypes.every((t, i) => equivalent(t, t2.paramTypes[i])))
+      (t1?.kind === "ListType" && t2?.kind === "ListType" && equivalent(t1.type, t2.type))
+      // ||
+      // (t1?.kind === "FunctionType" &&
+      //   t2?.kind === "FunctionType" &&
+      //   equivalent(t1.returnType === t2.returnType) &&
+      //   t1.paramTypes.length === t2.paramTypes.length &&
+      //   t1.paramTypes.every((t, i) => equivalent(t, t2.paramTypes[i])))
     );
   }
 
@@ -300,7 +301,7 @@ export default function analyze(match) {
       return core.printStatement(exp.analyze());
     },
 
-    TypeDecl(_matter, id, _left, fields, _right) {
+    StructDecl(_matter, id, _left, fields, _right) {
       checkNotDeclared(id.sourceString, { at: id });
       // To allow recursion, enter into context without any fields yet
       const type = core.objectType(id.sourceString, []);
@@ -379,14 +380,30 @@ export default function analyze(match) {
       return initializations;
     },
 
-    Statement_incdec(exp, incDec, _semi) {
-      const variable = exp.analyze();
-      checkHasNumericType(variable, exp);
-      if (incDec.sourceString === "++") {
-        return core.incrementStatement(variable);
-      } else if (incDec.sourceString === "--") {
-        return core.decrementStatement(variable);
-      }
+    // Statement_call(exp, _open, argList, _close, _semi) {
+    //   const callee = exp.analyze();
+    //   checkIsCallable(callee, { at: exp });
+    //   const exps = argList.asIteration().children;
+    //   // TODO: what to do when an objectType? Do we currently store the name of attribute for object?
+    //   const targetParamNames =
+    //     callee?.kind === "ObjectType" ? callee.fields.map((f) => f.type) : callee.type.paramNames;
+    //   const targetTypes = callee?.kind === "ObjectType" ? callee.fields.map((f) => f.type) : callee.type.paramTypes;
+    //   checkArgumentCount(exps.length, targetTypes.length, { at: open });
+    //   const args = exps.map((exp, i) => {
+    //     const arg = exp.analyze();
+    //     checkIsAssignable(arg, { toType: targetTypes[i] }, { at: exp });
+    //     checkArgNameMatchesParam(arg, { toName: targetParamNames[i] }, { at: exp });
+    //     return arg;
+    //   });
+    //   return callee?.kind === "ObjectType" ? core.objectCall(callee, args) : core.functionCall(callee, args);
+    // },
+
+    Statement_incdec(id, op, _semi) {
+      const variable = id.analyze();
+      checkHasNumericType(variable, id)
+      //TODO: check if there's a cleaner way to check this
+      if (op.sourceString === "++") { return core.incrementStatement(variable); }
+      if (op.sourceString === "--") { return core.decrementStatement(variable); }
     },
 
     Statement_assign(variable, _eq, exp, _semi) {
@@ -664,6 +681,7 @@ export default function analyze(match) {
           objectType = object.type;
         }
         checkHasMember(objectType, id.sourceString, id);
+        console.log("FIELD: ", objectType.fields)
         const field = objectType.fields.find((f) => f.name === id.sourceString);
         return core.memberExpression(object, dot.sourceString, field);
       }
@@ -710,9 +728,9 @@ export default function analyze(match) {
       return BigInt(this.sourceString);
     },
 
-    lit(_chars) {
-      return this.sourceString;
-    },
+    // lit(_chars) {
+    //   return this.sourceString;
+    // },
 
     String(_openQuote, firstLit, interps, restOfLits, _closeQuote) {
       const litText1 = firstLit.sourceString;
