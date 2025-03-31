@@ -15,7 +15,7 @@ const semanticChecks = [
   ["empty function", "don addNums(num1: int, num2: int) -> int { return (num1 + num2); } "],
   ["function declaration", "don incrementFunction(num: int) -> int { num++; return num; }"],
   ["function call", `don incNum(num: int) -> int { num++; return num; } incNum(num: 5);`],
-//   //TODO: add function call 
+//   //TODO: add function call
   ["increment statement", "thine x: int = 1; x++;"],
   ["decrement statement", "thine x: float = 3.1; x--;"],
   ["assignment statement", "thine testvar: int = 2; testvar = 1;"],
@@ -45,7 +45,7 @@ const semanticChecks = [
   //types
   ["struct declaration", `matter Person { name: string age: int }`],
   ["class declaration", `matter car { init (make: string, model: string, year: int) { ye.make = make; ye.model = model; ye.year = year; } }`],
-  // ["member check", `matter car { init (color: string, model: string, year: int) { ye.color = color; ye.model = model; ye.year = year; } } proclaim("This car is a \${car.model} in the color \${car.color}.");`],
+  ["member check", `matter car { init (color: string, model: string, year: int) { ye.color = color; ye.model = model; ye.year = year; } } proclaim("This car is a \${car.model} in the color \${car.color}.");`],
   ["empty return", `don addNums(a: int, b: int) -> void { perchance (a + b) > 5 { return; }}`],
   ["string interpolation", `thine bankBalance: int = 5234; proclaim("Your current balance is \${bankBalance}. This is the end of your transaction.");`],
 ];

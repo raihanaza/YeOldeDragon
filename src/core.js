@@ -173,8 +173,8 @@ export function objectDefinition(name, fields, methods) {
   return { kind: "ObjectDefinition", name, fields, methods };
 }
 
-export function objectCall(callee, args) {
-  return { kind: "ObjectCall", callee, args, type: callee.type.returnType };
+export function objectCall(callee, args, type) {
+  return { kind: "ObjectCall", callee, args, type };
 }
 
 export function memberExpression(object, op, field) {

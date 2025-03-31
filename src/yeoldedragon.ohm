@@ -5,7 +5,6 @@ YeOldeDragon {
               | FuncDecl
               | StructDecl
               | ClassDecl
-              // | Exp7_member ";"                                                   --member
               | Exp7_call ";"                                                        --call
               | Exp7 ("++"|"--") ";"										--incdec
               | Exp7 "=" Exp0 ";"											--assign
@@ -18,7 +17,7 @@ YeOldeDragon {
     PrintStmt = proclaim Exp0 ";"
     VarDecl = (thine | fact) id ":" Type "=" Exp0 ";"
     StructDecl = matter id "{" Field* "}"
-    
+
     Block = "{" Statement* "}"
     BreakStmt = breaketh ";"
     Params      = "(" ListOf<Param, ","> ")"
@@ -26,7 +25,7 @@ YeOldeDragon {
     FuncDecl    = don id Params "->" Type Block
     Arg         = id ":" Exp0
 
-    
+
     // how to do default parameters? how to require users to initialize parameters in Block?
     ClassDecl = matter id "{" ClassInit Methods "}"
     ClassInit = init Fields FieldInitBlock

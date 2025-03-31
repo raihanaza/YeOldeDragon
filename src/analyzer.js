@@ -140,21 +140,27 @@ export default function analyze(match) {
     check(!selfContaining, `Object type ${objectType.name} cannot contain itself`, at);
   }
 
+  function checkArgIsAField(argName, fieldNames, at) {
+    console.log("argName", argName, "fieldNames", fieldNames);
+    check(fieldNames.includes(argName), `Argument ${argName} not found in Object Fields`, at);
+  }
+
   function equivalent(t1, t2) {
+    console.log(
+      "equivalent run",
+      t1 === t2 ||
+        (t1?.kind === "OptionalType" && t2?.kind == "OptionalType" && equivalent(t1.type, t2.type)) ||
+        (t1?.kind === "ListType" && t2?.kind === "ListType" && equivalent(t1.type, t2.type))
+    );
     return (
       t1 === t2 ||
       (t1?.kind === "OptionalType" && t2?.kind == "OptionalType" && equivalent(t1.type, t2.type)) ||
       (t1?.kind === "ListType" && t2?.kind === "ListType" && equivalent(t1.type, t2.type))
-      // ||
-      // (t1?.kind === "FunctionType" &&
-      //   t2?.kind === "FunctionType" &&
-      //   equivalent(t1.returnType === t2.returnType) &&
-      //   t1.paramTypes.length === t2.paramTypes.length &&
-      //   t1.paramTypes.every((t, i) => equivalent(t, t2.paramTypes[i])))
     );
   }
 
   function assignable(fromType, toType) {
+    console.log("**in assignable** FROM: ", fromType, "TO: ", toType);
     return (
       toType === core.anyType ||
       equivalent(fromType, toType) ||
@@ -169,6 +175,7 @@ export default function analyze(match) {
   }
 
   function typeDescription(type) {
+    console.log("type in typeDescription", type);
     if (typeof type === "string") return type;
     if (type.kind == "ObjectType") return type.name;
     if (type.kind == "FunctionType") {
@@ -181,15 +188,19 @@ export default function analyze(match) {
   }
 
   // TODO: still need to work on throwing error if missing arg name?
-  function checkArgNameMatchesParam(e, { toName: name }, at) {
+  function checkArgNameMatchesParam(e, name, at) {
+    console.log("**in checkArgNameMatchesParam** e: ", e, "name: ", name);
     check(assignable(e.name, name), `Cannot assign ${e.name} to ${name}`, at);
   }
 
   function checkIsAssignable(e, targetType, at) {
+    console.log("**in checkIsAssignable** e: ", e.type, "target: ", targetType);
+
     const source = typeDescription(e.type);
     const target = typeDescription(targetType);
     const message = `Cannot assign a ${source} to a ${target}`;
-    check(assignable(e.type, targetType), message, at);
+    console.log("**in checkIsAssignable** source: ", source, "target: ", target);
+    check(assignable(source, target), message, { at: at });
   }
 
   function isMutable(e) {
@@ -268,6 +279,9 @@ export default function analyze(match) {
       const targetType = type.analyze();
       const variable = core.variable(id.sourceString, targetType, mutable);
       const initialValue = exp.analyze();
+      console.log("initialvalue.type", initialValue.type);
+
+      console.log("**in VarDecl** initialValue: ", initialValue, "targetType: ", targetType);
       checkIsAssignable(initialValue, targetType, exp);
       context.add(id.sourceString, variable);
       if (mutable) {
@@ -380,30 +394,16 @@ export default function analyze(match) {
       return initializations;
     },
 
-    // Statement_call(exp, _open, argList, _close, _semi) {
-    //   const callee = exp.analyze();
-    //   checkIsCallable(callee, { at: exp });
-    //   const exps = argList.asIteration().children;
-    //   // TODO: what to do when an objectType? Do we currently store the name of attribute for object?
-    //   const targetParamNames =
-    //     callee?.kind === "ObjectType" ? callee.fields.map((f) => f.type) : callee.type.paramNames;
-    //   const targetTypes = callee?.kind === "ObjectType" ? callee.fields.map((f) => f.type) : callee.type.paramTypes;
-    //   checkArgumentCount(exps.length, targetTypes.length, { at: open });
-    //   const args = exps.map((exp, i) => {
-    //     const arg = exp.analyze();
-    //     checkIsAssignable(arg, { toType: targetTypes[i] }, { at: exp });
-    //     checkArgNameMatchesParam(arg, { toName: targetParamNames[i] }, { at: exp });
-    //     return arg;
-    //   });
-    //   return callee?.kind === "ObjectType" ? core.objectCall(callee, args) : core.functionCall(callee, args);
-    // },
-
     Statement_incdec(id, op, _semi) {
       const variable = id.analyze();
-      checkHasNumericType(variable, id)
+      checkHasNumericType(variable, id);
       //TODO: check if there's a cleaner way to check this
-      if (op.sourceString === "++") { return core.incrementStatement(variable); }
-      if (op.sourceString === "--") { return core.decrementStatement(variable); }
+      if (op.sourceString === "++") {
+        return core.incrementStatement(variable);
+      }
+      if (op.sourceString === "--") {
+        return core.decrementStatement(variable);
+      }
     },
 
     Statement_assign(variable, _eq, exp, _semi) {
@@ -632,20 +632,40 @@ export default function analyze(match) {
 
     Exp7_call(exp, open, argList, _close) {
       const callee = exp.analyze();
+      console.log("***callee***", callee);
       checkIsCallable(callee, { at: exp });
       const exps = argList.asIteration().children;
       // TODO: what to do when an objectType? Do we currently store the name of attribute for object?
+      console.log(
+        "callee.fields",
+        callee.fields,
+        callee.fields.map((f) => f.name)
+      );
       const targetParamNames =
-        callee?.kind === "ObjectType" ? callee.fields.map((f) => f.type) : callee.type.paramNames;
+        callee?.kind === "ObjectType" ? callee.fields.map((f) => f.name) : callee.type.paramNames;
       const targetTypes = callee?.kind === "ObjectType" ? callee.fields.map((f) => f.type) : callee.type.paramTypes;
+      console.log("targetTypes", targetTypes);
+      console.log("targetParamNames", targetParamNames);
       checkArgumentCount(exps.length, targetTypes.length, { at: open });
+      //console.log("callee", callee)
       const args = exps.map((exp, i) => {
         const arg = exp.analyze();
-        checkIsAssignable(arg, targetTypes[i], { at: exp });
-        checkArgNameMatchesParam(arg, { toName: targetParamNames[i] }, { at: exp });
+        console.log("**in exp7_call: **");
+
+        if (callee?.kind === "ObjectType") {
+          checkArgIsAField(arg.name, targetParamNames, { at: exp });
+          checkIsAssignable(arg, targetTypes[i], { at: exp });
+        } else {
+          checkIsAssignable(arg, targetTypes[i], { at: exp });
+          checkIsAssignable(arg, targetParamNames[i], { at: exp });
+          //checkArgNameMatchesParam(arg, targetParamNames[i], { at: exp });
+        }
+
         return arg;
       });
-      return callee?.kind === "ObjectType" ? core.objectCall(callee, args) : core.functionCall(callee, args);
+      return callee?.kind === "ObjectType"
+        ? core.objectCall(callee, args, callee.name)
+        : core.functionCall(callee, args);
     },
 
     Exp7_subscript(exp1, _open, exp2, _close) {
@@ -680,8 +700,9 @@ export default function analyze(match) {
           checkHasObjectType(object, exp);
           objectType = object.type;
         }
+        console.log("check has member: ", objectType, id.sourceString);
         checkHasMember(objectType, id.sourceString, id);
-        console.log("FIELD: ", objectType.fields)
+        console.log("FIELD: ", objectType.fields);
         const field = objectType.fields.find((f) => f.name === id.sourceString);
         return core.memberExpression(object, dot.sourceString, field);
       }
