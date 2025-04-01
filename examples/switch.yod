@@ -1,13 +1,13 @@
-thine earnings: string = “gold coin”;
+thine earnings: string = "gold coin";
 
 changeth (earnings) {
-    spell “gold coin”:
-        console.log(“You earned a gold coin!”);
-    spell “silver coin”: 
-        console.log(“You earned a silver coin!”);
-    spell “bronze coin”: 
-        console.log(“You earned a bronze coin!”);
+    spell "gold coin":
+        console.log("You earned a gold coin!");
+    spell "silver coin":
+        console.log("You earned a silver coin!");
+    spell "bronze coin":
+        console.log("You earned a bronze coin!");
     defaulte:
-        console.log(“I’m not sure what this coin is…”);
+        console.log("I’m not sure what this coin is…");
 }
 

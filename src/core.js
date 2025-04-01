@@ -2,9 +2,9 @@ export function program(statements) {
   return { kind: "Program", statements };
 }
 
-export function block(statements) {
-  return { kind: "Block", statements };
-}
+// export function block(statements) {
+//   return { kind: "Block", statements };
+// }
 
 export function variableDeclaration(variable, initializer) {
   return { kind: "VariableDeclaration", variable, initializer };
@@ -39,20 +39,8 @@ export function functionType(paramNames, paramTypes, returnType) {
 }
 
 export function functionCall(name, args) {
-  if (name.instrinsic) {
-    if (name.type.returnType === voidType) {
-      return { kind: name.name.replace(/^\p{L}/u, (c) => c.toUpperCase()), args };
-    } else if (name.type.paramTypes.lenth === 1) {
-      return unaryExpression(name.name, args[0], name.type.returnType);
-    } else {
-      return binaryExpression(name.name, args[0], args[1], name.type.returnType);
-    }
-  }
+  // TODO: Long term add standard functions, does not have to be for the class
   return { kind: "FunctionCall", name, args };
-}
-
-export function intrinsicFunction(name, type) {
-  return { kind: "Function", name, type, intrinsic: true };
 }
 
 export function incrementStatement(variable) {
@@ -63,8 +51,8 @@ export function decrementStatement(variable) {
   return { kind: "DecrementStatement", variable };
 }
 
-export function assignmentStatement(target, source) {
-  return { kind: "AssignmentStatement", target, source };
+export function assignmentStatement(target, source, type) {
+  return { kind: "AssignmentStatement", target, source, type };
 }
 
 export function returnStatement(expression) {
@@ -84,11 +72,17 @@ export function binaryExpression(op, left, right, type) {
 }
 
 export function ternaryExpression(op, consequence, alternate) {
-  return { kind: "TernaryExpression", op, consequence, alternate, type: consequence.type };
+  return {
+    kind: "TernaryExpression",
+    op,
+    consequence,
+    alternate,
+    type: consequence.type,
+  };
 }
 
-export function nilCoalescingExpression(left, right) {
-  return { kind: "NilCoalescingExpression", left, right, type: left.type };
+export function nilCoalescingExpression(op, left, right, type) {
+  return { kind: "NilCoalescingExpression", op, left, right, type };
 }
 
 export function ifStatement(condition, consequence, alternate) {
@@ -99,12 +93,16 @@ export function shortIfStatement(condition, consequence) {
   return { kind: "ShortIfStatement", condition, consequence };
 }
 
-export function elseStatement(consequence) {
-  return { kind: "ElseStatement", consequence };
-}
+// export function elseStatement(consequence) {
+//   return { kind: "ElseStatement", consequence };
+// }
 
 export function whileStatement(condition, body) {
   return { kind: "LoopStatement", condition, body };
+}
+
+export function repeatStatement(count, body) {
+  return { kind: "RepeatStatement", count, body };
 }
 
 export function forEachStatement(iterator, collection, body) {
@@ -119,20 +117,24 @@ export function breakStatement() {
   return { kind: "BreakStatement" };
 }
 
-export function optionalType(type) {
-  return { kind: "OptionalType", type };
+export function emptyOptional(baseType) {
+  return { kind: "EmptyOptional", baseType, type: optionalType(baseType) };
 }
 
-export function listType(type) {
-  return { kind: "ListType", type };
+export function optionalType(baseType) {
+  return { kind: "OptionalType", baseType };
 }
 
-export function emptyListType(type) {
-  return { kind: "EmptyListType", type };
+export function listType(baseType) {
+  return { kind: "ListType", baseType };
 }
 
-export function listExpression(elements) {
-  return { kind: "ListExpression", elements };
+// export function emptyListType(type) {
+//   return { kind: "EmptyListType", type };
+// }
+
+export function listExpression(elements, type) {
+  return { kind: "ListExpression", elements, type };
 }
 
 export function emptyListExpression(type) {
@@ -143,9 +145,9 @@ export function subscriptExpression(list, index) {
   return { kind: "SubscriptExpression", list, index, type: list.type.baseType };
 }
 
-export function call(callee, args) {
-  return { kind: "Call", callee, args, type: callee.type.returnType };
-}
+// export function call(callee, args) {
+//   return { kind: "Call", callee, args, type: callee.type.returnType };
+// }
 
 // eventually add parent classes/superclasses as parameter for classDeclaration?
 // export function classDeclaration(name, superClass, fields, methods) {
@@ -153,36 +155,36 @@ export function classDeclaration(type) {
   return { kind: "ClassDeclaration", type };
 }
 
-export function classInitializer(fields, body) {
-  return { kind: "ClassInitializer", fields, body };
+export function classInitializer(fields) {
+  return { kind: "ClassInitializer", fields };
 }
 
 export function objectType(name, fields, methods) {
   return { kind: "ObjectType", name, fields, methods };
 }
 
-export function objectDefinition(name, fields, methods) {
-  return { kind: "ObjectDefinition", name, fields, methods };
-}
+// export function objectDefinition(name, fields, methods) {
+//   return { kind: "ObjectDefinition", name, fields, methods };
+// }
 
-export function objectCall(callee, args) {
-  return { kind: "ObjectCall", calee, args, type: callee.type.returnType };
+export function objectCall(callee, args, type) {
+  return { kind: "ObjectCall", callee, args, type };
 }
 
 export function memberExpression(object, op, field) {
   return { kind: "MemberExpression", object, op, field, type: field.type };
 }
 
-export function objectInstance(name, fields) {
-  return { kind: "ObjectInstance", name, fields };
-}
+// export function objectInstance(name, fields) {
+//   return { kind: "ObjectInstance", name, fields };
+// }
 
 export function stringExpression(strings) {
   return { kind: "StringExpression", strings, type: stringType };
 }
 
-export function field(name, type) {
-  return { kind: "Field", name, type };
+export function field(name, type, value) {
+  return { kind: "Field", name, type, value };
 }
 
 export const voidType = "void";
@@ -191,6 +193,7 @@ export const booleanType = "boolean";
 export const floatType = "float";
 export const intType = "int";
 export const stringType = "string";
+export const zilchType = "zilch";
 
 const floatToFloatType = functionType([floatType], floatType);
 const anyToVoidType = functionType([anyType], voidType);
@@ -203,15 +206,8 @@ export const standardLibrary = Object.freeze({
   boolean: booleanType,
   void: voidType,
   any: anyType,
+  zilch: zilchType,
   π: variable("π", false, floatType),
-  proclaim: intrinsicFunction("proclaim", anyToVoidType),
-  exp: intrinsicFunction("exp", floatToFloatType),
-  sin: intrinsicFunction("sin", floatToFloatType),
-  cos: intrinsicFunction("cos", floatToFloatType),
-  exp: intrinsicFunction("exp", floatToFloatType),
-  ln: intrinsicFunction("ln", floatToFloatType),
-  hypot: intrinsicFunction("hypot", floatToFloatType),
-  bytes: intrinsicFunction("bytes", stringToIntType),
 });
 
 String.prototype.type = stringType;

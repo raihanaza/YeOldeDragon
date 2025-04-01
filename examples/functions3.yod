@@ -1,0 +1,4 @@
+don incrementFunction(num: int) -> int {
+    num++;
+    return num;
+}
