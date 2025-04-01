@@ -100,7 +100,7 @@ Here are some examples, Ye Olde Dragon on the left, JavaScript on the right.
 ```
 thine coins: [string] = [“gold”, “silver”, “bronze”];
 fortill (coin in coins) {
-    proclaim(“We have a ${coin} today!”);
+    proclaim(“We have a ${coin} coin today!”);
 }
 ```
 
@@ -111,7 +111,7 @@ fortill (coin in coins) {
 let coins = [“gold”, “silver”, “bronze”];
 
 for (coin in coins) {
-    console.log(“We have a “ + coins.length + “ today!”);
+    console.log(“We have a “ + coin + “ coin today!”);
 }
 ```
 
@@ -124,7 +124,7 @@ for (coin in coins) {
 ```
 thine dragons: int = 10;
 whilst (dragons > 0) {
-    proclaim(“There are ${toString(dragons)} left in the café”);
+    proclaim(“There are still dragons left in the café”);
     dragons--;
 }
 ```
@@ -135,7 +135,7 @@ whilst (dragons > 0) {
 ```
 let dragons = 10;
 while (dragons > 0) {
-    console.log(“There are “ + dragons + “ left in the café”);
+    console.log(“There are still dragons left in the café”);
     dragons--;
 }
 ```
@@ -172,6 +172,72 @@ if (caféIsOpen == true) {
 } else {
     console.log(“Lowkey, we don’t know what happened here…”)
 }
+```
+
+</td>
+</tr>
+</table>
+
+### Function Calls
+<table>
+<tr> <th>YeOldeDragon</th><th>JavaScript</th> </tr>
+<tr>
+<td>
+
+```
+don printNum(num: int) -> int {
+    proclaim(num);
+}
+printNum(num: 5);
+```
+
+</td>
+<td>
+
+```
+function printNum(num) {
+    console.log(num);
+}
+printNum(5);
+```
+
+</td>
+</tr>
+</table>
+
+### Class Declaration
+<table>
+<tr> <th>YeOldeDragon</th><th>JavaScript</th> </tr>
+<tr>
+<td>
+
+```
+matter Car {
+    init (color: string, model: string, year: int) {
+        ye.color = color;
+        ye.model = model;
+        ye.year = year;
+    }
+}
+
+thine car: Car = Car(color: "blue", model: "ford", year: 2025);
+proclaim("This car is a ${car.model} in the color ${car.color}.");
+```
+
+</td>
+<td>
+
+```
+class Car {
+    constructor(color, model, year) {
+        this.color = color;
+        this.model = model;
+        this.year = year;
+    }
+}
+
+let car = new Car("blue", "ford", 2025);
+console.log("This car is a ${car.model} in the color ${car.color}.");
 ```
 
 </td>
