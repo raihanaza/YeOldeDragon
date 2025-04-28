@@ -286,8 +286,12 @@ export default function analyze(match) {
       return core.functionDeclaration(func);
     },
 
-    PrintStmt(_print, exp, _semi) {
-      return core.printStatement(exp.analyze());
+    PrintStmt(_print, _open, exps, _close, _semi) {
+      console.log("PRINT STATEMENT. need to make it so that can have multiple args");
+      // console.log("******exp******", exp);
+      // console.log("******exp.analyze()******", exp.analyze());
+      const expressions = exps.asIteration().children.map((exp) => exp.analyze());
+      return core.printStatement(expressions);
     },
 
     StructDecl(_matter, id, _left, fields, _right) {

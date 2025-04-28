@@ -2,7 +2,7 @@
 // accepts a program representation and returns the JavaScript translation
 // as a string.
 
-import { voidType, standardLibrary } from "./core.js";
+import { voidType, standardLibrary, printStatement } from "./core.js";
 
 export default function generate(program) {
   // When generating code for statements, we'll accumulate the lines of
@@ -36,29 +36,35 @@ export default function generate(program) {
       // already checked that we never updated a const, so let is always fine.
       output.push(`thine ${gen(d.variable)} = ${gen(d.initializer)};`)
     },
-    TypeDeclaration(d) {
-      // The only type declaration in Carlos is the struct! Becomes a JS class.
-      output.push(`class ${gen(d.type)} {`)
+    // TODO: change name from classDeclaration to typeDeclaration?
+    ClassDeclaration(d) {
+      // TODO: how to differentiate between class and struct, since both are classDeclaration?
+      output.push(`matter ${gen(d.type)} {`)
       output.push(`constructor(${d.type.fields.map(gen).join(",")}) {`)
       for (let field of d.type.fields) {
         output.push(`this[${JSON.stringify(gen(field))}] = ${gen(field)};`)
       }
+      // TODO: does this work? how to add methods to the class?
+      for (let method of d.type.methods) {
+        output.push(`this[${JSON.stringify(gen(method))}] = ${gen(method)};`)
+      }
       output.push("}")
       output.push("}")
     },
-    StructType(t) {
+    ObjectType(t) {
       return targetName(t)
     },
     Field(f) {
       return targetName(f)
     },
     FunctionDeclaration(d) {
-      output.push(`function ${gen(d.fun)}(${d.fun.params.map(gen).join(", ")}) {`)
-      d.fun.body.forEach(gen)
+      output.push(`function ${gen(d.func)}(${d.func.params.map(gen).join(", ")}) {`)
+      d.func.body.forEach(gen)
       output.push("}")
     },
     Variable(v) {
       // Standard library constants get special treatment
+      // TODO: anything left in standard library?
       if (v === standardLibrary.π) return "Math.PI"
       return targetName(v)
     },
@@ -175,8 +181,8 @@ export default function generate(program) {
     ConstructorCall(c) {
       return `new ${gen(c.callee)}(${c.args.map(gen).join(", ")})`
     },
-    Print(s) {
-      output.push(`console.log(${s.args.map(gen).join(", ")});`)
+    PrintStatement(s) {
+      output.push(`console.log(${s.expressions.map(gen).join(", ")});`)
     },
   }
 

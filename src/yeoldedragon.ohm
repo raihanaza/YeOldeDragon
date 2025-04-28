@@ -14,7 +14,7 @@ YeOldeDragon {
               | IfStmt
               | LoopStmt
 
-    PrintStmt = proclaim Exp0 ";"
+    PrintStmt = proclaim "(" ListOf<Exp0, ","> ")" ";"
     VarDecl = (thine | fact) id ":" Type "=" Exp0 ";"
     StructDecl = matter id "{" Field* "}"
 

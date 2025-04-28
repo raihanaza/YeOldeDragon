@@ -22,8 +22,8 @@ export function constantDeclaration(variable, initializer, mutable) {
   return { kind: "ConstantDeclaration", variable, initializer, mutable: false };
 }
 
-export function printStatement(expression) {
-  return { kind: "PrintStatement", expression, type: voidType };
+export function printStatement(expressions) {
+  return { kind: "PrintStatement", expressions, type: voidType };
 }
 
 export function functionDeclaration(func) {
@@ -34,13 +34,23 @@ export function func(name, params, body, type) {
   return { kind: "FunctionType", name, params, body, type };
 }
 
+export function intrinsicFunction(name, type) {
+  return { kind: "FunctionType", name, type, intrinsic: true };
+}
+
 export function functionType(paramNames, paramTypes, returnType) {
   return { kind: "FunctionType", paramNames, paramTypes, returnType };
 }
 
-export function functionCall(name, args) {
+export function functionCall(callee, args) {
   // TODO: Long term add standard functions, does not have to be for the class
-  return { kind: "FunctionCall", name, args };
+  // console.log("********functionCall called*********", callee, args);
+  // if (callee.type.intrinsic) {
+  //   if (callee.type.returnType === voidType) {
+  //     return { kind: callee.name.replace(/^\p{L}/u, (c) => c.toUpperCase()), args };
+  //   }
+  // }
+  return { kind: "FunctionCall", callee, args };
 }
 
 export function incrementStatement(variable) {
@@ -208,6 +218,7 @@ export const standardLibrary = Object.freeze({
   any: anyType,
   zilch: zilchType,
   π: variable("π", false, floatType),
+  proclaim: intrinsicFunction("proclaim", anyToVoidType),
 });
 
 String.prototype.type = stringType;
