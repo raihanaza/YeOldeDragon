@@ -2,7 +2,7 @@
 // accepts a program representation and returns the JavaScript translation
 // as a string.
 
-import { voidType, standardLibrary } from "./core.js";
+import { voidType, standardLibrary, func } from "./core.js";
 
 export default function generate(program) {
   // When generating code for statements, we'll accumulate the lines of
@@ -42,17 +42,13 @@ export default function generate(program) {
       output.push(`matter ${gen(d.type)} {`);
       output.push(`constructor(${d.type.fields.map(gen).join(",")}) {`);
       for (let field of d.type.fields) {
-        console.log("*********field called*********", field);
         output.push(`this[${JSON.stringify(gen(field))}] = ${gen(field)};`);
       }
       // TODO: does this work? how to add methods to the class?
-      console.log("*********classDeclaration called*********", d.type.methods);
+      // console.log("*********classDeclaration called*********", d.type.methods);
       if (d.type.methods) {
         for (let method of d.type.methods) {
-          console.log("*********method called*********", method);
-          console.log("stringify name", gen(method));
-          console.log("stringify body", gen(method.func));
-          // output.push(`${JSON.stringify(gen(method.func.name))} = ${gen(method)};`);
+          output.push(gen(method));
         }
       }
       output.push("}");
@@ -65,7 +61,8 @@ export default function generate(program) {
       return targetName(f);
     },
     FunctionDeclaration(d) {
-      output.push(`function ${gen(d.func)}(${d.func.params.map(gen).join(", ")}) {`);
+      const funcKeyword = d.func.isMethod ? "" : "function";
+      output.push(`${funcKeyword}${gen(d.func)}(${d.func.params.map(gen).join(", ")}) {`);
       d.func.body.forEach(gen);
       output.push("}");
     },
@@ -75,7 +72,7 @@ export default function generate(program) {
       if (v === standardLibrary.π) return "Math.PI";
       return targetName(v);
     },
-    Function(f) {
+    FunctionType(f) {
       return targetName(f);
     },
     Increment(s) {
@@ -91,6 +88,7 @@ export default function generate(program) {
       output.push("break;");
     },
     ReturnStatement(s) {
+      console.log("***ReturnStatement returned**", `return ${gen(s.expression)};`);
       output.push(`return ${gen(s.expression)};`);
     },
     ShortReturnStatement(s) {
@@ -172,9 +170,11 @@ export default function generate(program) {
       return "[]";
     },
     MemberExpression(e) {
+      console.log("*********MemberExpression called*********", e);
       const object = gen(e.object);
       const field = JSON.stringify(gen(e.field));
       const chain = e.op === "." ? "" : e.op;
+      console.log("***MemberExpression returned**", `(${object}${chain}[${field}])`);
       return `(${object}${chain}[${field}])`;
     },
     FunctionCall(c) {
