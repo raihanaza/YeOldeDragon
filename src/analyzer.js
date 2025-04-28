@@ -287,10 +287,8 @@ export default function analyze(match) {
     },
 
     PrintStmt(_print, _open, exps, _close, _semi) {
-      console.log("PRINT STATEMENT. need to make it so that can have multiple args");
-      // console.log("******exp******", exp);
-      // console.log("******exp.analyze()******", exp.analyze());
       const expressions = exps.asIteration().children.map((exp) => exp.analyze());
+      console.log("******expressions******", expressions);
       return core.printStatement(expressions);
     },
 
@@ -713,11 +711,15 @@ export default function analyze(match) {
       return BigInt(this.sourceString);
     },
 
+    // TODO: for some reason when parse, spaces are being ignored between interp and lit2
     String(_openQuote, firstLit, interps, restOfLits, _closeQuote) {
       const litText1 = firstLit.sourceString;
       const interpolations = interps.children.map((i) => i.children[1].analyze());
       const litText2 = restOfLits.children.map((lit) => lit.sourceString);
       let res = [litText1];
+      console.log("litText1", litText1);
+      console.log("interpolations", interpolations);
+      console.log("litText2", litText2);
       for (let i = 0; i < interpolations.length; i++) {
         res.push(interpolations[i]);
         res.push(litText2[i]);

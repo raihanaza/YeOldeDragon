@@ -113,7 +113,7 @@ YeOldeDragon {
     idchar = letter | digit | "_"
     numeral = digit+ ("." digit+)? (("E"|"e") ("+"|"-")? digit+)?
 
-    String    = "\"" lit (Interp lit)* "\""
+    String    = "\"" lit (Interp #lit)* "\""
     lit       = char*
     char      = ~control ~"\\" ~"\"" ~"$" any   			                    --char
               | "\\" escape                					               --esc

@@ -218,7 +218,7 @@ export const standardLibrary = Object.freeze({
   any: anyType,
   zilch: zilchType,
   π: variable("π", false, floatType),
-  proclaim: intrinsicFunction("proclaim", anyToVoidType),
+  // proclaim: intrinsicFunction("proclaim", anyToVoidType),
 });
 
 String.prototype.type = stringType;

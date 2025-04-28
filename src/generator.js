@@ -2,7 +2,7 @@
 // accepts a program representation and returns the JavaScript translation
 // as a string.
 
-import { voidType, standardLibrary, printStatement } from "./core.js";
+import { voidType, standardLibrary } from "./core.js";
 
 export default function generate(program) {
   // When generating code for statements, we'll accumulate the lines of
@@ -34,7 +34,9 @@ export default function generate(program) {
     VariableDeclaration(d) {
       // We don't care about const vs. let in the generated code! The analyzer has
       // already checked that we never updated a const, so let is always fine.
-      output.push(`thine ${gen(d.variable)} = ${gen(d.initializer)};`)
+      console.log("*********VariableDeclaration called*********", d)
+      console.log("var decl kind", d.initializer.kind)
+      output.push(`let ${gen(d.variable)} = ${gen(d.initializer)};`);
     },
     // TODO: change name from classDeclaration to typeDeclaration?
     ClassDeclaration(d) {
@@ -153,7 +155,7 @@ export default function generate(program) {
       return `${e.op}(${operand})`
     },
     EmptyOptional(e) {
-      return "undefined"
+      return "zilch"
     },
     SubscriptExpression(e) {
       return `${gen(e.array)}[${gen(e.index)}]`
@@ -183,6 +185,11 @@ export default function generate(program) {
     },
     PrintStatement(s) {
       output.push(`console.log(${s.expressions.map(gen).join(", ")});`)
+    },
+    StringExpression(s) {
+      console.log("*********StringExpression called*********", s)
+      return `"${s.strings.map(gen).join("")}"`;
+      // return `"${s.strings.map(gen).join("")}"`
     },
   }
 
