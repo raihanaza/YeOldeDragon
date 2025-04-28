@@ -30,8 +30,8 @@ export function functionDeclaration(func) {
   return { kind: "FunctionDeclaration", func };
 }
 
-export function func(name, params, body, type) {
-  return { kind: "FunctionType", name, params, body, type };
+export function func(name, params, body, type, isMethod) {
+  return { kind: "FunctionType", name, params, body, type, isMethod };
 }
 
 export function intrinsicFunction(name, type) {

@@ -282,6 +282,7 @@ export default function analyze(match) {
 
       // Analyze body while still in child context
       func.body = block.analyze();
+      func.isMethod = context.classDecl ? true : false;
       context = context.parent;
       return core.functionDeclaration(func);
     },
@@ -311,11 +312,11 @@ export default function analyze(match) {
       const classInitRep = classInit.analyze();
       type.fields = classInitRep.fields;
       context = context.newChildContext({ inLoop: false, classDecl: type });
+      // TODO: how to make sure that functiondeclaration understands that isMethod is true?
       // check that every value has been initialized?
       checkHasDistinctFields(type, id);
       checkIfSelfContaining(type, id);
       type.methods = methods.analyze();
-
       // checkHadDistinctMethods(type, id);
       // maybe just check if have distinct methods names since don't want to overload?
       context = context.parent;
@@ -710,15 +711,14 @@ export default function analyze(match) {
       return BigInt(this.sourceString);
     },
 
-    // TODO: for some reason when parse, spaces are being ignored between interp and lit2
     String(_openQuote, firstLit, interps, restOfLits, _closeQuote) {
       const litText1 = firstLit.sourceString;
       const interpolations = interps.children.map((i) => i.children[1].analyze());
       const litText2 = restOfLits.children.map((lit) => lit.sourceString);
-      let res = [`"${litText1}"`];
+      let res = [litText1];
       for (let i = 0; i < interpolations.length; i++) {
         res.push(interpolations[i]);
-        res.push(`"${litText2[i]}"`);
+        res.push(litText2[i]);
       }
       return core.stringExpression(res);
     },

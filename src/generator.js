@@ -42,12 +42,17 @@ export default function generate(program) {
       output.push(`matter ${gen(d.type)} {`)
       output.push(`constructor(${d.type.fields.map(gen).join(",")}) {`)
       for (let field of d.type.fields) {
+        console.log("*********field called*********", field);
         output.push(`this[${JSON.stringify(gen(field))}] = ${gen(field)};`)
       }
       // TODO: does this work? how to add methods to the class?
+      console.log("*********classDeclaration called*********", d.type.methods);
       if (d.type.methods) {
         for (let method of d.type.methods) {
-          output.push(`this[${JSON.stringify(gen(method))}] = ${gen(method)};`);
+          console.log("*********method called*********", method);
+          console.log("stringify name", gen(method));
+          console.log("stringify body", gen(method.func));
+          // output.push(`${JSON.stringify(gen(method.func.name))} = ${gen(method)};`);
         }
       }
       output.push("}")
@@ -187,7 +192,13 @@ export default function generate(program) {
       output.push(`console.log(${s.expressions.map(gen).join(", ")});`)
     },
     StringExpression(s) {
-      return s.strings.map(gen).join("");
+      const stringInterp = s.strings.map(litOrInterp => {
+        if (litOrInterp.kind) {
+          return `\$\{${gen(litOrInterp)}\}`;
+        }
+        return gen(litOrInterp);
+      })
+      return `\`${stringInterp.join("")}\``;
     },
   }
 
