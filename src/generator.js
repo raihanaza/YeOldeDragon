@@ -45,8 +45,10 @@ export default function generate(program) {
         output.push(`this[${JSON.stringify(gen(field))}] = ${gen(field)};`)
       }
       // TODO: does this work? how to add methods to the class?
-      for (let method of d.type.methods) {
-        output.push(`this[${JSON.stringify(gen(method))}] = ${gen(method)};`)
+      if (d.type.methods) {
+        for (let method of d.type.methods) {
+          output.push(`this[${JSON.stringify(gen(method))}] = ${gen(method)};`);
+        }
       }
       output.push("}")
       output.push("}")
