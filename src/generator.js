@@ -34,8 +34,6 @@ export default function generate(program) {
     VariableDeclaration(d) {
       // We don't care about const vs. let in the generated code! The analyzer has
       // already checked that we never updated a const, so let is always fine.
-      console.log("*********VariableDeclaration called*********", d)
-      console.log("var decl kind", d.initializer.kind)
       output.push(`let ${gen(d.variable)} = ${gen(d.initializer)};`);
     },
     // TODO: change name from classDeclaration to typeDeclaration?
@@ -155,7 +153,7 @@ export default function generate(program) {
       return `${e.op}(${operand})`
     },
     EmptyOptional(e) {
-      return "zilch"
+      return "undefined"
     },
     SubscriptExpression(e) {
       return `${gen(e.array)}[${gen(e.index)}]`
@@ -187,9 +185,7 @@ export default function generate(program) {
       output.push(`console.log(${s.expressions.map(gen).join(", ")});`)
     },
     StringExpression(s) {
-      console.log("*********StringExpression called*********", s)
-      return `${s.strings.map(gen).join("")}`;
-      // return `"${s.strings.map(gen).join("")}"`
+      return s.strings.map(gen).join("");
     },
   }
 

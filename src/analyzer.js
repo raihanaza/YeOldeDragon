@@ -288,7 +288,6 @@ export default function analyze(match) {
 
     PrintStmt(_print, _open, exps, _close, _semi) {
       const expressions = exps.asIteration().children.map((exp) => exp.analyze());
-      console.log("******expressions******", expressions);
       return core.printStatement(expressions);
     },
 
@@ -717,9 +716,6 @@ export default function analyze(match) {
       const interpolations = interps.children.map((i) => i.children[1].analyze());
       const litText2 = restOfLits.children.map((lit) => lit.sourceString);
       let res = [`"${litText1}"`];
-      console.log("litText1", `'"${litText1}"'`);
-      console.log("interpolations", interpolations);
-      console.log("litText2", litText2);
       for (let i = 0; i < interpolations.length; i++) {
         res.push(interpolations[i]);
         res.push(`"${litText2[i]}"`);
