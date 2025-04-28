@@ -8,28 +8,28 @@ export default function generate(program) {
   // When generating code for statements, we'll accumulate the lines of
   // the target code here. When we finish generating, we'll join the lines
   // with newlines and return the result.
-  const output = []
+  const output = [];
 
   // Variable and function names in JS will be suffixed with _1, _2, _3,
   // etc. This is because "switch", for example, is a legal name in Carlos,
   // but not in JS. So, the Carlos variable "switch" must become something
   // like "switch_1". We handle this by mapping each name to its suffix.
-  const targetName = (mapping => {
-    return entity => {
+  const targetName = ((mapping) => {
+    return (entity) => {
       if (!mapping.has(entity)) {
-        mapping.set(entity, mapping.size + 1)
+        mapping.set(entity, mapping.size + 1);
       }
-      return `${entity.name}_${mapping.get(entity)}`
-    }
-  })(new Map())
+      return `${entity.name}_${mapping.get(entity)}`;
+    };
+  })(new Map());
 
-  const gen = node => generators?.[node?.kind]?.(node) ?? node
+  const gen = (node) => generators?.[node?.kind]?.(node) ?? node;
 
   const generators = {
     // Key idea: when generating an expression, just return the JS string; when
     // generating a statement, write lines of translated JS to the output array.
     Program(p) {
-      p.statements.forEach(gen)
+      p.statements.forEach(gen);
     },
     VariableDeclaration(d) {
       // We don't care about const vs. let in the generated code! The analyzer has
@@ -39,11 +39,11 @@ export default function generate(program) {
     // TODO: change name from classDeclaration to typeDeclaration?
     ClassDeclaration(d) {
       // TODO: how to differentiate between class and struct, since both are classDeclaration?
-      output.push(`matter ${gen(d.type)} {`)
-      output.push(`constructor(${d.type.fields.map(gen).join(",")}) {`)
+      output.push(`matter ${gen(d.type)} {`);
+      output.push(`constructor(${d.type.fields.map(gen).join(",")}) {`);
       for (let field of d.type.fields) {
         console.log("*********field called*********", field);
-        output.push(`this[${JSON.stringify(gen(field))}] = ${gen(field)};`)
+        output.push(`this[${JSON.stringify(gen(field))}] = ${gen(field)};`);
       }
       // TODO: does this work? how to add methods to the class?
       console.log("*********classDeclaration called*********", d.type.methods);
@@ -55,153 +55,149 @@ export default function generate(program) {
           // output.push(`${JSON.stringify(gen(method.func.name))} = ${gen(method)};`);
         }
       }
-      output.push("}")
-      output.push("}")
+      output.push("}");
+      output.push("}");
     },
     ObjectType(t) {
-      return targetName(t)
+      return targetName(t);
     },
     Field(f) {
-      return targetName(f)
+      return targetName(f);
     },
     FunctionDeclaration(d) {
-      output.push(`function ${gen(d.func)}(${d.func.params.map(gen).join(", ")}) {`)
-      d.func.body.forEach(gen)
-      output.push("}")
+      output.push(`function ${gen(d.func)}(${d.func.params.map(gen).join(", ")}) {`);
+      d.func.body.forEach(gen);
+      output.push("}");
     },
     Variable(v) {
       // Standard library constants get special treatment
       // TODO: anything left in standard library?
-      if (v === standardLibrary.π) return "Math.PI"
-      return targetName(v)
+      if (v === standardLibrary.π) return "Math.PI";
+      return targetName(v);
     },
     Function(f) {
-      return targetName(f)
+      return targetName(f);
     },
     Increment(s) {
-      output.push(`${gen(s.variable)}++;`)
+      output.push(`${gen(s.variable)}++;`);
     },
     Decrement(s) {
-      output.push(`${gen(s.variable)}--;`)
+      output.push(`${gen(s.variable)}--;`);
     },
     Assignment(s) {
-      output.push(`${gen(s.target)} = ${gen(s.source)};`)
+      output.push(`${gen(s.target)} = ${gen(s.source)};`);
     },
     BreakStatement(s) {
-      output.push("break;")
+      output.push("break;");
     },
     ReturnStatement(s) {
-      output.push(`return ${gen(s.expression)};`)
+      output.push(`return ${gen(s.expression)};`);
     },
     ShortReturnStatement(s) {
-      output.push("return;")
+      output.push("return;");
     },
     IfStatement(s) {
-      output.push(`if (${gen(s.test)}) {`)
-      s.consequent.forEach(gen)
+      output.push(`if (${gen(s.test)}) {`);
+      s.consequent.forEach(gen);
       if (s.alternate?.kind?.endsWith?.("IfStatement")) {
-        output.push("} else")
-        gen(s.alternate)
+        output.push("} else");
+        gen(s.alternate);
       } else {
-        output.push("} else {")
-        s.alternate.forEach(gen)
-        output.push("}")
+        output.push("} else {");
+        s.alternate.forEach(gen);
+        output.push("}");
       }
     },
     ShortIfStatement(s) {
-      output.push(`if (${gen(s.test)}) {`)
-      s.consequent.forEach(gen)
-      output.push("}")
+      output.push(`if (${gen(s.test)}) {`);
+      s.consequent.forEach(gen);
+      output.push("}");
     },
     WhileStatement(s) {
-      output.push(`while (${gen(s.test)}) {`)
-      s.body.forEach(gen)
-      output.push("}")
+      output.push(`while (${gen(s.test)}) {`);
+      s.body.forEach(gen);
+      output.push("}");
     },
     RepeatStatement(s) {
       // JS can only repeat n times if you give it a counter variable!
-      const i = targetName({ name: "i" })
-      output.push(`for (let ${i} = 0; ${i} < ${gen(s.count)}; ${i}++) {`)
-      s.body.forEach(gen)
-      output.push("}")
+      const i = targetName({ name: "i" });
+      output.push(`for (let ${i} = 0; ${i} < ${gen(s.count)}; ${i}++) {`);
+      s.body.forEach(gen);
+      output.push("}");
     },
     ForRangeStatement(s) {
-      const i = targetName(s.iterator)
-      const op = s.op === "..." ? "<=" : "<"
-      output.push(`for (let ${i} = ${gen(s.low)}; ${i} ${op} ${gen(s.high)}; ${i}++) {`)
-      s.body.forEach(gen)
-      output.push("}")
+      const i = targetName(s.iterator);
+      const op = s.op === "..." ? "<=" : "<";
+      output.push(`for (let ${i} = ${gen(s.low)}; ${i} ${op} ${gen(s.high)}; ${i}++) {`);
+      s.body.forEach(gen);
+      output.push("}");
     },
     ForStatement(s) {
-      output.push(`for (let ${gen(s.iterator)} of ${gen(s.collection)}) {`)
-      s.body.forEach(gen)
-      output.push("}")
+      output.push(`for (let ${gen(s.iterator)} of ${gen(s.collection)}) {`);
+      s.body.forEach(gen);
+      output.push("}");
     },
     Conditional(e) {
-      return `((${gen(e.test)}) ? (${gen(e.consequent)}) : (${gen(e.alternate)}))`
+      return `((${gen(e.test)}) ? (${gen(e.consequent)}) : (${gen(e.alternate)}))`;
     },
     BinaryExpression(e) {
-      if (e.op === "hypot") return `Math.hypot(${gen(e.left)},${gen(e.right)})`
-      const op = { "==": "===", "!=": "!==" }[e.op] ?? e.op
-      return `(${gen(e.left)} ${op} ${gen(e.right)})`
+      if (e.op === "hypot") return `Math.hypot(${gen(e.left)},${gen(e.right)})`;
+      const op = { "==": "===", "!=": "!==" }[e.op] ?? e.op;
+      return `(${gen(e.left)} ${op} ${gen(e.right)})`;
     },
     UnaryExpression(e) {
-      const operand = gen(e.operand)
-      if (e.op === "some") return operand
-      if (e.op === "#") return `${operand}.length`
-      if (e.op === "random") return `((a=>a[~~(Math.random()*a.length)])(${operand}))`
-      if (e.op === "codepoints") return `[...(${operand})].map(s=>s.codePointAt(0))`
-      if (e.op === "bytes") return `[...Buffer.from(${operand}, "utf8")]`
-      if (e.op === "sqrt") return `Math.sqrt(${operand})`
-      if (e.op === "sin") return `Math.sin(${operand})`
-      if (e.op === "cos") return `Math.cos(${operand})`
-      if (e.op === "exp") return `Math.exp(${operand})`
-      if (e.op === "ln") return `Math.log(${operand})`
-      return `${e.op}(${operand})`
+      const operand = gen(e.operand);
+      if (e.op === "some") return operand;
+      if (e.op === "#") return `${operand}.length`;
+      if (e.op === "random") return `((a=>a[~~(Math.random()*a.length)])(${operand}))`;
+      if (e.op === "codepoints") return `[...(${operand})].map(s=>s.codePointAt(0))`;
+      if (e.op === "bytes") return `[...Buffer.from(${operand}, "utf8")]`;
+      if (e.op === "sqrt") return `Math.sqrt(${operand})`;
+      if (e.op === "sin") return `Math.sin(${operand})`;
+      if (e.op === "cos") return `Math.cos(${operand})`;
+      if (e.op === "exp") return `Math.exp(${operand})`;
+      if (e.op === "ln") return `Math.log(${operand})`;
+      return `${e.op}(${operand})`;
     },
     EmptyOptional(e) {
-      return "undefined"
+      return "undefined";
     },
     SubscriptExpression(e) {
-      return `${gen(e.array)}[${gen(e.index)}]`
+      return `${gen(e.array)}[${gen(e.index)}]`;
     },
     ArrayExpression(e) {
-      return `[${e.elements.map(gen).join(",")}]`
+      return `[${e.elements.map(gen).join(",")}]`;
     },
     EmptyArray(e) {
-      return "[]"
+      return "[]";
     },
     MemberExpression(e) {
-      const object = gen(e.object)
-      const field = JSON.stringify(gen(e.field))
-      const chain = e.op === "." ? "" : e.op
-      return `(${object}${chain}[${field}])`
+      const object = gen(e.object);
+      const field = JSON.stringify(gen(e.field));
+      const chain = e.op === "." ? "" : e.op;
+      return `(${object}${chain}[${field}])`;
     },
     FunctionCall(c) {
-      const targetCode = `${gen(c.callee)}(${c.args.map(gen).join(", ")})`
+      const targetCode = `${gen(c.callee)}(${c.args.map(gen).join(", ")})`;
       // Calls in expressions vs in statements are handled differently
       if (c.callee.type.returnType !== voidType) {
-        return targetCode
+        return targetCode;
       }
-      output.push(`${targetCode};`)
+      output.push(`${targetCode};`);
     },
     ConstructorCall(c) {
-      return `new ${gen(c.callee)}(${c.args.map(gen).join(", ")})`
+      return `new ${gen(c.callee)}(${c.args.map(gen).join(", ")})`;
     },
     PrintStatement(s) {
-      output.push(`console.log(${s.expressions.map(gen).join(", ")});`)
+      output.push(`console.log(${s.expressions.map(gen).join(", ")});`);
     },
     StringExpression(s) {
-      const stringInterp = s.strings.map(litOrInterp => {
-        if (litOrInterp.kind) {
-          return `\$\{${gen(litOrInterp)}\}`;
-        }
-        return gen(litOrInterp);
-      })
-      return `\`${stringInterp.join("")}\``;
+      return `\`${s.strings.map((litOrInterp) =>
+        litOrInterp.kind ? `\$\{${gen(litOrInterp)}\}` : gen(litOrInterp)
+      )}\``;
     },
-  }
+  };
 
-  gen(program)
-  return output.join("\n")
+  gen(program);
+  return output.join("\n");
 }
