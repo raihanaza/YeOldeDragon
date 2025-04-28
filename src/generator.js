@@ -194,7 +194,7 @@ export default function generate(program) {
     StringExpression(s) {
       return `\`${s.strings.map((litOrInterp) =>
         litOrInterp.kind ? `\$\{${gen(litOrInterp)}\}` : gen(litOrInterp)
-      )}\``;
+      ).join("")}\``;
     },
   };
 
