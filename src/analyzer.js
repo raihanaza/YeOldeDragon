@@ -101,7 +101,7 @@ export default function analyze(match) {
 
   function includesAsField(objectType, type) {
     return objectType.fields.some(
-      (field) => field.type === type 
+      (field) => field.type === type
       // || (field.type?.kind === "ObjectType" && includesAsField(field.type, type))
     );
   }
