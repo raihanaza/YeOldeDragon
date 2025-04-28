@@ -188,7 +188,7 @@ export default function generate(program) {
     },
     StringExpression(s) {
       console.log("*********StringExpression called*********", s)
-      return `"${s.strings.map(gen).join("")}"`;
+      return `${s.strings.map(gen).join("")}`;
       // return `"${s.strings.map(gen).join("")}"`
     },
   }

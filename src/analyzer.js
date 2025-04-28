@@ -716,13 +716,13 @@ export default function analyze(match) {
       const litText1 = firstLit.sourceString;
       const interpolations = interps.children.map((i) => i.children[1].analyze());
       const litText2 = restOfLits.children.map((lit) => lit.sourceString);
-      let res = [litText1];
-      console.log("litText1", litText1);
+      let res = [`"${litText1}"`];
+      console.log("litText1", `'"${litText1}"'`);
       console.log("interpolations", interpolations);
       console.log("litText2", litText2);
       for (let i = 0; i < interpolations.length; i++) {
         res.push(interpolations[i]);
-        res.push(litText2[i]);
+        res.push(`"${litText2[i]}"`);
       }
       return core.stringExpression(res);
     },
