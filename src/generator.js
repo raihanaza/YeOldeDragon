@@ -30,23 +30,53 @@ export default function generate(program) {
       output.push(`const ${gen(d.variable)} = ${gen(d.initializer)};`)
     },
     ClassDeclaration(d) {
-      // TODO: how to differentiate between class and struct, since both are classDeclaration?
-      output.push(`matter ${gen(d.type)} {`);
-      output.push(`constructor(${d.type.fields.map(gen).join(",")}) {`);
-      for (let field of d.type.fields) {
-        output.push(`this[${JSON.stringify(gen(field))}] = ${gen(field)};`);
+      const classNames = gen(d.type)
+      const fields = d.type.fields || [];
+      const methods = d.type.methods || [];
+      console.log("METHODS: ", methods)
+
+      const isClass = methods.some(m => m.name === "init")
+
+      if (isClass) {
+        const initMethod = methods.find(m => m.name === "init")
+        if (initMethod) {
+          output.push(`class ${classNames} {`)
+          const params = initMethod.params.map(gen).join(", ")
+          output.push(`constructor(${params}) {`)
+          initMethod.body.forEach(statement => output.push(gen(statement)))
+          output.push("}")
+        }
+      } else {
+        output.push(`function ${gen(d.type)}(${fields.map(gen).join(", ")}) {`);
+        fields.forEach(field => {
+          output.push(`this.${gen(field)} = ${gen(field)};`)
+        });
       }
-      // TODO: does this work? how to add methods to the class?
-      // console.log("*********classDeclaration called*********", d.type.methods);
-      if (d.type.methods) {
-        for (let method of d.type.methods) {
-          output.push(gen(method));
+
+      for (const method of methods) {
+        if (method.name !== "init") {
+          output.push(gen(method))
         }
       }
-      output.push("}");
-      output.push("}");
+      output.push("}")
+
+      // // TODO: how to differentiate between class and struct, since both are classDeclaration?
+      // output.push(`function ${gen(d.type)} {`);
+      // output.push(`constructor(${d.type.fields.map(gen).join(",")}) {`);
+      // for (let field of d.type.fields) {
+      //   output.push(`this[${JSON.stringify(gen(field))}] = ${gen(field)};`);
+      // }
+      // // TODO: does this work? how to add methods to the class?
+      // // console.log("*********classDeclaration called*********", d.type.methods);
+      // if (d.type.methods) {
+      //   for (let method of d.type.methods) {
+      //     output.push(gen(method));
+      //   }
+      // }
+      // output.push("}");
+      // output.push("}");
     },
-    ObjectCall(d) {
+    ObjectCall(c) {
       return `new ${gen(c.callee)}(${c.args.map(gen).join(", ")})`;
     },
     ObjectType(t) {
@@ -87,7 +117,7 @@ export default function generate(program) {
       }
     },
     BinaryExpression(e) {
-      const op = { "==" : "===", "!=": "!=="}[e.op] ?? e.op
+      const op = { "==" : "===", "!=": "!==", "^": "**"}[e.op] ?? e.op
       return `${gen(e.left)} ${op} ${gen(e.right)}`
     },
     TernaryExpression(e) {
@@ -165,9 +195,9 @@ export default function generate(program) {
     EmptyOptional(e) {
       return "null";
     },
-    ListType(t) {
-      return `[${gen(t.baseType)}]`
-    },
+    // ListType(t) {
+    //   return `[${gen(t.baseType)}]`
+    // },
     ListExpression(e) {
       return `[${e.elements.map(gen).join(", ")}]`
     },
@@ -193,11 +223,15 @@ export default function generate(program) {
       return targetName(f);
     },
     FunctionCall(c) {
-      const targetCode = `${gen(c.callee)}(${c.args.map(gen).join(", ")})`;
+      const argValues = c.args.map(arg => gen(arg.value))
+      const targetCode = `${gen(c.callee)}(${argValues.join(", ")})`;
+      console.log("ARGS: ", c.args)
+      console.log("TARGET CODE: ", targetCode);
       // Calls in expressions vs in statements are handled differently
-      if (c.callee.type.returnType !== voidType) {
-        return targetCode;
-      }
+      //TODO: revisit this cause we don't allow functions to be assigned to variables yet
+      // if (c.callee.type.returnType !== voidType) {
+      //   return targetCode;
+      // }
       output.push(`${targetCode};`);
     },
     PrintStatement(s) {
