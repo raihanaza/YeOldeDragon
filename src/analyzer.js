@@ -309,8 +309,7 @@ export default function analyze(match) {
       checkNotDeclared(id.sourceString, id);
       const type = core.objectType(id.sourceString, [], [], []);
       context.add(id.sourceString, type);
-      const classInitRep = classInit.analyze();
-      type.fields = classInitRep.fields;
+      type.fields = classInit.analyze();
       type.fields.map((field) => {
         context.add(field.name, field);
       });
@@ -334,12 +333,12 @@ export default function analyze(match) {
       const targetFields = fieldArgs.analyze();
       const initialValues = fieldInitBlock.analyze();
       checkAllFieldsInitialized(targetFields, initialValues, { at: fieldArgs });
-      const classInit = core.classInitializer([]);
-      classInit.fields = targetFields.map(field => {
+
+      let fields = targetFields.map(field => {
         return core.field(field.name, field.type, initialValues.find((f) => f.target === field.name).source);
       })
       context = context.parent;
-      return classInit;
+      return fields;
     },
 
     FieldArg(id, _colon, type) {
@@ -502,7 +501,7 @@ export default function analyze(match) {
     },
 
     Arg(id, _colon, exp) {
-      const arg = core.argument(id.sourceString, exp.analyze().type);
+      const arg = core.argument(id.sourceString, exp.analyze().type, exp.analyze());
       return arg;
     },
 
@@ -618,7 +617,7 @@ export default function analyze(match) {
       checkArgumentCount(exps.length, targetTypes.length, { at: open });
       const args = exps.map((exp, i) => {
         const arg = exp.analyze();
-
+        console.log("***ARG***", arg);
         if (callee?.kind === "ObjectType") {
           checkArgIsAField(arg.name, targetParamNames, { at: exp });
           checkIsAssignable(arg, targetTypes[i], { at: exp });
@@ -626,7 +625,6 @@ export default function analyze(match) {
           checkIsAssignable(arg, targetTypes[i], { at: exp });
           checkArgNameMatchesParam(arg, targetParamNames[i], { at: exp });
         }
-
         return arg;
       });
       return callee?.kind === "ObjectType"
@@ -654,8 +652,6 @@ export default function analyze(match) {
         } else {
           objectType = object.type;
         }
-        console.log("objectType", objectType);
-        // console.log("***objectType***", objectType);
         checkHasMember(classDecl, id.sourceString, id);
         // const field = objectType.fields.find((f) => f.name === id.sourceString);
         return core.memberExpression(classDecl, dot.sourceString, object, true);

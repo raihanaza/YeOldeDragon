@@ -57,16 +57,18 @@ export default function generate(program) {
     ObjectType(t) {
       return targetName(t);
     },
+    Argument(a) {
+      return targetName(a);
+    },
+    FieldArgument(f) {
+      return targetName(f);
+    },
     Field(f) {
       return targetName(f);
     },
     FunctionDeclaration(d) {
       const funcKeyword = d.func.isMethod ? "" : "function";
       output.push(`${funcKeyword}${gen(d.func)}(${d.func.params.map(gen).join(", ")}) {`);
-      console.log("***d.func.body***", d.func.body);
-      for (let stmt of d.func.body) {
-        console.log("***generated stmt in body***", gen(stmt));
-      }
       d.func.body.forEach(gen);
       output.push("}");
     },
@@ -92,7 +94,6 @@ export default function generate(program) {
       output.push("break;");
     },
     ReturnStatement(s) {
-      console.log("***ReturnStatement returned**", `return ${gen(s.expression)};`);
       output.push(`return ${gen(s.expression)};`);
     },
     ShortReturnStatement(s) {
@@ -143,7 +144,6 @@ export default function generate(program) {
       return `((${gen(e.test)}) ? (${gen(e.consequent)}) : (${gen(e.alternate)}))`;
     },
     BinaryExpression(e) {
-      console.log("*********BinaryExpression returned*********", `(${gen(e.left)} ${op} ${gen(e.right)})`);
       if (e.op === "hypot") return `Math.hypot(${gen(e.left)},${gen(e.right)})`;
       const op = { "==": "===", "!=": "!==" }[e.op] ?? e.op;
       return `(${gen(e.left)} ${op} ${gen(e.right)})`;
@@ -169,7 +169,6 @@ export default function generate(program) {
       return `${gen(e.array)}[${gen(e.index)}]`;
     },
     listExpression(e) {
-      console.log("*****ArrayExpression returned****", `[${e.elements.map(gen).join(",")}]`);
       return `[${e.elements.map(gen).join(",")}]`;
     },
     emptyListExpression(e) {
@@ -177,11 +176,9 @@ export default function generate(program) {
     },
     MemberExpression(e) {
       // TODO: need to check if in class and need to use "this" keyword
-      // console.log("***MemberExpression called***", e);
       const object = gen(e.object);
       const field = JSON.stringify(gen(e.field));
       const chain = e.op === "." ? "" : e.op;
-      console.log("***MemberExpression returned**", `(${object}${chain}[${field}])`);
       return `(${object}${chain}[${field}])`;
     },
     FunctionCall(c) {

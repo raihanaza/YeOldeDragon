@@ -10,8 +10,8 @@ export function variable(name, type, mutable) {
   return { kind: "Variable", name, type, mutable };
 }
 
-export function argument(name, type) {
-  return { kind: "Argument", name, type };
+export function argument(name, type, value) {
+  return { kind: "Argument", name, type, value };
 }
 
 export function constantDeclaration(variable, initializer) {
@@ -159,10 +159,6 @@ export function subscriptExpression(list, index) {
 // export function classDeclaration(name, superClass, fields, methods) {
 export function classDeclaration(type) {
   return { kind: "ClassDeclaration", type };
-}
-
-export function classInitializer(fields) {
-  return { kind: "ClassInitializer", fields };
 }
 
 export function objectType(name, fields, methods) {
