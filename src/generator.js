@@ -162,6 +162,13 @@ export default function generate(program) {
       if (e.op === "ln") return `Math.log(${operand})`;
       return `${e.op}(${operand})`;
     },
+    NilCoalescingExpression(e) {
+      console.log(e);
+      const left = gen(e.left);
+      const right = gen(e.right);
+      const chain = e.op === "." ? "" : e.op;
+      return `(${left}${chain}${right})`;
+    },
     EmptyOptional(e) {
       return "undefined";
     },
