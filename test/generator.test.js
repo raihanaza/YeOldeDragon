@@ -38,12 +38,14 @@ const fixtures = [
             x = x + 2;
             fact y: int = 5;
             proclaim("x is \${x} and y is \${y}.");
+            thine dragons: [string] = [];
         `,
     expected: dedent`
             let x_1 = 1;
             x_1 = x_1 + 2;
             const y_2 = 5;
             console.log(\`x is \${x_1} and y is \${y_2}.\`);
+            let dragons_3 = [];
         `,
   },
   {
@@ -54,10 +56,10 @@ const fixtures = [
             return num;
         }
         `,
-    expected: dedent`
-            function incrementFunction(num_1) {
-                num_1++;
-                return num_1;
+        expected: dedent`
+            function incrementFunction_1(num_2) {
+                num_2++;
+                return num_2;
             }
         `,
   },
@@ -86,16 +88,36 @@ const fixtures = [
             let y_3 = null;
         `,
   },
-  // {
-  //     name: "exponents",
-  //     source: ``,
-  //     expected: dedent``,
-  // },
-  // {
-  //     name: "",
-  //     source: ``,
-  //     expected: dedent``,
-  // },
+  {
+      name: "exponents",
+      source: `
+            thine dragon_scales: int = 2;
+            thine dragon_scales_sqrd: int = dragon_scales^2;
+      `,
+      expected: dedent`
+            let dragon_scales_1 = 2;
+            let dragon_scales_sqrd_2 = dragon_scales_1 ** 2;
+      `,
+  },
+  {
+    name: "non void function",
+    source: `
+            don add(num1: int, num2: int) -> int {
+                thine result: int = num1 + num2;
+                return result;
+            }
+            
+            add(num1: 2, num2: 3);
+    `,
+    expected: dedent`
+            function add_1(num1_2, num2_3) {
+                let result_4 = num1_2 + num2_3;
+                return result_4;
+            }
+
+            add_1(2, 3);
+    `,
+},
   {
     name: "break statement",
     source: `
@@ -108,17 +130,21 @@ const fixtures = [
                     }
                 }
             }
+
+            breakTest(num: 89);
         `,
-    expected: dedent`
-            function breakTest(num_1) {
-                while (num_1 > 5) {
+        expected: dedent`
+            function breakTest_1(num_2) {
+                while (num_2 > 5) {
                     console.log("num is right size");
-                    if (num_1 === 13) {
+                    if (num_2 === 13) {
                         console.log("num is unlucky!");
                         break;
                     }
                 }
             }
+
+            breakTest_1(89);
         `,
   },
   {
@@ -148,6 +174,12 @@ const fixtures = [
             } else {
                 proclaim("x and y are equal");
             }
+
+            perchance x == 9.99 {
+                proclaim("x is 9.99");
+            } else {
+                proclaim("x is not 9.99");
+            }
         `,
     expected: dedent`
             let x_1 = 3.45;
@@ -158,6 +190,12 @@ const fixtures = [
                 console.log(x_1);
             } else {
                 console.log("x and y are equal");
+            }
+
+            if (x_1 === 9.99) {
+                console.log("x is 9.99");
+            } else {
+                console.log("x is not 9.99");
             }
         `,
   },
@@ -198,14 +236,82 @@ const fixtures = [
             fortill dragon in dragons {
                 proclaim("Thee hath trained the following dragon: \${dragon}");
             }
+            proclaim(dragons[0]);
         `,
     expected: dedent`
             let dragons_1 = ["Night Fury", "Monstrous Nightmare", "Nadder", "Gronkle"];
             for (let dragon_2 of dragons_1) {
                 console.log(\`Thee hath trained the following dragon: \${dragon_2}\`);
             }
+            console.log(dragons_1[0]);
         `,
   },
+  {
+      name: "repeat loop",
+      source: `
+            fortill 5 {
+                proclaim("Hello!");}
+      `,
+      expected: dedent`
+            for (let i_1 = 0; i_1 < 5; i_1++) {
+                console.log("Hello!");
+            }
+      `,
+  },  
+  {  
+      name: "object declaration",
+      source: `
+            matter Coffee {
+                name: string
+                roast: string
+                seasonal: boolean
+            }
+      `,
+      expected: dedent`
+            function Coffee_1(name_2, roast_3, seasonal_4) {
+                this.name_2 = name_2;
+                this.roast_3 = roast_3;
+                this.seasonal_4 = seasonal_4;
+            }
+      `,
+  },
+//   {
+//       name: "class declaration",
+//       source: `
+//             matter Car {
+//                 init (color: string, model: string, year: int) {
+//                     ye.color = color;
+//                     ye.model = model;
+//                     ye.year = year;
+//                 }
+
+//                 don vroom() -> void {
+//                     proclaim("vroom vroom");
+//                 }
+//             }
+//             thine car: Car = Car(color: "blue", model: "ford", year: 2025);
+//             proclaim("This \${car.model} in \${car.color} is a \${car.year} model.");
+//       `,
+//       expected: dedent`
+//             class Car_1 {
+//                 constructor(color_2, model_3, year_4) {
+//                     this.color_2 = color_2;
+//                     this.model_3 = model_3;
+//                     this.year_4 = year_4;
+//                 }
+//                 vroom() {
+//                     console.log("vroom vroom");
+//                 }
+//             }
+//             let car_5 = new Car_1("blue", "ford", 2025);
+//             console.log(\`This \${car_5.model_3} in \${car_5.color_2} is a \${car_5.year_4} model.\`);
+//       `,
+//   },
+  // {
+  //     name: "",
+  //     source: ``,
+  //     expected: dedent``,
+  // },
 ];
 
 describe("The code generator", () => {

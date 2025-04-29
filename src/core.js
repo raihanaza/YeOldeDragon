@@ -39,13 +39,6 @@ export function functionType(paramNames, paramTypes, returnType) {
 }
 
 export function functionCall(callee, args) {
-  // TODO: Long term add standard functions, does not have to be for the class
-  // console.log("********functionCall called*********", callee, args);
-  // if (callee.type.intrinsic) {
-  //   if (callee.type.returnType === voidType) {
-  //     return { kind: callee.name.replace(/^\p{L}/u, (c) => c.toUpperCase()), args };
-  //   }
-  // }
   return { kind: "FunctionCall", callee, args };
 }
 
