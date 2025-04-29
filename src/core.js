@@ -22,8 +22,8 @@ export function constantDeclaration(variable, initializer, mutable) {
   return { kind: "ConstantDeclaration", variable, initializer, mutable: false };
 }
 
-export function printStatement(expression) {
-  return { kind: "PrintStatement", expression, type: voidType };
+export function printStatement(expressions) {
+  return { kind: "PrintStatement", expressions, type: voidType };
 }
 
 export function functionDeclaration(func) {

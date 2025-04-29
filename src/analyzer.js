@@ -286,8 +286,21 @@ export default function analyze(match) {
       return core.functionDeclaration(func);
     },
 
-    PrintStmt(_print, exp, _semi) {
-      return core.printStatement(exp.analyze());
+    PrintStmt(_print, _open, exps, _close, _semi) {
+      const expressions = exps.asIteration().children.map((exp) => exp.analyze());
+      return core.printStatement(expressions);
+    },
+    
+    String(_openQuote, firstLit, interps, restOfLits, _closeQuote) {
+      const litText1 = firstLit.sourceString;
+      const interpolations = interps.children.map((i) => i.children[1].analyze());
+      const litText2 = restOfLits.children.map((lit) => lit.sourceString);
+      let res = [`"${litText1}"`];
+      for (let i = 0; i < interpolations.length; i++) {
+        res.push(interpolations[i]);
+        res.push(`"${litText2[i]}"`);
+      }
+      return core.stringExpression(res);
     },
 
     StructDecl(_matter, id, _left, fields, _right) {
