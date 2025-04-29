@@ -46,6 +46,21 @@ const fixtures = [
             console.log(\`x is \${x_1} and y is \${y_2}.\`);
         `,
     },
+    {
+        name: "function declaration",
+        source: `
+        don incrementFunction(num: int) -> int {
+            num++;
+            return num;
+        }
+        `,
+        expected: dedent`
+            function incrementFunction(num_1) {
+                num_1++;
+                return num_1;
+            }
+        `,
+    },
     // {
     //     name: "",
     //     source: ``,
@@ -88,6 +103,51 @@ const fixtures = [
                 console.log(x_1);
             } else {
                 console.log("x and y are equal");
+            }
+        `,
+    },
+    {
+        name: "normal loop",
+        source: `
+            thine num: int = 10;
+            whilst num > 5 {
+                num = num/2;
+            }
+            proclaim(num);
+        `,
+        expected: dedent`
+            let num_1 = 10;
+            while (num_1 > 5) {
+                num_1 = num_1 / 2;
+            }
+            console.log(num_1);
+        `,
+    },
+    {
+        name: "range loop",
+        source: `
+            fortill i in 3...10 {
+                proclaim("I am in the loop! Currently at \${i}");
+            }
+        `,
+        expected: dedent`
+            for (let i_1 = 3; i_1 <= 10; i_1++) {
+                console.log(\`I am in the loop! Currently at \${i_1}\`);
+            }
+        `,
+    },
+    {
+        name: "for in loop",
+        source: `
+            thine dragons: [string] = ["Night Fury", "Monstrous Nightmare", "Nadder", "Gronkle"];
+            fortill dragon in dragons {
+                proclaim("Thee hath trained the following dragon: \${dragon}");
+            }
+        `,
+        expected: dedent`
+            let dragons_1 = ["Night Fury", "Monstrous Nightmare", "Nadder", "Gronkle"];
+            for (let dragon_2 of dragons_1) {
+                console.log(\`Thee hath trained the following dragon: \${dragon_2}\`);
             }
         `,
     },

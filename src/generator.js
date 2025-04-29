@@ -61,8 +61,8 @@ export default function generate(program) {
       // }
     },
     FunctionDeclaration(d) {
-      output.push(`function ${gen(d.fun)}(${d.fun.params.map(gen).join(", ")}) {`)
-      d.fun.body.forEach(gen)
+      output.push(`function ${gen(d.func.name)}(${d.func.params.map(gen).join(", ")}) {`)
+      d.func.body.forEach(gen)
       output.push(`}`)
     },
     // FunctionType(f) {
@@ -136,7 +136,7 @@ export default function generate(program) {
       s.consequence.forEach(gen)
       output.push(`}`)
     },
-    WhileStatement(s) {
+    LoopStatement(s) {
       output.push(`while (${gen(s.condition)}) {`)
       s.body.forEach(gen)
       output.push(`}`)
@@ -148,14 +148,14 @@ export default function generate(program) {
       output.push(`}`)
     },
     ForEachStatement(s) {
-      output.push(`for (let ${gen(s.id)} of ${gen(s.exp)})`)
+      output.push(`for (let ${gen(s.iterator)} of ${gen(s.collection)}) {`)
       s.body.forEach(gen)
       output.push(`}`)
     },
     ForRangeStatement(s) {
       const i = targetName(s.iterator)
       const op = s.op === "..." ? "<=" : "<"
-      output.push(`for (let ${i} = ${gen(s.low)}; ${i} ${op} ${gen(s.high)}; ${i}++);`)
+      output.push(`for (let ${i} = ${gen(s.start)}; ${i} ${op} ${gen(s.end)}; ${i}++) {`)
       s.body.forEach(gen)
       output.push(`}`)
     },
@@ -169,9 +169,9 @@ export default function generate(program) {
       return `[${gen(t.baseType)}]`
     },
     ListExpression(e) {
-      return `[${gen(e.elements).join(",")}];`
+      return `[${e.elements.map(gen).join(", ")}]`
     },
-    EmptyListExpressioin(e) {
+    EmptyListExpressioin() {
       return "[]"
     },
     SubscriptExpression(e) {

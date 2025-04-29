@@ -290,7 +290,7 @@ export default function analyze(match) {
       const expressions = exps.asIteration().children.map((exp) => exp.analyze());
       return core.printStatement(expressions);
     },
-    
+
     String(_openQuote, firstLit, interps, restOfLits, _closeQuote) {
       const litText1 = firstLit.sourceString;
       const interpolations = interps.children.map((i) => i.children[1].analyze());
