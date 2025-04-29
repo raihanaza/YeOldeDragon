@@ -167,7 +167,7 @@ export default function generate(program) {
       const left = gen(e.left);
       const right = gen(e.right);
       const chain = e.op === "." ? "" : e.op;
-      return `(${left}${chain}${right})`;
+      return `(${left} ${chain} ${right})`;
     },
     EmptyOptional(e) {
       return "undefined";
