@@ -22,6 +22,7 @@ export default function generate(program) {
       output.push(`let ${gen(d.variable)} = ${gen(d.initializer)};`);
     },
     Variable(v) {
+      if (v === standardLibrary.π) return "Math.PI";
       return targetName(v);
     },
     ConstantDeclaration(d) {
@@ -199,6 +200,7 @@ export default function generate(program) {
       return `new ${gen(c.callee)}(${c.args.map(gen).join(", ")})`;
     },
     NilCoalescingExpression(e) {
+      console.log("*********NilCoalescingExpression called*********", e);
       const left = gen(e.left);
       const right = gen(e.right);
       const chain = e.op === "." ? "" : e.op;
