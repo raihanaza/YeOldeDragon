@@ -617,7 +617,6 @@ export default function analyze(match) {
       checkArgumentCount(exps.length, targetTypes.length, { at: open });
       const args = exps.map((exp, i) => {
         const arg = exp.analyze();
-        console.log("***ARG***", arg);
         if (callee?.kind === "ObjectType") {
           checkArgIsAField(arg.name, targetParamNames, { at: exp });
           checkIsAssignable(arg, targetTypes[i], { at: exp });
