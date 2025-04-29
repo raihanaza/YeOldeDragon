@@ -163,7 +163,6 @@ export default function generate(program) {
       return `${e.op}(${operand})`;
     },
     NilCoalescingExpression(e) {
-      console.log(e);
       const left = gen(e.left);
       const right = gen(e.right);
       const chain = e.op === "." ? "" : e.op;
