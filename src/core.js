@@ -2,10 +2,6 @@ export function program(statements) {
   return { kind: "Program", statements };
 }
 
-// export function block(statements) {
-//   return { kind: "Block", statements };
-// }
-
 export function variableDeclaration(variable, initializer) {
   return { kind: "VariableDeclaration", variable, initializer };
 }
@@ -18,7 +14,7 @@ export function argument(name, type) {
   return { kind: "Argument", name, type };
 }
 
-export function constantDeclaration(variable, initializer, mutable) {
+export function constantDeclaration(variable, initializer) {
   return { kind: "ConstantDeclaration", variable, initializer, mutable: false };
 }
 
@@ -34,9 +30,9 @@ export function func(name, params, body, type, isMethod) {
   return { kind: "FunctionType", name, params, body, type, isMethod };
 }
 
-export function intrinsicFunction(name, type) {
-  return { kind: "FunctionType", name, type, intrinsic: true };
-}
+// export function intrinsicFunction(name, type) {
+//   return { kind: "FunctionType", name, type, intrinsic: true };
+// }
 
 export function functionType(paramNames, paramTypes, returnType) {
   return { kind: "FunctionType", paramNames, paramTypes, returnType };
@@ -181,8 +177,8 @@ export function objectCall(callee, args, type) {
   return { kind: "ObjectCall", callee, args, type };
 }
 
-export function memberExpression(object, op, field) {
-  return { kind: "MemberExpression", object, op, field, type: field.type };
+export function memberExpression(object, op, field, isField) {
+  return { kind: "MemberExpression", object, op, field, type: field.type, isField };
 }
 
 // export function objectInstance(name, fields) {
@@ -191,6 +187,10 @@ export function memberExpression(object, op, field) {
 
 export function stringExpression(strings) {
   return { kind: "StringExpression", strings, type: stringType };
+}
+
+export function fieldArg(name, type) {
+  return { kind: "FieldArgument", name, type};
 }
 
 export function field(name, type, value) {

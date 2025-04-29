@@ -16,7 +16,7 @@ YeOldeDragon {
 
     PrintStmt = proclaim "(" ListOf<Exp0, ","> ")" ";"
     VarDecl = (thine | fact) id ":" Type "=" Exp0 ";"
-    StructDecl = matter id "{" Field* "}"
+    StructDecl = matter id "{" FieldArg* "}"
 
     Block = "{" Statement* "}"
     BreakStmt = breaketh ";"
@@ -28,9 +28,9 @@ YeOldeDragon {
 
     // how to do default parameters? how to require users to initialize parameters in Block?
     ClassDecl = matter id "{" ClassInit Methods "}"
-    ClassInit = init Fields FieldInitBlock
-    Field = id ":" Type
-    Fields = "(" ListOf<Field, ","> ")"
+    ClassInit = init FieldArgs FieldInitBlock
+    FieldArg = id ":" Type
+    FieldArgs = "(" ListOf<FieldArg, ","> ")"
     FieldInitBlock = "{" FieldInit* "}"
     FieldInit = ye "." id "=" Exp0 ";"
     ClassMemberExpression = ye "." id
