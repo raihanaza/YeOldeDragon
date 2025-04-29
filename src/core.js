@@ -88,7 +88,7 @@ export function ternaryExpression(op, consequence, alternate) {
 }
 
 export function nilCoalescingExpression(op, left, right, type) {
-  return { kind: " ", op, left, right, type };
+  return { kind: "NilCoalescingExpression", op, left, right, type };
 }
 
 export function ifStatement(condition, consequence, alternate) {
