@@ -23,6 +23,12 @@ export default function generate(program) {
       // already checked that we never updated a const, so let is always fine.
       output.push(`let ${gen(d.variable)} = ${gen(d.initializer)};`);
     },
+    Variable(v) {
+      return targetName(v)
+    },
+    ConstantDeclaration(d) {
+      output.push(`const ${gen(d.variable)} = ${gen(d.initializer)};`)
+    },
     ClassDeclaration(d) {
       // TODO: how to differentiate between class and struct, since both are classDeclaration?
       output.push(`matter ${gen(d.type)} {`);
@@ -40,6 +46,9 @@ export default function generate(program) {
       output.push("}");
       output.push("}");
     },
+    ObjectCall(d) {
+      return `new ${gen(c.callee)}(${c.args.map(gen).join(", ")})`;
+    },
     ObjectType(t) {
       return targetName(t);
     },
@@ -52,22 +61,13 @@ export default function generate(program) {
     Field(f) {
       return targetName(f);
     },
-    FunctionDeclaration(d) {
-      const funcKeyword = d.func.isMethod ? "" : "function";
-      output.push(`${funcKeyword}${gen(d.func)}(${d.func.params.map(gen).join(", ")}) {`);
-      d.func.body.forEach(gen);
-      output.push("}");
-    },
-    FunctionType(f) {
-      return targetName(f);
-    },
     IncrementStatement(s) {
       output.push(`${gen(s.variable)}++;`);
     },
     DecrementStatement(s) {
       output.push(`${gen(s.variable)}--;`);
     },
-    Assignment(s) {
+    AssignmentStatement(s) {
       output.push(`${gen(s.target)} = ${gen(s.source)};`);
     },
     BreakStatement(s) {
@@ -77,7 +77,27 @@ export default function generate(program) {
       output.push(`return ${gen(s.expression)};`);
     },
     ShortReturnStatement(s) {
-      output.push("return;");
+      output.push(`return;`)
+    },
+    UnaryExpression(e) {
+      if (e.op === "ne") {
+        return `!(${gen(e.operand)})`
+      } else {
+        return `${e.op}(${gen(e.operand)})`
+      }
+    },
+    BinaryExpression(e) {
+      const op = { "==" : "===", "!=": "!=="}[e.op] ?? e.op
+      return `${gen(e.left)} ${op} ${gen(e.right)}`
+    },
+    TernaryExpression(e) {
+      return `(${gen(e.op)}) ? (${gen(e.consequence)}) : (${gen(e.alternate)})`
+    }, 
+    NilCoalescingExpression(e) {
+      const left = gen(e.left);
+      const right = gen(e.right);
+      const chain = e.op === "." ? "" : e.op;
+      return `(${left} ${chain} ${right})`;
     },
     IfStatement(s) {
       output.push(`if (${gen(s.condition)}) {`);
@@ -112,74 +132,65 @@ export default function generate(program) {
       }
     },
     ShortIfStatement(s) {
-      output.push(`if (${gen(s.condition)}) {`);
-      s.consequence.forEach(gen);
-      output.push(`}`);
+      output.push(`if (${gen(s.condition)}) {`)
+      s.consequence.forEach(gen)
+      output.push(`}`)
     },
     LoopStatement(s) {
-      output.push(`while (${gen(s.condition)}) {`);
-      s.body.forEach(gen);
-      output.push(`}`);
+      output.push(`while (${gen(s.condition)}) {`)
+      s.body.forEach(gen)
+      output.push(`}`)
     },
     RepeatStatement(s) {
-      const i = targetName({ name: "i" });
-      output.push(`for (let ${i} = 0; ${i} < ${gen(s.count)}; ${i}++) {`);
-      s.body.forEach(gen);
-      output.push(`}`);
+      const i = targetName({ name: "i"})
+      output.push(`for (let ${i} = 0; ${i} < ${gen(s.count)}; ${i}++) {`)
+      s.body.forEach(gen)
+      output.push(`}`)
     },
     ForEachStatement(s) {
-      output.push(`for (let ${gen(s.iterator)} of ${gen(s.collection)}) {`);
-      s.body.forEach(gen);
-      output.push(`}`);
+      output.push(`for (let ${gen(s.iterator)} of ${gen(s.collection)}) {`)
+      s.body.forEach(gen)
+      output.push(`}`)
     },
     ForRangeStatement(s) {
-      const i = targetName(s.iterator);
-      const op = s.op === "..." ? "<=" : "<";
-      output.push(`for (let ${i} = ${gen(s.start)}; ${i} ${op} ${gen(s.end)}; ${i}++) {`);
-      s.body.forEach(gen);
-      output.push(`}`);
+      const i = targetName(s.iterator)
+      const op = s.op === "..." ? "<=" : "<"
+      output.push(`for (let ${i} = ${gen(s.start)}; ${i} ${op} ${gen(s.end)}; ${i}++) {`)
+      s.body.forEach(gen)
+      output.push(`}`)
     },
     BreakStatement(s) {
       output.push("break;");
     },
-    UnaryExpression(e) {
-      if (e.op === "ne") {
-        return `!(${gen(e.operand)})`;
-      } else {
-        return `${e.op}(${gen(e.operand)})`;
-      }
-    },
-    BinaryExpression(e) {
-      const op = { "==": "===", "!=": "!==" }[e.op] ?? e.op;
-      return `${gen(e.left)} ${op} ${gen(e.right)}`;
-    },
-    TernaryExpression(e) {
-      return `(${gen(e.op)}) ? (${gen(e.consequence)}) : (${gen(e.alternate)})`;
-    },
-    NilCoalescingExpression(e) {
-      const left = gen(e.left);
-      const right = gen(e.right);
-      const chain = e.op === "." ? "" : e.op;
-      return `(${left} ${chain} ${right})`;
-    },
     EmptyOptional(e) {
-      return "undefined";
+      return "null";
     },
-    SubscriptExpression(e) {
-      return `${gen(e.array)}[${gen(e.index)}]`;
+    ListType(t) {
+      return `[${gen(t.baseType)}]`
     },
-    listExpression(e) {
-      return `[${e.elements.map(gen).join(",")}]`;
+    ListExpression(e) {
+      return `[${e.elements.map(gen).join(", ")}]`
     },
-    emptyListExpression(e) {
+    EmptyListExpression(e) {
       return "[]";
     },
+    SubscriptExpression(e) {
+      return `${gen(e.list)}[${gen(e.index)}]`;
+    },
     MemberExpression(e) {
-      // TODO: need to check if in class and need to use "this" keyword
-      const object = gen(e.object);
-      const field = JSON.stringify(gen(e.field));
-      const chain = e.op === "." ? "" : e.op;
-      return `(${object}${chain}[${field}])`;
+      const object = gen(e.object)
+      const field = JSON.stringify(gen(e.field))
+      const chain = e.op === "." ? "" : e.op
+      return `(${object}${chain}[${field}])`
+    },
+    FunctionDeclaration(d) {
+      const funcKeyword = d.func.isMethod ? "" : "function ";
+      output.push(`${funcKeyword}${gen(d.func)}(${d.func.params.map(gen).join(", ")}) {`);
+      d.func.body.forEach(gen);
+      output.push("}");
+    },
+    FunctionType(f) {
+      return targetName(f);
     },
     FunctionCall(c) {
       const targetCode = `${gen(c.callee)}(${c.args.map(gen).join(", ")})`;
@@ -189,16 +200,20 @@ export default function generate(program) {
       }
       output.push(`${targetCode};`);
     },
-    ObjectCall(c) {
-      return `new ${gen(c.callee)}(${c.args.map(gen).join(", ")})`;
-    },
     PrintStatement(s) {
       output.push(`console.log(${s.expressions.map(gen).join(", ")});`);
     },
-    StringExpression(s) {
-      return `\`${s.strings
-        .map((litOrInterp) => (litOrInterp.kind ? `\$\{${gen(litOrInterp)}\}` : gen(litOrInterp)))
-        .join("")}\``;
+    StringExpression(e) {
+      const parts = e.strings.map((litOrInterp) =>
+        litOrInterp.kind ? `\$\{${gen(litOrInterp)}\}` : gen(litOrInterp)
+      ).join("")
+      const hasInterpolation = e.strings.some((litOrInterp) => litOrInterp.kind);
+
+      if (hasInterpolation) {
+        return `\`${parts}\``;
+      } else {
+        return `"${parts}"`;
+      }
     },
   };
 
