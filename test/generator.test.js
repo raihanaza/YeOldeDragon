@@ -61,11 +61,66 @@ const fixtures = [
             }
         `,
     },
+    {
+        name: "unary and ternary",
+        source: `
+            thine isNot: boolean = shall;
+            perchance ne isNot {
+                proclaim("It is!");
+            }
+
+            thine x: int = 5;
+            proclaim(x == 5 ? "x is 5" : "x is not 5");
+
+            thine y: int? = zilch int;
+        `,
+        expected: dedent`
+            let isNot_1 = true;
+            if (!(isNot_1)) {
+                console.log("It is!");
+            }
+
+            let x_2 = 5;
+            console.log((x_2 === 5) ? ("x is 5") : ("x is not 5"));
+
+            let y_3 = null;
+        `,
+    },
+    // {
+    //     name: "exponents",
+    //     source: ``,
+    //     expected: dedent``,
+    // },
     // {
     //     name: "",
     //     source: ``,
     //     expected: dedent``,
     // },
+    {
+        name: "break statement",
+        source: `
+            don breakTest(num: int) -> void {
+                whilst num > 5 { 
+                    proclaim("num is right size"); 
+                    perchance num == 13 { 
+                        proclaim("num is unlucky!"); 
+                        breaketh; 
+                    } 
+                }
+            }
+        `,
+        expected: dedent`
+            function breakTest(num_1) {
+                while (num_1 > 5) {
+                    console.log("num is right size");
+                    if (num_1 === 13) {
+                        console.log("num is unlucky!");
+                        break;
+                    }
+                }
+            }
+        `,
+    },
     { 
         name: "increment and decrement",
         source: `

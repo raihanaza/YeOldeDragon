@@ -32,33 +32,6 @@ export default function generate(program) {
     },
     PrintStatement(s) {
       output.push(`console.log(${s.expressions.map(gen).join(", ")});`)
-
-      // if (s.expressions.length === 1 && typeof s.expressions[0].value === "string" && s.expressions[0].value.includes("${")) {
-      //   const expr = s.expressions[0]
-      //   const parts = [];
-      //   const regex = /\${([^}]+)\}/g;
-      //   let lastIndex = 0;
-      //   let match;
-
-      //   while ((match = regex.exec(expr.value)) !== null) {
-      //     if (match.index > lastIndex) {
-      //       parts.push(JSON.stringify(expr.value.slice(lastIndex, match.index)));
-      //     }
-      //     const originalName = match[1].trim();
-      //     const renamed = targetName({ name: originalName }); 
-      //     parts.push(renamed);
-      //     lastIndex = regex.lastIndex;
-      //     // parts.push(targetName({ name: match[1].trim() }));
-      //     // lastIndex = regex.lastIndex;
-      //   }
-
-      //   if (lastIndex < expr.value.length) {
-      //     parts.push(JSON.stringify(expr.value.slice(lastIndex)));
-      //   }
-      //   output.push(`console.log(${parts.join(", ")});`)
-      // } else {
-      //   output.push(`console.log(${s.expressions.map(gen).join(", ")});`)
-      // }
     },
     FunctionDeclaration(d) {
       output.push(`function ${gen(d.func.name)}(${d.func.params.map(gen).join(", ")}) {`)
@@ -87,14 +60,18 @@ export default function generate(program) {
       output.push(`return;`)
     },
     UnaryExpression(e) {
-      return `${e.op}(${gen(e.operand)})`
+      if (e.op === "ne") {
+        return `!(${gen(e.operand)})`
+      } else {
+        return `${e.op}(${gen(e.operand)})`
+      }
     },
     BinaryExpression(e) {
       const op = { "==" : "===", "!=": "!=="}[e.op] ?? e.op
       return `${gen(e.left)} ${op} ${gen(e.right)}`
     },
     TernaryExpression(e) {
-      return `((${gen(e.op)}) ? (${gen(e.consequence)}) : (${gen(e.alternate)}))`
+      return `(${gen(e.op)}) ? (${gen(e.consequence)}) : (${gen(e.alternate)})`
     }, 
     // NilCoalescingExpression(e) {
 
@@ -163,7 +140,7 @@ export default function generate(program) {
       output.push("break;")
     },
     EmptyOptional(t) {
-      return "undefined"
+      return "null"
     },
     ListType(t) {
       return `[${gen(t.baseType)}]`
@@ -210,9 +187,9 @@ export default function generate(program) {
         return `"${parts}"`;
       }
     },
-    Field(f) {
-      return targetName(f)
-    },
+    // Field(f) {
+    //   return targetName(f)
+    // },
   }
 
   gen(program) 
