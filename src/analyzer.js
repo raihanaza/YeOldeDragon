@@ -311,6 +311,9 @@ export default function analyze(match) {
       context.add(id.sourceString, type);
       const classInitRep = classInit.analyze();
       type.fields = classInitRep.fields;
+      type.fields.map((field) => {
+        context.add(field.name, field);
+      });
       context = context.newChildContext({ inLoop: false, classDecl: type });
       // check that every value has been initialized?
       checkHasDistinctFields(type, id);
@@ -329,16 +332,12 @@ export default function analyze(match) {
     ClassInit(_init, fieldArgs, fieldInitBlock) {
       context = context.newChildContext({ inLoop: false });
       const targetFields = fieldArgs.analyze();
-      console.log("***targetFields***", targetFields);
       const initialValues = fieldInitBlock.analyze();
-      console.log("***initialValues***", initialValues);
       checkAllFieldsInitialized(targetFields, initialValues, { at: fieldArgs });
       const classInit = core.classInitializer([]);
       classInit.fields = targetFields.map(field => {
-        console.log("***field***", field);
         return core.field(field.name, field.type, initialValues.find((f) => f.target === field.name).source);
       })
-      console.log("classInit", classInit);
       context = context.parent;
       return classInit;
     },
@@ -648,8 +647,6 @@ export default function analyze(match) {
         checkClassFieldExists(id, { at: exp });
         const object = context.lookup(id.sourceString);
         const classDecl = context.classDecl;
-        console.log("***classDecl***", context.classDecl);
-        console.log("***Member expression called***", object);
         let objectType;
         if (dot.sourceString === "?.") {
           checkHasOptionalObjectType(object, exp);
@@ -657,6 +654,7 @@ export default function analyze(match) {
         } else {
           objectType = object.type;
         }
+        console.log("objectType", objectType);
         // console.log("***objectType***", objectType);
         checkHasMember(classDecl, id.sourceString, id);
         // const field = objectType.fields.find((f) => f.name === id.sourceString);
