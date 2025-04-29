@@ -1,2 +1,2 @@
 proclaim("Hello ${2 + 5}w${3}z");
-~ proclaim("hello");
+proclaim("hello");
