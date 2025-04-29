@@ -55,9 +55,9 @@ const fixtures = [
         }
         `,
         expected: dedent`
-            function incrementFunction(num_1) {
-                num_1++;
-                return num_1;
+            function incrementFunction_1(num_2) {
+                num_2++;
+                return num_2;
             }
         `,
     },
@@ -110,10 +110,10 @@ const fixtures = [
             }
         `,
         expected: dedent`
-            function breakTest(num_1) {
-                while (num_1 > 5) {
+            function breakTest_1(num_2) {
+                while (num_2 > 5) {
                     console.log("num is right size");
-                    if (num_1 === 13) {
+                    if (num_2 === 13) {
                         console.log("num is unlucky!");
                         break;
                     }

@@ -24,9 +24,9 @@ export default function generate(program) {
     Variable(v) {
       return targetName(v)
     },
-    // Argument(a) {
-
-    // },
+    Argument(a) {
+      return targetName(a)
+    },
     ConstantDeclaration(d) {
       output.push(`const ${gen(d.variable)} = ${gen(d.initializer)};`)
     },
@@ -34,15 +34,24 @@ export default function generate(program) {
       output.push(`console.log(${s.expressions.map(gen).join(", ")});`)
     },
     FunctionDeclaration(d) {
-      output.push(`function ${gen(d.func.name)}(${d.func.params.map(gen).join(", ")}) {`)
-      d.func.body.forEach(gen)
-      output.push(`}`)
+      // output.push(`function ${gen(d.func.name)}(${d.func.params.map(gen).join(", ")}) {`)
+      // d.func.body.forEach(gen)
+      // output.push(`}`)
+      const funcKeyword = d.func.isMethod ? "" : "function ";
+      output.push(`${funcKeyword}${gen(d.func)}(${d.func.params.map(gen).join(", ")}) {`);
+      d.func.body.forEach(gen);
+      output.push("}");
     },
-    // FunctionType(f) {
-      
-    // },
+    FunctionType(f) {
+      return targetName(f);
+    },
     FunctionCall(f) {
-      return targetName(f.name) + `(${f.args.map(gen).join(", ")})`
+      const targetCode = `${gen(c.callee)}(${c.args.map(gen).join(", ")})`;
+      // Calls in expressions vs in statements are handled differently
+      if (c.callee.type.returnType !== voidType) {
+        return targetCode;
+      }
+      output.push(`${targetCode};`);
     },
     IncrementStatement(s) {
       output.push(`${gen(s.variable)}++;`)
@@ -73,9 +82,12 @@ export default function generate(program) {
     TernaryExpression(e) {
       return `(${gen(e.op)}) ? (${gen(e.consequence)}) : (${gen(e.alternate)})`
     }, 
-    // NilCoalescingExpression(e) {
-
-    // },
+    NilCoalescingExpression(e) {
+      const left = gen(e.left);
+      const right = gen(e.right);
+      const chain = e.op === "." ? "" : e.op;
+      return `(${left} ${chain} ${right})`;
+    },
     IfStatement(s) {
       output.push(`if (${gen(s.condition)}) {`)
       s.consequence.forEach(gen)
@@ -155,7 +167,21 @@ export default function generate(program) {
       return `${gen(e.list)}[${gen(e.index)}]`
     },
     ClassDeclaration(d) {
-
+      // TODO: how to differentiate between class and struct, since both are classDeclaration?
+      output.push(`matter ${gen(d.type)} {`);
+      output.push(`constructor(${d.type.fields.map(gen).join(",")}) {`);
+      for (let field of d.type.fields) {
+        output.push(`this[${JSON.stringify(gen(field))}] = ${gen(field)};`);
+      }
+      // TODO: does this work? how to add methods to the class?
+      // console.log("*********classDeclaration called*********", d.type.methods);
+      if (d.type.methods) {
+        for (let method of d.type.methods) {
+          output.push(gen(method));
+        }
+      }
+      output.push("}");
+      output.push("}");
     },
     ClassInitializer(d) {
 
@@ -164,7 +190,7 @@ export default function generate(program) {
       return targetName(t)
     },
     ObjectCall(d) {
-
+      return `new ${gen(c.callee)}(${c.args.map(gen).join(", ")})`;
     },
     MemberExpression(e) {
       const object = gen(e.object)
@@ -187,9 +213,12 @@ export default function generate(program) {
         return `"${parts}"`;
       }
     },
-    // Field(f) {
-    //   return targetName(f)
-    // },
+    Field(f) {
+      return targetName(f)
+    },
+    FieldArgument(f) {
+      return targetName(f);
+    },
   }
 
   gen(program) 
