@@ -260,7 +260,7 @@ const fixtures = [
       `,
   },
   {
-    name: "object declaration",
+    name: "struct declaration",
     source: `
             matter Coffee {
                 name: string
@@ -296,23 +296,23 @@ const fixtures = [
             proclaim("This \${car.model} in \${car.color} is a \${car.year} model.");
 
             thine car2: Car? = Car(color: "blue", model: "ford", year: 2025);
-            proclaim("This \${car?.model} in \${car?.color} is a \${car?.year} model.");
+            proclaim("This \${car2?.model} in \${car2?.color} is a \${car2?.year} model.");
       `,
     expected: dedent`
             class Car_1 {
                 constructor(color_2,model_3,year_4) {
-                    this["color_2"] = color_2;
-                    this["model_3"] = model_3;
-                    this["year_4"] = year_4;
+                this["color_2"] = color_2;
+                this["model_3"] = model_3;
+                this["year_4"] = year_4;
                 }
                 vroom_5() {
-                    console.log("vroom vroom");
+                console.log("vroom vroom");
                 }
             }
             let car_6 = new Car_1(color_7, model_8, year_9);
-            console.log("This \${car.model} in \${car.color} is a \${car.year} model.");
+            console.log(\`This \${(car_6["model_3"])} in \${(car_6["color_2"])} is a \${(car_6["year_4"])} model.\`);
             let car2_10 = new Car_1(color_11, model_12, year_13);
-            console.log("This \${car?.model} in \${car?.color} is a \${car?.year} model.");
+            console.log(\`This \${(car2_10?.["model_3"])} in \${(car2_10?.["color_2"])} is a \${(car2_10?.["year_4"])} model.\`);
       `,
   },
   {

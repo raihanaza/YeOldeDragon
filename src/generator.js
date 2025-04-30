@@ -89,8 +89,7 @@ export default function generate(program) {
     NilCoalescingExpression(e) {
       const left = gen(e.left);
       const right = gen(e.right);
-      const chain = e.op === "." ? "" : e.op;
-      return `(${left} ${chain} ${right})`;
+      return `(${left} ${e.op} ${right})`;
     },
     IfStatement(s) {
       output.push(`if (${gen(s.condition)}) {`);
@@ -135,9 +134,6 @@ export default function generate(program) {
     EmptyOptional(e) {
       return "null";
     },
-    // ListType(t) {
-    //   return `[${gen(t.baseType)}]`
-    // },
     ListExpression(e) {
       return `[${e.elements.map(gen).join(", ")}]`;
     },

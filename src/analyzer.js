@@ -272,7 +272,7 @@ export default function analyze(match) {
 
       const paramTypes = func.params.map((param) => param.type);
       const paramNames = func.params.map((param) => param.name);
-      const returnType = type.children?.[0]?.analyze()
+      const returnType = type.children?.[0]?.analyze();
       // const returnType = type.children?.[0]?.analyze() ?? core.voidType;
       func.type = core.functionType(paramNames, paramTypes, returnType);
 
@@ -330,9 +330,9 @@ export default function analyze(match) {
       const initialValues = fieldInitBlock.analyze();
       checkAllFieldsInitialized(targetFields, initialValues, { at: fieldArgs });
 
-      let fields = targetFields.map(field => {
+      let fields = targetFields.map((field) => {
         return core.field(field.name, field.type, initialValues.find((f) => f.target === field.name).source);
-      })
+      });
       context = context.parent;
       return fields;
     },
@@ -709,7 +709,6 @@ export default function analyze(match) {
     intLiteral(_digits) {
       return BigInt(this.sourceString);
     },
-
     String(_openQuote, firstLit, interps, restOfLits, _closeQuote) {
       const litText1 = firstLit.sourceString;
       const interpolations = interps.children.map((i) => i.children[1].analyze());

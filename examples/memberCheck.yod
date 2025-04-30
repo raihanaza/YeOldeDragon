@@ -10,7 +10,7 @@ matter Car {
     }
 }
 thine car: Car = Car(color: "blue", model: "ford", year: 2025);
-proclaim("This \${car.model} in \${car.color} is a \${car.year} model.");
+proclaim("This ${car.model} in ${car.color} is a ${car.year} model.");
 
 thine car2: Car? = Car(color: "blue", model: "ford", year: 2025);
-proclaim("This \${car?.model} in \${car?.color} is a \${car?.year} model.");
+proclaim("This ${car2?.model} in ${car2?.color} is a ${car2?.year} model.");
