@@ -23,6 +23,7 @@ export default function generate(program) {
       // already checked that we never updated a const, so let is always fine.
       output.push(`let ${gen(d.variable)} = ${gen(d.initializer)};`);
     },
+
     Variable(v) {
       return targetName(v);
     },
@@ -32,12 +33,10 @@ export default function generate(program) {
       for (let field of d.type.fields) {
         output.push(`this[${JSON.stringify(gen(field))}] = ${gen(field)};`);
       }
-      if (d.type.methods) {
-        for (let method of d.type.methods) {
-          output.push(gen(method));
-        }
-      }
       output.push("}");
+      if (d.type.methods) {
+        d.type.methods.forEach(gen);
+      }
       output.push("}");
     },
     ObjectCall(c) {
@@ -97,32 +96,12 @@ export default function generate(program) {
       output.push(`if (${gen(s.condition)}) {`);
       s.consequence.forEach(gen);
       if (s.alternate?.kind?.endsWith?.("IfStatement")) {
-        output.push(`} else if (${gen(s.alternate.condition)}) {`);
-        s.alternate.consequence.forEach(gen);
-        if (s.alternate.alternate) {
-          if (s.alternate.alternate.kind?.endsWith?.("IfStatement")) {
-            output.push(`} else`);
-            gen(s.alternate.alternate);
-          } else {
-            output.push(`} else {`);
-            if (Array.isArray(s.alternate.alternate)) {
-              s.alternate.alternate.forEach(gen);
-            } else {
-              gen(s.alternate.alternate);
-            }
-            output.push(`}`);
-          }
-        } else {
-          output.push(`}`);
-        }
-      } else if (s.alternate) {
-        output.push(`} else {`);
-        if (Array.isArray(s.alternate)) {
-          s.alternate.forEach(gen);
-        } else {
-          gen(s.alternate);
-        }
-        output.push(`}`);
+        output.push("} else");
+        gen(s.alternate);
+      } else {
+        output.push("} else {");
+        s.alternate.forEach(gen);
+        output.push("}");
       }
     },
     ShortIfStatement(s) {
@@ -186,8 +165,6 @@ export default function generate(program) {
     FunctionCall(c) {
       const argValues = c.args.map((arg) => gen(arg.value));
       const targetCode = `${gen(c.callee)}(${argValues.join(", ")})`;
-      console.log("ARGS: ", c.args);
-      console.log("TARGET CODE: ", targetCode);
       // Calls in expressions vs in statements are handled differently
       //TODO: revisit this cause we don't allow functions to be assigned to variables yet
       // if (c.callee.type.returnType !== voidType) {

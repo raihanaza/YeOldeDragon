@@ -258,11 +258,7 @@ export default function analyze(match) {
       }
       checkIsAssignable(initialValue, targetType, exp);
       context.add(id.sourceString, variable);
-      if (mutable) {
-        return core.variableDeclaration(variable, initialValue);
-      } else {
-        return core.constantDeclaration(variable, initialValue);
-      }
+      return core.variableDeclaration(variable, initialValue);
     },
 
     FuncDecl(_func, id, parameters, _colons, type, block) {

@@ -14,9 +14,9 @@ export function argument(name, type, value) {
   return { kind: "Argument", name, type, value };
 }
 
-export function constantDeclaration(variable, initializer) {
-  return { kind: "ConstantDeclaration", variable, initializer, mutable: false };
-}
+// export function constantDeclaration(variable, initializer) {
+//   return { kind: "ConstantDeclaration", variable, initializer, mutable: false };
+// }
 
 export function printStatement(expressions) {
   return { kind: "PrintStatement", expressions, type: voidType };
@@ -90,10 +90,6 @@ export function shortIfStatement(condition, consequence) {
   return { kind: "ShortIfStatement", condition, consequence };
 }
 
-// export function elseStatement(consequence) {
-//   return { kind: "ElseStatement", consequence };
-// }
-
 export function whileStatement(condition, body) {
   return { kind: "LoopStatement", condition, body };
 }
@@ -123,10 +119,6 @@ export function optionalType(baseType) {
 export function listType(baseType) {
   return { kind: "ListType", baseType };
 }
-
-// export function emptyListType(type) {
-//   return { kind: "EmptyListType", type };
-// }
 
 export function listExpression(elements, type) {
   return { kind: "ListExpression", elements, type };
