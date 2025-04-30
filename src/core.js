@@ -58,9 +58,7 @@ export function returnStatement(expression) {
   return { kind: "ReturnStatement", expression };
 }
 
-export function shortReturnStatement() {
-  return { kind: "ShortReturnStatement" };
-}
+export const shortReturnStatement = { kind: "ShortReturnStatement" };
 
 export function unaryExpression(op, operand, type) {
   return { kind: "UnaryExpression", op, operand, type };
@@ -112,9 +110,7 @@ export function forRangeStatement(iterator, start, op, end, body) {
   return { kind: "ForRangeStatement", iterator, start, op, end, body };
 }
 
-export function breakStatement() {
-  return { kind: "BreakStatement" };
-}
+export const breakStatement = { kind: "BreakStatement" };
 
 export function emptyOptional(baseType) {
   return { kind: "EmptyOptional", baseType, type: optionalType(baseType) };
@@ -179,7 +175,7 @@ export function stringExpression(strings) {
 }
 
 export function fieldArg(name, type) {
-  return { kind: "FieldArgument", name, type};
+  return { kind: "FieldArgument", name, type };
 }
 
 export function field(name, type, value) {

@@ -402,7 +402,7 @@ export default function analyze(match) {
     Statement_returnvoid(returnKeyword, _semi) {
       checkInFunction(returnKeyword);
       checkReturnsNothing(context.function, returnKeyword);
-      return core.shortReturnStatement();
+      return core.shortReturnStatement;
     },
 
     Statement_call(call, _semicolon) {
@@ -482,8 +482,9 @@ export default function analyze(match) {
     },
 
     Statement_break(breakKeyword, _semi) {
+      console.log("***Statement_break runs***");
       checkInLoop(breakKeyword);
-      return core.breakStatement();
+      return core.breakStatement;
     },
 
     Block(_open, statements, _close) {

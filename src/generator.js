@@ -153,9 +153,6 @@ export default function generate(program) {
       s.body.forEach(gen);
       output.push(`}`);
     },
-    BreakStatement(s) {
-      output.push("break;");
-    },
     EmptyOptional(e) {
       return "null";
     },

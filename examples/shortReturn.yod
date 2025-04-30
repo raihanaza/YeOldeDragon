@@ -1,0 +1,4 @@
+don hello(name: string) -> void {
+    perchance name == "" { return; }
+    proclaim(name);
+}

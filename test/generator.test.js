@@ -56,7 +56,7 @@ const fixtures = [
             return num;
         }
         `,
-        expected: dedent`
+    expected: dedent`
             function incrementFunction_1(num_2) {
                 num_2++;
                 return num_2;
@@ -89,12 +89,12 @@ const fixtures = [
         `,
   },
   {
-      name: "exponents",
-      source: `
+    name: "exponents",
+    source: `
             thine dragon_scales: int = 2;
             thine dragon_scales_sqrd: int = dragon_scales^2;
       `,
-      expected: dedent`
+    expected: dedent`
             let dragon_scales_1 = 2;
             let dragon_scales_sqrd_2 = dragon_scales_1 ** 2;
       `,
@@ -106,7 +106,7 @@ const fixtures = [
                 thine result: int = num1 + num2;
                 return result;
             }
-            
+
             add(num1: 2, num2: 3);
     `,
     expected: dedent`
@@ -117,7 +117,7 @@ const fixtures = [
 
             add_1(2, 3);
     `,
-},
+  },
   {
     name: "break statement",
     source: `
@@ -133,7 +133,7 @@ const fixtures = [
 
             breakTest(num: 89);
         `,
-        expected: dedent`
+    expected: dedent`
             function breakTest_1(num_2) {
                 while (num_2 > 5) {
                     console.log("num is right size");
@@ -247,27 +247,27 @@ const fixtures = [
         `,
   },
   {
-      name: "repeat loop",
-      source: `
+    name: "repeat loop",
+    source: `
             fortill 5 {
                 proclaim("Hello!");}
       `,
-      expected: dedent`
+    expected: dedent`
             for (let i_1 = 0; i_1 < 5; i_1++) {
                 console.log("Hello!");
             }
       `,
-  },  
-  {  
-      name: "object declaration",
-      source: `
+  },
+  {
+    name: "object declaration",
+    source: `
             matter Coffee {
                 name: string
                 roast: string
                 seasonal: boolean
             }
       `,
-      expected: dedent`
+    expected: dedent`
             function Coffee_1(name_2, roast_3, seasonal_4) {
                 this.name_2 = name_2;
                 this.roast_3 = roast_3;
@@ -275,38 +275,79 @@ const fixtures = [
             }
       `,
   },
-//   {
-//       name: "class declaration",
-//       source: `
-//             matter Car {
-//                 init (color: string, model: string, year: int) {
-//                     ye.color = color;
-//                     ye.model = model;
-//                     ye.year = year;
-//                 }
+  {
+    name: "class declaration",
+    source: `
+            matter Car {
+                init (color: string, model: string, year: int) {
+                    ye.color = color;
+                    ye.model = model;
+                    ye.year = year;
+                }
 
-//                 don vroom() -> void {
-//                     proclaim("vroom vroom");
-//                 }
-//             }
-//             thine car: Car = Car(color: "blue", model: "ford", year: 2025);
-//             proclaim("This \${car.model} in \${car.color} is a \${car.year} model.");
-//       `,
-//       expected: dedent`
-//             class Car_1 {
-//                 constructor(color_2, model_3, year_4) {
-//                     this.color_2 = color_2;
-//                     this.model_3 = model_3;
-//                     this.year_4 = year_4;
-//                 }
-//                 vroom() {
-//                     console.log("vroom vroom");
-//                 }
-//             }
-//             let car_5 = new Car_1("blue", "ford", 2025);
-//             console.log(\`This \${car_5.model_3} in \${car_5.color_2} is a \${car_5.year_4} model.\`);
-//       `,
-//   },
+                don vroom() -> void {
+                    proclaim("vroom vroom");
+                }
+            }
+            thine car: Car = Car(color: "blue", model: "ford", year: 2025);
+            proclaim("This \${car.model} in \${car.color} is a \${car.year} model.");
+      `,
+    expected: dedent`
+            class Car_1 {
+                constructor(color_2, model_3, year_4) {
+                    this.["color_2"] = color_2;
+                    this.["model_3"] = model_3;
+                    this.["year_4"] = year_4;
+                }
+                vroom_5() {
+                    console.log("vroom vroom");
+                }
+                [object Object]
+            }
+            let car_6 = new Car_1(color_7, model_8, year_9);
+            console.log(\`This \${(car_6.["model_3"])} in \${(car_6.["color_2"])} is a \${(car_5.["year_4"])} model.\`);
+      `,
+  },
+  {
+    name: "short return statement",
+    source: `
+            don hello(name: string) -> void {
+                perchance name == "" { return; }
+                proclaim(name);
+            }
+    `,
+    expected: dedent`
+            function hello_1(name_2) {
+                if (name_2 === "") {
+                    return;
+                }
+                console.log(name_2);
+            }
+      `,
+  },
+  {
+    name: "unary expression",
+    source: `proclaim(-1);`,
+    expected: dedent`console.log(-(1));`,
+  },
+  {
+    name: "nil coalescing",
+    source: `
+        don hello(name: string?) -> void {
+            proclaim(name ?? "no name");
+        }
+    `,
+    expected: dedent`
+            function hello_1(name_2) {
+                console.log((name_2 ?? "no name"));
+            }
+    `,
+  },
+  {
+      name: "",
+      source: ``,
+      expected: dedent``,
+  },
   // {
   //     name: "",
   //     source: ``,
