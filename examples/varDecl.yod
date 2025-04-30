@@ -1,5 +1,5 @@
 thine x: int = 1;
 x = x + 2;
 fact y: int = 5;
-proclaim("x is \${x} and y is \${y}.");
+proclaim("x is ${x} and y is ${y}.");
 thine dragons: [string] = [];

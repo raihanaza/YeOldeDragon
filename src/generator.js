@@ -176,12 +176,7 @@ export default function generate(program) {
         .map((litOrInterp) => (litOrInterp.kind ? `\$\{${gen(litOrInterp)}\}` : gen(litOrInterp)))
         .join("");
       const hasInterpolation = e.strings.some((litOrInterp) => litOrInterp.kind);
-
-      if (hasInterpolation) {
-        return `\`${parts}\``;
-      } else {
-        return `"${parts}"`;
-      }
+      return hasInterpolation ? `\`${parts}\`` : `"${parts}"`;
     },
   };
 
