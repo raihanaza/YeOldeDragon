@@ -478,7 +478,6 @@ export default function analyze(match) {
     },
 
     Statement_break(breakKeyword, _semi) {
-      console.log("***Statement_break runs***");
       checkInLoop(breakKeyword);
       return core.breakStatement;
     },

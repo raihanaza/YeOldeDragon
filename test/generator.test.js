@@ -221,6 +221,10 @@ const fixtures = [
     name: "range loop",
     source: `
             fortill i in 3...10 {
+                proclaim("I am in the loop! Currently at \$\{i\}");
+            }
+
+            fortill i in 3..<10 {
                 proclaim("I am in the loop! Currently at \${i}");
             }
         `,
@@ -228,6 +232,10 @@ const fixtures = [
             for (let i_1 = 3; i_1 <= 10; i_1++) {
                 console.log(\`I am in the loop! Currently at \${i_1}\`);
             }
+            for (let i_2 = 3; i_2 < 10; i_2++) {
+                console.log(\`I am in the loop! Currently at \${i_2}\`);
+            }
+
         `,
   },
   {
@@ -332,11 +340,6 @@ const fixtures = [
             }
       `,
   },
-  //   {
-  //     name: "unary expression",
-  //     source: `proclaim(-1);`,
-  //     expected: dedent`console.log(-(1));`,
-  //   },
   {
     name: "nil coalescing",
     source: `
