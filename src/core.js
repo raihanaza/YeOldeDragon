@@ -2,10 +2,6 @@ export function program(statements) {
   return { kind: "Program", statements };
 }
 
-// export function block(statements) {
-//   return { kind: "Block", statements };
-// }
-
 export function variableDeclaration(variable, initializer) {
   return { kind: "VariableDeclaration", variable, initializer };
 }
@@ -14,33 +10,36 @@ export function variable(name, type, mutable) {
   return { kind: "Variable", name, type, mutable };
 }
 
-export function argument(name, type) {
-  return { kind: "Argument", name, type };
+export function argument(name, type, value) {
+  return { kind: "Argument", name, type, value };
 }
 
-export function constantDeclaration(variable, initializer, mutable) {
-  return { kind: "ConstantDeclaration", variable, initializer, mutable: false };
-}
+// export function constantDeclaration(variable, initializer) {
+//   return { kind: "ConstantDeclaration", variable, initializer, mutable: false };
+// }
 
-export function printStatement(expression) {
-  return { kind: "PrintStatement", expression, type: voidType };
+export function printStatement(expressions) {
+  return { kind: "PrintStatement", expressions, type: voidType };
 }
 
 export function functionDeclaration(func) {
   return { kind: "FunctionDeclaration", func };
 }
 
-export function func(name, params, body, type) {
-  return { kind: "FunctionType", name, params, body, type };
+export function func(name, params, body, type, isMethod) {
+  return { kind: "FunctionType", name, params, body, type, isMethod };
 }
+
+// export function intrinsicFunction(name, type) {
+//   return { kind: "FunctionType", name, type, intrinsic: true };
+// }
 
 export function functionType(paramNames, paramTypes, returnType) {
   return { kind: "FunctionType", paramNames, paramTypes, returnType };
 }
 
-export function functionCall(name, args) {
-  // TODO: Long term add standard functions, does not have to be for the class
-  return { kind: "FunctionCall", name, args };
+export function functionCall(callee, args) {
+  return { kind: "FunctionCall", callee, args };
 }
 
 export function incrementStatement(variable) {
@@ -59,9 +58,7 @@ export function returnStatement(expression) {
   return { kind: "ReturnStatement", expression };
 }
 
-export function shortReturnStatement() {
-  return { kind: "ShortReturnStatement" };
-}
+export const shortReturnStatement = { kind: "ShortReturnStatement" };
 
 export function unaryExpression(op, operand, type) {
   return { kind: "UnaryExpression", op, operand, type };
@@ -93,10 +90,6 @@ export function shortIfStatement(condition, consequence) {
   return { kind: "ShortIfStatement", condition, consequence };
 }
 
-// export function elseStatement(consequence) {
-//   return { kind: "ElseStatement", consequence };
-// }
-
 export function whileStatement(condition, body) {
   return { kind: "LoopStatement", condition, body };
 }
@@ -113,9 +106,7 @@ export function forRangeStatement(iterator, start, op, end, body) {
   return { kind: "ForRangeStatement", iterator, start, op, end, body };
 }
 
-export function breakStatement() {
-  return { kind: "BreakStatement" };
-}
+export const breakStatement = { kind: "BreakStatement" };
 
 export function emptyOptional(baseType) {
   return { kind: "EmptyOptional", baseType, type: optionalType(baseType) };
@@ -128,10 +119,6 @@ export function optionalType(baseType) {
 export function listType(baseType) {
   return { kind: "ListType", baseType };
 }
-
-// export function emptyListType(type) {
-//   return { kind: "EmptyListType", type };
-// }
 
 export function listExpression(elements, type) {
   return { kind: "ListExpression", elements, type };
@@ -155,10 +142,6 @@ export function classDeclaration(type) {
   return { kind: "ClassDeclaration", type };
 }
 
-export function classInitializer(fields) {
-  return { kind: "ClassInitializer", fields };
-}
-
 export function objectType(name, fields, methods) {
   return { kind: "ObjectType", name, fields, methods };
 }
@@ -171,8 +154,8 @@ export function objectCall(callee, args, type) {
   return { kind: "ObjectCall", callee, args, type };
 }
 
-export function memberExpression(object, op, field) {
-  return { kind: "MemberExpression", object, op, field, type: field.type };
+export function memberExpression(object, op, field, isField) {
+  return { kind: "MemberExpression", object, op, field, type: field.type, isField };
 }
 
 // export function objectInstance(name, fields) {
@@ -181,6 +164,10 @@ export function memberExpression(object, op, field) {
 
 export function stringExpression(strings) {
   return { kind: "StringExpression", strings, type: stringType };
+}
+
+export function fieldArg(name, type) {
+  return { kind: "FieldArgument", name, type };
 }
 
 export function field(name, type, value) {
@@ -208,6 +195,7 @@ export const standardLibrary = Object.freeze({
   any: anyType,
   zilch: zilchType,
   π: variable("π", false, floatType),
+  // proclaim: intrinsicFunction("proclaim", anyToVoidType),
 });
 
 String.prototype.type = stringType;

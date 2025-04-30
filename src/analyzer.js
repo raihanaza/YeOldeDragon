@@ -101,7 +101,7 @@ export default function analyze(match) {
 
   function includesAsField(objectType, type) {
     return objectType.fields.some(
-      (field) => field.type === type 
+      (field) => field.type === type
       // || (field.type?.kind === "ObjectType" && includesAsField(field.type, type))
     );
   }
@@ -258,11 +258,7 @@ export default function analyze(match) {
       }
       checkIsAssignable(initialValue, targetType, exp);
       context.add(id.sourceString, variable);
-      if (mutable) {
-        return core.variableDeclaration(variable, initialValue);
-      } else {
-        return core.constantDeclaration(variable, initialValue);
-      }
+      return core.variableDeclaration(variable, initialValue);
     },
 
     FuncDecl(_func, id, parameters, _colons, type, block) {
@@ -276,18 +272,20 @@ export default function analyze(match) {
 
       const paramTypes = func.params.map((param) => param.type);
       const paramNames = func.params.map((param) => param.name);
-      const returnType = type.children?.[0]?.analyze()
+      const returnType = type.children?.[0]?.analyze();
       // const returnType = type.children?.[0]?.analyze() ?? core.voidType;
       func.type = core.functionType(paramNames, paramTypes, returnType);
 
       // Analyze body while still in child context
       func.body = block.analyze();
+      func.isMethod = context.classDecl ? true : false;
       context = context.parent;
       return core.functionDeclaration(func);
     },
 
-    PrintStmt(_print, exp, _semi) {
-      return core.printStatement(exp.analyze());
+    PrintStmt(_print, _open, exps, _close, _semi) {
+      const expressions = exps.asIteration().children.map((exp) => exp.analyze());
+      return core.printStatement(expressions);
     },
 
     StructDecl(_matter, id, _left, fields, _right) {
@@ -307,14 +305,15 @@ export default function analyze(match) {
       checkNotDeclared(id.sourceString, id);
       const type = core.objectType(id.sourceString, [], [], []);
       context.add(id.sourceString, type);
-      const classInitRep = classInit.analyze();
-      type.fields = classInitRep.fields;
+      type.fields = classInit.analyze();
+      type.fields.map((field) => {
+        context.add(field.name, field);
+      });
       context = context.newChildContext({ inLoop: false, classDecl: type });
       // check that every value has been initialized?
       checkHasDistinctFields(type, id);
       checkIfSelfContaining(type, id);
       type.methods = methods.analyze();
-
       // checkHadDistinctMethods(type, id);
       // maybe just check if have distinct methods names since don't want to overload?
       context = context.parent;
@@ -325,27 +324,26 @@ export default function analyze(match) {
       return methods.children.map((method) => method.analyze());
     },
 
-    ClassInit(_init, fields, fieldInitBlock) {
-      const targetFields = fields.analyze();
-      const classInit = core.classInitializer([], []);
+    ClassInit(_init, fieldArgs, fieldInitBlock) {
       context = context.newChildContext({ inLoop: false });
-      classInit.fields = targetFields;
+      const targetFields = fieldArgs.analyze();
       const initialValues = fieldInitBlock.analyze();
-      checkAllFieldsInitialized(classInit.fields, initialValues, { at: fields });
-      classInit.fields.map((field) => {
-        field.value = initialValues.find((f) => f.target === field.name).source;
+      checkAllFieldsInitialized(targetFields, initialValues, { at: fieldArgs });
+
+      let fields = targetFields.map((field) => {
+        return core.field(field.name, field.type, initialValues.find((f) => f.target === field.name).source);
       });
       context = context.parent;
-      return classInit;
+      return fields;
     },
 
-    Field(id, _colon, type) {
-      const field = core.field(id.sourceString, type.analyze(), null);
+    FieldArg(id, _colon, type) {
+      const field = core.fieldArg(id.sourceString, type.analyze());
       context.add(field.name, field);
       return field;
     },
 
-    Fields(_open, fieldList, _close) {
+    FieldArgs(_open, fieldList, _close) {
       return fieldList.asIteration().children.map((field) => field.analyze());
     },
 
@@ -400,7 +398,7 @@ export default function analyze(match) {
     Statement_returnvoid(returnKeyword, _semi) {
       checkInFunction(returnKeyword);
       checkReturnsNothing(context.function, returnKeyword);
-      return core.shortReturnStatement();
+      return core.shortReturnStatement;
     },
 
     Statement_call(call, _semicolon) {
@@ -481,7 +479,7 @@ export default function analyze(match) {
 
     Statement_break(breakKeyword, _semi) {
       checkInLoop(breakKeyword);
-      return core.breakStatement();
+      return core.breakStatement;
     },
 
     Block(_open, statements, _close) {
@@ -499,7 +497,7 @@ export default function analyze(match) {
     },
 
     Arg(id, _colon, exp) {
-      const arg = core.argument(id.sourceString, exp.analyze().type);
+      const arg = core.argument(id.sourceString, exp.analyze().type, exp.analyze());
       return arg;
     },
 
@@ -615,7 +613,6 @@ export default function analyze(match) {
       checkArgumentCount(exps.length, targetTypes.length, { at: open });
       const args = exps.map((exp, i) => {
         const arg = exp.analyze();
-
         if (callee?.kind === "ObjectType") {
           checkArgIsAField(arg.name, targetParamNames, { at: exp });
           checkIsAssignable(arg, targetTypes[i], { at: exp });
@@ -623,7 +620,6 @@ export default function analyze(match) {
           checkIsAssignable(arg, targetTypes[i], { at: exp });
           checkArgNameMatchesParam(arg, targetParamNames[i], { at: exp });
         }
-
         return arg;
       });
       return callee?.kind === "ObjectType"
@@ -643,6 +639,7 @@ export default function analyze(match) {
         checkInClassDecl({ at: exp });
         checkClassFieldExists(id, { at: exp });
         const object = context.lookup(id.sourceString);
+        const classDecl = context.classDecl;
         let objectType;
         if (dot.sourceString === "?.") {
           checkHasOptionalObjectType(object, exp);
@@ -650,7 +647,9 @@ export default function analyze(match) {
         } else {
           objectType = object.type;
         }
-        return core.memberExpression(object, dot.sourceString, object);
+        checkHasMember(classDecl, id.sourceString, id);
+        // const field = objectType.fields.find((f) => f.name === id.sourceString);
+        return core.memberExpression(classDecl, dot.sourceString, object, true);
       } else {
         const object = exp.analyze();
         let objectType;
@@ -662,8 +661,9 @@ export default function analyze(match) {
           objectType = object.type;
         }
         checkHasMember(objectType, id.sourceString, id);
+        // console.log("***objectType***", objectType);
         const field = objectType.fields.find((f) => f.name === id.sourceString);
-        return core.memberExpression(object, dot.sourceString, field);
+        return core.memberExpression(object, dot.sourceString, field, false);
       }
     },
 
@@ -708,7 +708,6 @@ export default function analyze(match) {
     intLiteral(_digits) {
       return BigInt(this.sourceString);
     },
-
     String(_openQuote, firstLit, interps, restOfLits, _closeQuote) {
       const litText1 = firstLit.sourceString;
       const interpolations = interps.children.map((i) => i.children[1].analyze());

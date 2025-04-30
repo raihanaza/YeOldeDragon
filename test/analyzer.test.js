@@ -3,14 +3,7 @@ import assert from "node:assert/strict";
 import { ok, deepEqual, throws } from "node:assert/strict";
 import parse from "../src/parser.js";
 import analyze from "../src/analyzer.js";
-import {
-  program,
-  variableDeclaration,
-  variable,
-  intType,
-  floatType,
-  binaryExpression,
-} from "../src/core.js";
+import { program, variableDeclaration, variable, intType, floatType, binaryExpression } from "../src/core.js";
 
 const semanticChecks = [
   ["int variable declaration", "thine x: int = 1;"],

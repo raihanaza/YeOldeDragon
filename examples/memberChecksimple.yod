@@ -1,0 +1,8 @@
+matter Car {
+      init (color: string, yearsOwned: int?) {
+        ye.color = color;
+        ye.yearsOwned = 0;
+      }
+}
+thine car: Car? = Car(color: "blue", yearsOwned: zilch int);
+proclaim("This ${car?.color} color car has been owned for ${car?.yearsOwned} years.");

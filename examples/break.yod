@@ -1,0 +1,11 @@
+don breakTest(num: int) -> void {
+    whilst num > 5 {
+        proclaim("num is right size");
+        perchance num == 13 {
+            proclaim("num is unlucky!");
+            breaketh;
+        }
+    }
+}
+
+breakTest(num: 89);

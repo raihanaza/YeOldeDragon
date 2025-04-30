@@ -1,0 +1,15 @@
+thine x: float = 3.45;
+thine y: float = 8.99;
+perchance x > y {
+    proclaim(y);
+} else perchance x < y {
+    proclaim(x);
+} else {
+    proclaim("x and y are equal");
+}
+
+perchance x == 9.99 {
+    proclaim("x is 9.99");
+} else {
+    proclaim("x is not 9.99");
+}
