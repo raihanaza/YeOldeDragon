@@ -102,7 +102,6 @@ export default function analyze(match) {
   function includesAsField(objectType, type) {
     return objectType.fields.some(
       (field) => field.type === type
-      // || (field.type?.kind === "ObjectType" && includesAsField(field.type, type))
     );
   }
 
@@ -656,7 +655,6 @@ export default function analyze(match) {
           objectType = object.type;
         }
         checkHasMember(objectType, id.sourceString, id);
-        // console.log("***objectType***", objectType);
         const field = objectType.fields.find((f) => f.name === id.sourceString);
         return core.memberExpression(object, dot.sourceString, field, false);
       }
