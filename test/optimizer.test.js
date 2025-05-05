@@ -5,23 +5,16 @@ import * as core from "../src/core.js"
 
 // Basic variables used in test cases
 const x_int = core.variable("x", core.intType, true)
-const x_float = core.variable("x_float", core.floatType, true)
 const x_list = core.variable("x_list", core.listType(core.intType), true)
 const x_inc = core.incrementStatement(x_int)
-const x_dec = core.decrementStatement(x_int)
-const return_add = core.returnStatement(core.binaryExpression("+", 1, 1, core.intType))
-const return_string = core.returnStatement("Hello, World!")
 const add_operation = core.binaryExpression("+", 1, 1, core.intType)
 const assign = (v, e) => core.assignmentStatement(v, e, core.intType)
 const empty_list = core.emptyListExpression(core.intType)
 const and = (...c) => c.reduce((a, b) => core.binaryExpression("&&", a, b, core.boolType))
 const or = (...d) => d.reduce((a, b) => core.binaryExpression("||", a, b, core.boolType))
-const not = c => core.unaryExpression("ne", c, core.boolType)
-const neg_int = x => core.unaryExpression("-", x, core.intType)
 const list_statement = (...elements) => core.listExpression(elements, core.anyType)
 const sub = (l, i) => core.subscriptExpression(l, i)
 const less = (x, y) => core.binaryExpression("<", x, y, core.boolType)
-const eq = (x, y) => core.binaryExpression("==", x, y, core.boolType)
 const class_dec = core.classDeclaration(core.objectType("Coffee", [core.field("seasonal", core.optionalType(core.booleanType), core.fieldArg("seasonal", core.optionalType(core.booleanType)))]))
 const program = core.program
 
@@ -93,7 +86,7 @@ const tests = [
     ["does not optimize member expression", program([class_dec, core.memberExpression(class_dec.name, "?.", "seasonal", true)]), program([class_dec, core.memberExpression(class_dec.name, "?.", "seasonal", true)])],
     ["folds nil coalescing with empty optional", core.nilCoalescingExpression("??", core.emptyOptional(core.stringType), core.stringExpression("fallback string")), core.stringExpression("fallback string")],
     ["folds nil coalescing with non-empty optional", program([core.nilCoalescingExpression("??", core.variable("maybe", core.optionalType(core.stringType), true), core.stringExpression("fallback string"))]), program([core.variable("maybe", core.optionalType(core.stringType), true)])],
-
+    ["does not optimize field argument", core.fieldArg("seasonal", core.optionalType(core.booleanType), core.stringExpression("fallback string")), core.fieldArg("seasonal", core.optionalType(core.booleanType), core.stringExpression("fallback string"))],
 ]
 
 describe("The optimizer", () => {

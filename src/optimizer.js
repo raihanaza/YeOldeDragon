@@ -18,8 +18,6 @@ const optimizers = {
     return d
   },
   ClassDeclaration(d) {
-    //d.type = optimize(d.type)
-    //d.fields = d.fields.map(optimize)
     if (d.type.methods) {
       d.type.methods = d.type.methods.map(optimize)
     }
@@ -40,9 +38,9 @@ const optimizers = {
   Argument(a) {
     return a
   },
-  // FieldArgument(a) {
-  //   return a
-  // },
+  FieldArgument(a) {
+    return a
+  },
   Field(f) {
     return f
   },
@@ -82,14 +80,8 @@ const optimizers = {
   },
   BinaryExpression(e) {
     e.op = optimize(e.op)
-    console.log("BINARY EXP: ", e)
     e.left = optimize(e.left)
     e.right = optimize(e.right)
-
-    console.log("E LEFT: ", e.left)
-    console.log("E RIGHT: ", e.right)
-    console.log("E LEFT CONSTRUCT: ", e.left.constructor)
-    console.log("E RIGHT CONSTRUCT: ", e.right.constructor)
 
     if (e.op === "&&") {
       if (e.left === true) return e.right
@@ -124,7 +116,6 @@ const optimizers = {
         if (e.op === "!=") return (e.left !== e.right)
       } 
     } 
-    console.log("E AFTER OPTIMIZE: ", e)
     return e
   },
   TernaryExpression(e) {
@@ -134,7 +125,6 @@ const optimizers = {
     return e.op ? e.consequence : e.alternate
   },
   NilCoalescingExpression(e) {
-    // e.op = optimize(e.op)
     e.left = optimize(e.left)
     e.right = optimize(e.right)
     if (e.left.kind === "EmptyOptional") {
@@ -216,17 +206,13 @@ const optimizers = {
     return e
   },
   MemberExpression(e) {
-    // e.object = optimize(e.object)
     return e
   },
 
   FunctionDeclaration(d) {
-    // d.func = optimize(d.func)
     return d
   },
   FunctionType(f) {
-    // f.params = f.params.map(optimize)
-    // f.returnType = optimize(f.returnType)
     return f
   },
   FunctionCall(c) {
@@ -234,11 +220,6 @@ const optimizers = {
     c.args = c.args.flatMap(optimize)
     return c
   },
-  // Function(f) {
-  //   if (f.body) {
-  //     f.body = f.body.flatMap(optimize)
-  //   }
-  // },
   PrintStatement(s) {
     return s
   },
