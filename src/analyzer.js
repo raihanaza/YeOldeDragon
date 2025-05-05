@@ -41,7 +41,7 @@ export default function analyze(match) {
 
   //utility functions
   function checkNotDeclared(name, at) {
-    context.lookup;
+    // console.log("checkNotDeclared", name, context.lookup(name), at);
     check(!context.lookup(name), `Identifier ${name} already declared`, at);
   }
 
@@ -223,18 +223,8 @@ export default function analyze(match) {
     check(argCount === paramCount, `Expected ${paramCount} arguments but got ${argCount}`, at);
   }
 
-  function checkFieldInClassInitParams(fieldName, at) {
-    check(context.lookup(fieldName), `Field ${fieldName} not included in Class initializer parameters`, at);
-  }
-
-  function checkAllFieldsInitialized(fields, initialValues, at) {
-    const fieldNames = fields.map((f) => f.name);
-    const initialValueNames = initialValues.map((f) => f.target);
-    check(
-      fieldNames.every((name) => initialValueNames.includes(name)),
-      `Not all fields have been initialized`,
-      at
-    );
+  function checkAllFieldArgsUsed(fields, initialValues, at) {
+    console.log("***checkAllFieldsInitialized***", fields, initialValues);
   }
 
   function checkIfReturnable(e, { from: f }, at) {
@@ -324,14 +314,18 @@ export default function analyze(match) {
       return methods.children.map((method) => method.analyze());
     },
 
-    ClassInit(_init, fieldArgs, fieldInitBlock) {
+    ClassInit(_init, fieldParams, fieldInitBlock) {
       context = context.newChildContext({ inLoop: false });
-      const targetFields = fieldArgs.analyze();
+      const fieldArgs = fieldParams.analyze();
       const initialValues = fieldInitBlock.analyze();
-      checkAllFieldsInitialized(targetFields, initialValues, { at: fieldArgs });
+      checkAllFieldArgsUsed(fieldArgs, initialValues, { at: fieldParams });
 
-      let fields = targetFields.map((field) => {
-        return core.field(field.name, field.type, initialValues.find((f) => f.target === field.name).source);
+      let fields = initialValues.map((initialValue) => {
+        return core.field(
+          initialValue.target,
+          initialValue.type,
+          initialValue.source,
+        );
       });
       context = context.parent;
       return fields;
@@ -347,20 +341,21 @@ export default function analyze(match) {
       return fieldList.asIteration().children.map((field) => field.analyze());
     },
 
-    FieldInit(_ye, _dot, id, _eq, exp, _semi) {
+    FieldInit(_ye, _dot, id, _colon, type, _eq, exp, _semi) {
+      // checkNotDeclared(id.sourceString, id);
       const fieldName = id.sourceString;
-      checkFieldInClassInitParams(fieldName, { at: id });
-      const initializer = exp.analyze();
-      return core.assignmentStatement(fieldName, initializer, context.lookup(fieldName).type);
+      let targetType = type.analyze();
+      const initialValue = exp.analyze();
+      if (targetType.kind === "ObjectType") {
+        targetType = targetType.name;
+      }
+      checkIsAssignable(initialValue, targetType, exp);
+      return core.assignmentStatement(fieldName, initialValue, targetType);
     },
 
     FieldInitBlock(_open, fieldInits, _close) {
       const initializations = fieldInits.children.map((exp) => {
         const fieldInit = exp.analyze();
-        const fieldInitTarget = context.lookup(fieldInit.target);
-        checkHasBeenDeclared(fieldInit, fieldInit, { at: exp });
-        checkIsAssignable(fieldInit.source, fieldInitTarget.type, { at: exp });
-        checkArgNameMatchesParam(fieldInit, fieldInit, { at: exp });
         return fieldInit;
       });
       return initializations;

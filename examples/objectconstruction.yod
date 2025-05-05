@@ -1,10 +1,11 @@
 
 matter Coffee {
     init(roast: int, name: string, origin: string?, seasonal: boolean?) {
-        ye.roast = roast + 2;
-        ye.name = name;
-        ye.origin = zilch string;
-        ye.seasonal = seasonal;
+        ye.roast: int = roast + 2;
+        ye.name: string = name;
+        ye.origin: string? = zilch string;
+        ye.seasonal: boolean? = seasonal;
+        ye.expired: boolean = false
     }
 
     don brew() -> void {

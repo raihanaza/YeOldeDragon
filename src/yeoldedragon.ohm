@@ -32,7 +32,7 @@ YeOldeDragon {
     FieldArg = id ":" Type
     FieldArgs = "(" ListOf<FieldArg, ","> ")"
     FieldInitBlock = "{" FieldInit* "}"
-    FieldInit = ye "." id "=" Exp0 ";"
+    FieldInit = ye "." id ":" Type "=" Exp0 ";"
     ClassMemberExpression = ye "." id
     Methods = FuncDecl*
 
@@ -42,7 +42,7 @@ YeOldeDragon {
          | id 															--id
 
     IfStmt = perchance Exp0 Block else Block 					               --long
-    	      | perchance Exp0 Block else IfStmt 						          --elseif
+               | perchance Exp0 Block else IfStmt 						          --elseif
            | perchance Exp0 Block									          --short
 
     LoopStmt = whilst Exp0 Block											--while
@@ -51,9 +51,9 @@ YeOldeDragon {
              | fortill id in Exp0 Block 									--forEach
 
     Exp0 = Exp1 "?" Exp1 ":" Exp0 										     --ternary
-    	    | Exp1
+             | Exp1
     Exp1 = Exp1 "??" Exp2 												--nilcoalescing
-    	    | Exp2
+             | Exp2
     Exp2 = Exp3 ("||" Exp3)+										     	--or
          | Exp3 ("&&" Exp3)+										     	--and
          | Exp3

@@ -1,0 +1,5 @@
+matter Coffee {
+    init() {
+        ye.roast: int = 0;
+    }
+}
