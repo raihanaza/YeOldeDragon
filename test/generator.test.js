@@ -327,7 +327,9 @@ const fixtures = [
     name: "short return statement",
     source: `
             don hello(name: string) -> void {
-                perchance name == "" { return; }
+                perchance name == "" { 
+                    return; 
+                }
                 proclaim(name);
             }
     `,

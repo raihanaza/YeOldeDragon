@@ -19,8 +19,6 @@ export default function generate(program) {
       p.statements.forEach(gen);
     },
     VariableDeclaration(d) {
-      // We don't care about const vs. let in the generated code! The analyzer has
-      // already checked that we never updated a const, so let is always fine.
       output.push(`let ${gen(d.variable)} = ${gen(d.initializer)};`);
     },
 
@@ -161,11 +159,6 @@ export default function generate(program) {
     FunctionCall(c) {
       const argValues = c.args.map((arg) => gen(arg.value));
       const targetCode = `${gen(c.callee)}(${argValues.join(", ")})`;
-      // Calls in expressions vs in statements are handled differently
-      //TODO: revisit this cause we don't allow functions to be assigned to variables yet
-      // if (c.callee.type.returnType !== voidType) {
-      //   return targetCode;
-      // }
       output.push(`${targetCode};`);
     },
     PrintStatement(s) {
