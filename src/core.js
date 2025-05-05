@@ -142,8 +142,12 @@ export function classDeclaration(type) {
   return { kind: "ClassDeclaration", type };
 }
 
-export function objectType(name, fields, methods) {
-  return { kind: "ObjectType", name, fields, methods };
+export function classInit(fieldArgs, fields) {
+  return { kind: "ClassDeclaration", fieldArgs, fields };
+}
+
+export function objectType(name, fields, fieldArgs, methods) {
+  return { kind: "ObjectType", name, fields, fieldArgs, methods };
 }
 
 // export function objectDefinition(name, fields, methods) {

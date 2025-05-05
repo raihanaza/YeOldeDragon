@@ -58,13 +58,18 @@ const semanticChecks = [
   ["struct declaration", `matter Person { name: string age: int }`],
   [
     "class declaration",
-    `matter car { init (make: string, model: string, year: int) { ye.make: string = make; ye.model: string = model; ye.year: string = year; } }`,
+    `matter car { init (make: string, model: string, year: int) {
+      ye.make: string = make;
+      ye.model: string = model;
+      ye.year: int = year; }
+    }`,
   ],
   [
     "member check",
     `matter Car {
       init (color: string, model: string, year: int) {
-        ye.color: string = color; ye.model = model;
+        ye.color: string = color;
+        ye.model: string = model;
         ye.year: int = year;
       }
     }
@@ -165,8 +170,9 @@ const semanticErrors = [
     "calling a function that does not exist in a class",
     `matter Car {
       init (color: string, model: string, year: int) {
-        ye.color = color; ye.model = model;
-        ye.year = year;
+        ye.color: string = color;
+        ye.model: string = model;
+        ye.year: int = year;
       }
 
       don vroom() -> string {
@@ -182,8 +188,9 @@ const semanticErrors = [
     "calling a member that does not exist in a class",
     `matter Car {
       init (color: string, model: string, year: int) {
-        ye.color = color; ye.model = model;
-        ye.year = year;
+        ye.color: string = color;
+        ye.model: string = model;
+        ye.year: int = year;
       }
     }
     thine car: Car = Car(color: "blue", model: "ford", year: 2025);
@@ -195,8 +202,9 @@ const semanticErrors = [
     "calling ye outside of a class",
     `matter Car {
       init (color: string, model: string, year: int) {
-        ye.color = color; ye.model = model;
-        ye.year = year;
+        ye.color: string = color;
+        ye.model: string = model;
+        ye.year: int = year;
       }
     }
     thine car: Car = Car(color: "blue", model: "ford", year: 2025);
@@ -208,10 +216,10 @@ const semanticErrors = [
     "accessing a field that was not included in the class init parameters",
     `matter Car {
         init (color: string, model: string, year: int) {
-          ye.color = color;
-          ye.model = model;
-          ye.year = year;
-          ye.yearsOwned = 0;
+          ye.color: string = color;
+          ye.model: string = model;
+          ye.year: int = year;
+          ye.yearsOwned: int = 0;
         }
       }
     thine car: Car = Car(color: "blue", model: "ford", year: 2025);`,

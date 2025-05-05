@@ -219,11 +219,12 @@ export default function analyze(match) {
   }
 
   function checkArgumentCount(argCount, paramCount, at) {
+    console.log("***checkArgumentCount called***", argCount, paramCount);
     check(argCount === paramCount, `Expected ${paramCount} arguments but got ${argCount}`, at);
   }
 
   function checkAllFieldArgsUsed(fields, initialValues, at) {
-    console.log("***checkAllFieldsInitialized***", fields, initialValues);
+    console.log("***checkAllFieldArgsUsed called***", fields, initialValues);
   }
 
   function checkIfReturnable(e, { from: f }, at) {
@@ -294,7 +295,11 @@ export default function analyze(match) {
       checkNotDeclared(id.sourceString, id);
       const type = core.objectType(id.sourceString, [], [], []);
       context.add(id.sourceString, type);
-      type.fields = classInit.analyze();
+      const classInitialized = classInit.analyze();
+      type.fields = classInitialized.fields;
+      type.fieldArgs = classInitialized.fieldArgs;
+      console.log("fields", type.fields);
+
       type.fields.map((field) => {
         context.add(field.name, field);
       });
@@ -306,6 +311,7 @@ export default function analyze(match) {
       // checkHadDistinctMethods(type, id);
       // maybe just check if have distinct methods names since don't want to overload?
       context = context.parent;
+      console.log("***ClassDecl***", type);
       return core.classDeclaration(type);
     },
 
@@ -327,7 +333,7 @@ export default function analyze(match) {
         );
       });
       context = context.parent;
-      return fields;
+      return core.classInit(fieldArgs, fields);
     },
 
     FieldArg(id, _colon, type) {
@@ -598,12 +604,13 @@ export default function analyze(match) {
 
     Exp7_call(exp, open, argList, _close) {
       const callee = exp.analyze();
+      console.log("callee", callee);
       checkIsCallable(callee, { at: exp });
       const exps = argList.asIteration().children;
-      // TODO: what to do when an objectType? Do we currently store the name of attribute for object?
       const targetParamNames =
         callee?.kind === "ObjectType" ? callee.fields.map((f) => f.name) : callee.type.paramNames;
-      const targetTypes = callee?.kind === "ObjectType" ? callee.fields.map((f) => f.type) : callee.type.paramTypes;
+      const targetTypes = callee?.kind === "ObjectType" ? callee.fieldArgs.map((f) => f.type) : callee.type.paramTypes;
+      console.log("targetTypes", targetTypes);
       checkArgumentCount(exps.length, targetTypes.length, { at: open });
       const args = exps.map((exp, i) => {
         const arg = exp.analyze();
