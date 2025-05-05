@@ -117,7 +117,8 @@ export default function analyze(match) {
     return (
       t1 === t2 ||
       (t1?.kind === "OptionalType" && t2?.kind == "OptionalType" && equivalent(t1.type, t2.type)) ||
-      (t1?.kind === "ListType" && t2?.kind === "ListType" && equivalent(t1.type, t2.type))
+      (t1?.kind === "ListType" && t2?.kind === "ListType" && equivalent(t1.type, t2.type)) ||
+      typeDescription(t1) === typeDescription(t2)
     );
   }
 
@@ -139,12 +140,6 @@ export default function analyze(match) {
   function typeDescription(type) {
     if (typeof type === "string") return type;
     if (type.kind == "ObjectType") return type.name;
-    // if (type.kind == "FunctionType") {
-    //   console.log("***TYPE DESCRIPTION CALLED***")
-    //   const paramTypes = type.paramTypes.map(typeDescription).join(", ");
-    //   const returnType = typeDescription(type.returnType);
-    //   return `(${paramTypes})->${returnType}`;
-    // }
     if (type.kind == "ListType") return `[${typeDescription(type.baseType)}]`;
     if (type.kind == "OptionalType") return `${typeDescription(type.baseType)}?`;
   }
@@ -297,8 +292,6 @@ export default function analyze(match) {
         context.add(field.name, field);
       });
       context = context.newChildContext({ inLoop: false, classDecl: type });
-      // check that every value has been initialized?
-      checkHasDistinctFields(type, {at: classInit});
       checkIfSelfContaining(type, id);
       type.methods = methods.analyze();
       // checkHadDistinctMethods(type, id);
@@ -315,18 +308,10 @@ export default function analyze(match) {
       context = context.newChildContext({ inLoop: false });
       const fieldArgs = fieldParams.analyze();
       const initialValues = fieldInitBlock.analyze();
-      // console.log("***ClassInit***", initialValues);
-      // checkHasDistinctFields(initialValues, { at: fieldParams });
       let fields = initialValues.map((initialValue) => {
-        return core.field(
-          initialValue.target,
-          initialValue.type,
-          initialValue.source,
-        );
+        return core.field(initialValue.target, initialValue.type, initialValue.source);
       });
-
       checkHasDistinctFields(fields, { at: fieldInitBlock });
-
       context = context.parent;
       return core.classInit(fieldArgs, fields);
     },
@@ -341,8 +326,13 @@ export default function analyze(match) {
       return fieldList.asIteration().children.map((field) => field.analyze());
     },
 
+    /*
+    if (targetType.kind === "ObjectType") {
+        targetType = targetType.name;
+      }
+    */
+
     FieldInit(_ye, _dot, id, _colon, type, _eq, exp, _semi) {
-      // checkNotDeclared(id.sourceString, id);
       const fieldName = id.sourceString;
       let targetType = type.analyze();
       const initialValue = exp.analyze();

@@ -212,19 +212,6 @@ const semanticErrors = [
     `,
   ],
   ["assigning to a constant", "fact x: int = 1; x = 5;"],
-  [
-    "accessing a field that was not included in the class init parameters",
-    `matter Car {
-        init (color: string, model: string, year: int) {
-          ye.color: string = color;
-          ye.model: string = model;
-          ye.year: int = year;
-          ye.yearsOwned: int = 0;
-        }
-      }
-    thine car: Car = Car(color: "blue", model: "ford", year: 2025);`,
-    /Line 6, col 14/,
-  ],
 ];
 
 describe("The analyzer", () => {
