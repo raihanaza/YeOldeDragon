@@ -126,11 +126,6 @@ export default function analyze(match) {
     return (
       toType === core.anyType ||
       equivalent(fromType, toType) ||
-      // (fromType?.kind === "FunctionType" &&
-      //   toType?.kind === "FunctionType" &&
-      //   assignable(fromType.returnType, toType.returnType) &&
-      //   fromType.paramTypes.length === toType.paramTypes.length &&
-      //   toType.paramTypes.every((t, i) => assignable(t, fromType.paramTypes[i]))) ||
       (fromType == core.anyType && toType?.kind === "ListType") ||
       fromType === toType.baseType ||
       fromType === toType.baseType?.name
@@ -221,7 +216,6 @@ export default function analyze(match) {
     checkIsAssignable(e, f.type.returnType, at);
   }
 
-  //TODO: the name of this var should be builder, and .addOperation("rep",
   const analyzer = grammar.createSemantics().addOperation("analyze", {
     Program(statements) {
       return core.program(statements.children.map((s) => s.analyze()));
@@ -325,12 +319,6 @@ export default function analyze(match) {
     FieldArgs(_open, fieldList, _close) {
       return fieldList.asIteration().children.map((field) => field.analyze());
     },
-
-    /*
-    if (targetType.kind === "ObjectType") {
-        targetType = targetType.name;
-      }
-    */
 
     FieldInit(_ye, _dot, id, _colon, type, _eq, exp, _semi) {
       const fieldName = id.sourceString;
@@ -493,12 +481,6 @@ export default function analyze(match) {
     Type_list(_open, type, _close) {
       return core.listType(type.analyze());
     },
-
-    // Type_function(_open, types, _close, _arrow, type) {
-    //   const paramTypes = types.asIteration().children.map((t) => t.analyze());
-    //   const returnType = type.analyze();
-    //   return core.functionType(paramTypes, returnType);
-    // },
 
     Type_id(id) {
       const entity = context.lookup(id.sourceString);
@@ -664,7 +646,6 @@ export default function analyze(match) {
       const elements = args.asIteration().children.map((e) => e.analyze());
       checkAllSameType(elements, args);
       const elementType = elements[0].type;
-      // const elementType = elements.length > 0 ? elements[0].type : "any";
       return core.listExpression(elements, core.listType(elementType));
     },
 

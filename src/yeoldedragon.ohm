@@ -25,8 +25,6 @@ YeOldeDragon {
     FuncDecl    = don id Params "->" Type Block
     Arg         = id ":" Exp0
 
-
-    // how to do default parameters? how to require users to initialize parameters in Block?
     ClassDecl = matter id "{" ClassInit Methods "}"
     ClassInit = init FieldArgs FieldInitBlock
     FieldArg = id ":" Type
