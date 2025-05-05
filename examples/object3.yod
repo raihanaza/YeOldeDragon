@@ -1,0 +1,11 @@
+matter Coffee {
+    init() {
+        ye.roast: int = 0;
+    }
+}
+
+matter Drink {
+    init(drink: Coffee) {
+        ye.drink: Coffee = drink;
+    }
+}

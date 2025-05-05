@@ -291,9 +291,9 @@ const fixtures = [
     source: `
             matter Car {
                 init (color: string, model: string, year: int) {
-                    ye.color = color;
-                    ye.model = model;
-                    ye.year = year;
+                    ye.color: string = color;
+                    ye.model: string = model;
+                    ye.year: int = year;
                 }
 
                 don vroom() -> void {
@@ -327,8 +327,8 @@ const fixtures = [
     name: "short return statement",
     source: `
             don hello(name: string) -> void {
-                perchance name == "" { 
-                    return; 
+                perchance name == "" {
+                    return;
                 }
                 proclaim(name);
             }
