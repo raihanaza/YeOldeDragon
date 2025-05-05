@@ -3,7 +3,8 @@ matter Car {
         ye.color: string = color;
         ye.model: string = model;
         ye.year: int = year;
-        ye.yearsOwned: int = 0;
+        ye.yearsOwned: int = year + 0;
+        ye.yearsOwned: int = year + 0;
     }
-    }
+}
 thine car: Car = Car(color: "blue", model: "ford", year: 2025);

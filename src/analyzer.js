@@ -41,7 +41,6 @@ export default function analyze(match) {
 
   //utility functions
   function checkNotDeclared(name, at) {
-    // console.log("checkNotDeclared", name, context.lookup(name), at);
     check(!context.lookup(name), `Identifier ${name} already declared`, at);
   }
 
@@ -174,9 +173,9 @@ export default function analyze(match) {
     check(isMutable(e), `Cannot assign to immutable expression ${e.name}`, at);
   }
 
-  function checkHasDistinctFields(type, at) {
-    const fieldNames = new Set(type.fields.map((field) => field.name));
-    check(fieldNames.size === type.fields.length, `Fields must be distinct from each other`, at);
+  function checkHasDistinctFields(fields, at) {
+    const fieldNames = new Set(fields.map((field) => field.name));
+    check(fieldNames.size === fields.length, `Fields in init must be distinct from each other`, at);
   }
 
   function checkHasMember(object, givenField, at) {
@@ -219,13 +218,9 @@ export default function analyze(match) {
   }
 
   function checkArgumentCount(argCount, paramCount, at) {
-    console.log("***checkArgumentCount called***", argCount, paramCount);
     check(argCount === paramCount, `Expected ${paramCount} arguments but got ${argCount}`, at);
   }
 
-  function checkAllFieldArgsUsed(fields, initialValues, at) {
-    console.log("***checkAllFieldArgsUsed called***", fields, initialValues);
-  }
 
   function checkIfReturnable(e, { from: f }, at) {
     checkIsAssignable(e, f.type.returnType, at);
@@ -286,7 +281,7 @@ export default function analyze(match) {
       // Now add the types as you parse and analyze. Since we already added
       // the struct type itself into the context, we can use it in fields.
       type.fields = fields.children.map((field) => field.analyze());
-      checkHasDistinctFields(type, { at: id });
+      checkHasDistinctFields(type.fields, { at: id });
       checkIfSelfContaining(type, { at: id });
       return core.classDeclaration(type);
     },
@@ -298,20 +293,17 @@ export default function analyze(match) {
       const classInitialized = classInit.analyze();
       type.fields = classInitialized.fields;
       type.fieldArgs = classInitialized.fieldArgs;
-      console.log("fields", type.fields);
-
       type.fields.map((field) => {
         context.add(field.name, field);
       });
       context = context.newChildContext({ inLoop: false, classDecl: type });
       // check that every value has been initialized?
-      checkHasDistinctFields(type, id);
+      checkHasDistinctFields(type, {at: classInit});
       checkIfSelfContaining(type, id);
       type.methods = methods.analyze();
       // checkHadDistinctMethods(type, id);
       // maybe just check if have distinct methods names since don't want to overload?
       context = context.parent;
-      console.log("***ClassDecl***", type);
       return core.classDeclaration(type);
     },
 
@@ -323,8 +315,8 @@ export default function analyze(match) {
       context = context.newChildContext({ inLoop: false });
       const fieldArgs = fieldParams.analyze();
       const initialValues = fieldInitBlock.analyze();
-      checkAllFieldArgsUsed(fieldArgs, initialValues, { at: fieldParams });
-
+      // console.log("***ClassInit***", initialValues);
+      // checkHasDistinctFields(initialValues, { at: fieldParams });
       let fields = initialValues.map((initialValue) => {
         return core.field(
           initialValue.target,
@@ -332,6 +324,9 @@ export default function analyze(match) {
           initialValue.source,
         );
       });
+
+      checkHasDistinctFields(fields, { at: fieldInitBlock });
+
       context = context.parent;
       return core.classInit(fieldArgs, fields);
     },
@@ -604,13 +599,11 @@ export default function analyze(match) {
 
     Exp7_call(exp, open, argList, _close) {
       const callee = exp.analyze();
-      console.log("callee", callee);
       checkIsCallable(callee, { at: exp });
       const exps = argList.asIteration().children;
       const targetParamNames =
         callee?.kind === "ObjectType" ? callee.fields.map((f) => f.name) : callee.type.paramNames;
       const targetTypes = callee?.kind === "ObjectType" ? callee.fieldArgs.map((f) => f.type) : callee.type.paramTypes;
-      console.log("targetTypes", targetTypes);
       checkArgumentCount(exps.length, targetTypes.length, { at: open });
       const args = exps.map((exp, i) => {
         const arg = exp.analyze();
