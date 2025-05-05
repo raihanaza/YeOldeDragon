@@ -40,9 +40,9 @@ const optimizers = {
   Argument(a) {
     return a
   },
-  FieldArgument(a) {
-    return a
-  },
+  // FieldArgument(a) {
+  //   return a
+  // },
   Field(f) {
     return f
   },
@@ -76,88 +76,91 @@ const optimizers = {
     e.op = optimize(e.op)
     e.operand = optimize(e.operand)
     if (e.operand.constructor === Number) {
-      if (e.op === "-") return -e.operand
+      if (e.op === "-") return -(e.operand)
     }
     return e
   },
-  BinaryExpresion(e) {
+  BinaryExpression(e) {
     e.op = optimize(e.op)
+    console.log("BINARY EXP: ", e)
     e.left = optimize(e.left)
     e.right = optimize(e.right)
-    if (e.op === "??") {
-      if (e.left.kind === "EmptyOptional") {
-        return e.right
-      }
-    } else if (e.op === "&&") {
+
+    console.log("E LEFT: ", e.left)
+    console.log("E RIGHT: ", e.right)
+    console.log("E LEFT CONSTRUCT: ", e.left.constructor)
+    console.log("E RIGHT CONSTRUCT: ", e.right.constructor)
+
+    if (e.op === "&&") {
       if (e.left === true) return e.right
       if (e.right === true) return e.left
+      if (e.left === false && e.right === false) return false
     } else if (e.op === "||") {
       if (e.left === false) return e.right
       if (e.right === false) return e.left
+      if (e.left === true && e.right === true) return true
     } else if ([Number, BigInt].includes(e.left.constructor)) {
       if ([Number, BigInt].includes(e.right.constructor)) {
-        if (e.op === "+") return e.left + e.right
-        if (e.op === "-") return e.left - e.right
-        if (e.op === "*") return e.left * e.right
-        if (e.op === "/") return e.left / e.right
-        if (e.op === "**") return e.left ** e.right
-        if (e.op === "<") return e.left < e.right
-        if (e.op === "<=") return e.left <= e.right
-        if (e.op === ">") return e.left > e.right
-        if (e.op === ">=") return e.left >= e.right
-        if (e.op === "==") return e.left === e.right
-        if (e.op === "!=") return e.left !== e.right
-      }
-      if (isZero(e.left) && e.op === "+") return e.right
-      if (isZero(e.left) && e.op === "-") return core.unaryExpression("-", e.right, e.right.type)
-      if (isOne(e.left) && e.op === "*") return e.right
-      if (isZero(e.left) && e.op === "*") return e.left
-      if (isZero(e.left) && ["*", "/"].includes(e.op)) return e.left
-    } else if ([Number, BigInt]. includes(e.right.constructor)) {
-      if (["+", "-"].includes(e.op) && isZero(e.right)) return e.left
-      if (["*", "/"].includes(e.op) && isOne(e.right)) return e.left
-      if (e.op === "*" && isZero(e.right)) return e.right
-      if (e.op === "**" && isZero(e.right)) return 1
-    }
+        if (["+", "-"].includes(e.op) && isZero(e.right)) return e.left
+        if (["*", "/"].includes(e.op) && isOne(e.right)) return e.left
+        if (e.op === "*" && isZero(e.right)) return e.right
+        if (e.op === "^" && isZero(e.right)) return 1
+        if (isZero(e.left) && e.op === "+") return e.right
+        if (isZero(e.left) && e.op === "-") return -(e.right)
+        if (isOne(e.left) && e.op === "*") return e.right
+        if (isZero(e.left) && e.op === "*") return e.left
+        if (isZero(e.left) && ["*", "/"].includes(e.op)) return e.left
+        if (e.op === "+") return (e.left + e.right)
+        if (e.op === "-") return (e.left - e.right)
+        if (e.op === "*") return (e.left * e.right)
+        if (e.op === "/") return (e.left / e.right)
+        if (e.op === "%") return (e.left % e.right)
+        if (e.op === "^") return (e.left ** e.right)
+        if (e.op === "<") return (e.left < e.right)
+        if (e.op === "<=") return (e.left <= e.right)
+        if (e.op === ">") return (e.left > e.right)
+        if (e.op === ">=") return (e.left >= e.right)
+        if (e.op === "==") return (e.left === e.right)
+        if (e.op === "!=") return (e.left !== e.right)
+      } 
+    } 
+    console.log("E AFTER OPTIMIZE: ", e)
     return e
   },
   TernaryExpression(e) {
     e.op = optimize(e.op)
     e.consequence = optimize(e.consequence)
     e.alternate = optimize(e.alternate)
-    if (e.op.constructor === Boolean) {
-      return e.op ? e.consequence : e.alternate
-    }
-    return e
+    return e.op ? e.consequence : e.alternate
   },
   NilCoalescingExpression(e) {
-    e.op = optimize(e.op)
+    // e.op = optimize(e.op)
     e.left = optimize(e.left)
     e.right = optimize(e.right)
     if (e.left.kind === "EmptyOptional") {
       return e.right
     }
-    return e
+    return e.left
   },
   IfStatement(s) {
     s.condition = optimize(s.condition)
     s.consequence = s.consequence.flatMap(optimize)
-    //s.alternate = s.alternate.flatMap(optimize)
-    // if (s.alernate?.kind?.endsWith?.("IfStatement")) {
-    //   s.alternate = optimize(s.alternate)
-    // } else {
-    //   s.alternate = s.alternate.flatMap(optimize)
-    // }
-    // if (s.condition.constructor === Boolean) {
-    //   return s.test ? s.consequence : s.alternate
-    // }
+    if (s.alternate?.kind?.endsWith?.("IfStatement")) {
+      s.alternate = optimize(s.alternate)
+    } else {
+      s.alternate = s.alternate.flatMap(optimize)
+    }
+    if (s.condition.constructor === Boolean) {
+      return s.condition ? s.consequence : s.alternate
+    }
     return s
   },
   ShortIfStatement(s) {
     s.condition = optimize(s.condition)
     s.consequence = s.consequence.flatMap(optimize)
-    if (s.condition.constructor === Boolean) {
-      return s.test ? s.consequence : s.alternate
+    if (s.condition == false) { return []}
+    if ((s.condition.constructor === Boolean) && (s.condition === true)) {
+      return s.consequence
     }
     return s
   },
@@ -181,7 +184,7 @@ const optimizers = {
     s.iterator = optimize(s.iterator)
     s.collection = optimize(s.collection)
     s.body = s.body.flatMap(optimize)
-    if (s.collection?.kind === "EmptyList") {
+    if (s.collection?.kind === "EmptyListExpression") {
       return []
     } 
     return s
@@ -227,17 +230,16 @@ const optimizers = {
     return f
   },
   FunctionCall(c) {
-    // c.callee = optimize(c.callee)
-    // c.args = c.args.map(optimize)
+    c.callee = optimize(c.callee)
+    c.args = c.args.flatMap(optimize)
     return c
   },
-  Function(f) {
-    if (f.body) {
-      f.body = f.body.flatMap(optimize)
-    }
-  },
+  // Function(f) {
+  //   if (f.body) {
+  //     f.body = f.body.flatMap(optimize)
+  //   }
+  // },
   PrintStatement(s) {
-    s.expressions = s.expressions.map(optimize)
     return s
   },
   StringExpression(e) {
