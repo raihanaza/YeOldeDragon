@@ -12,18 +12,9 @@ const semanticChecks = [
   ["constant declaration", "fact x: int = 5;"],
   ["print statement", 'proclaim("This is a statement");'],
   ["true statement", `perchance shant { proclaim("It shan't be"); }`],
-  [
-    "empty function",
-    "don addNums(num1: int, num2: int) -> int { return (num1 + num2); } ",
-  ],
-  [
-    "function declaration",
-    "don incrementFunction(num: int) -> int { num++; return num; }",
-  ],
-  [
-    "function call",
-    `don incNum(num: int) -> int { num++; return num; } incNum(num: 5);`,
-  ],
+  ["empty function", "don addNums(num1: int, num2: int) -> int { return (num1 + num2); } "],
+  ["function declaration", "don incrementFunction(num: int) -> int { num++; return num; }"],
+  ["function call", `don incNum(num: int) -> int { num++; return num; } incNum(num: 5);`],
   ["increment statement", "thine x: int = 1; x++;"],
   ["decrement statement", "thine x: float = 3.1; x--;"],
   ["assignment statement", "thine testvar: int = 2; testvar = 1;"],
@@ -31,22 +22,10 @@ const semanticChecks = [
     "break statement",
     `don breakTest(num: int) -> void { whilst num > 5 { proclaim("num is right size"); perchance num == 13 { proclaim("num is unlucky!"); breaketh; } } } `,
   ],
-  [
-    "long return",
-    "don funcName(num: int) -> int { proclaim(num); return num; }",
-  ],
-  [
-    "function call",
-    "don printNum(num: int) -> int { proclaim(num); } printNum(num: 5);",
-  ],
-  [
-    "short if statement",
-    "thine x: float = 3.45; thine y: float = 8.99; perchance x > y { proclaim(y); }",
-  ],
-  [
-    "else if statement",
-    "perchance shall { proclaim(1); } else { proclaim(3);}",
-  ],
+  ["long return", "don funcName(num: int) -> int { proclaim(num); return num; }"],
+  ["function call", "don printNum(num: int) -> int { proclaim(num); } printNum(num: 5);"],
+  ["short if statement", "thine x: float = 3.45; thine y: float = 8.99; perchance x > y { proclaim(y); }"],
+  ["else if statement", "perchance shall { proclaim(1); } else { proclaim(3);}"],
   [
     "long if statement",
     `thine x: int = 4; thine y: int = 2; perchance (y > 3) { proclaim("y is greater than 3"); } else perchance y == (x/2) { proclaim("y is half of x");}`,
@@ -58,10 +37,7 @@ const semanticChecks = [
     `thine coins: [string] = ["dollar", "fifty cents", "twenty cents"]; fortill coin in coins { proclaim("Thee hath the following coins"); proclaim(coin); } `,
   ],
   ["range loop", `fortill i in 3...10 { proclaim("writing"); }`],
-  [
-    "ternary with ints",
-    `thine num: int = 5; proclaim(num == 5 ? "it is" : "it is not"); `,
-  ],
+  ["ternary with ints", `thine num: int = 5; proclaim(num == 5 ? "it is" : "it is not"); `],
   [
     "or operator",
     `thine num1: int = 2; thine num2: int = 6; perchance (num1 == 2 || num2 % 2 == 0) { proclaim("yipee"); } `,
@@ -72,33 +48,29 @@ const semanticChecks = [
   ],
   ["exponents", "thine num: float = 4.2; thine num_sqrd: float = num^2.0;"],
   ["negative numbers", "thine num: int = -23; num = num + 24;"],
-  [
-    "not value",
-    `thine isNot: boolean = shall; perchance ne isNot { proclaim("It is!"); }`,
-  ],
+  ["not value", `thine isNot: boolean = shall; perchance ne isNot { proclaim("It is!"); }`],
   //TODO: add ne operator tests with lists
   ["creating empty optional", "thine studentAge: int? = zilch int;"],
   ["declare empty list", "thine nums: [int] = [];"],
   ["declare list elements", "thine numList: [int] = [1, 2, 3];"],
-  [
-    "printing from subscript",
-    "thine numList: [int] = [1, 2, 3]; proclaim(numList[1]);",
-  ],
-  [
-    "reassigning value at subscript in list",
-    "thine numList: [int] = [1, 2, 3]; numList[1] = 5;",
-  ],
+  ["printing from subscript", "thine numList: [int] = [1, 2, 3]; proclaim(numList[1]);"],
+  ["reassigning value at subscript in list", "thine numList: [int] = [1, 2, 3]; numList[1] = 5;"],
   ["struct declaration", `matter Person { name: string age: int }`],
   [
     "class declaration",
-    `matter car { init (make: string, model: string, year: int) { ye.make = make; ye.model = model; ye.year = year; } }`,
+    `matter car { init (make: string, model: string, year: int) {
+      ye.make: string = make;
+      ye.model: string = model;
+      ye.year: int = year; }
+    }`,
   ],
   [
     "member check",
     `matter Car {
       init (color: string, model: string, year: int) {
-        ye.color = color; ye.model = model;
-        ye.year = year;
+        ye.color: string = color;
+        ye.model: string = model;
+        ye.year: int = year;
       }
     }
     thine car: Car = Car(color: "blue", model: "ford", year: 2025);
@@ -109,33 +81,28 @@ const semanticChecks = [
     "member reassignment",
     `matter Car {
       init (color: string, model: string, year: int) {
-        ye.color = color; ye.model = model;
-        ye.year = year;
+        ye.color: string = color;
+        ye.model: string = model;
+        ye.year: int = year;
       }
     }
     thine car: Car = Car(color: "blue", model: "ford", year: 2025);
     car.color = "green";
     `,
   ],
-  [
-    "empty return",
-    `don addNums(a: int, b: int) -> void { perchance (a + b) > 5 { return; }}`,
-  ],
+  ["empty return", `don addNums(a: int, b: int) -> void { perchance (a + b) > 5 { return; }}`],
   [
     "string interpolation",
     `thine bankBalance: int = 5234; proclaim("Your current balance is \${bankBalance}. This is the end of your transaction.");`,
   ],
-  [
-    "nil-coalescing operator",
-    `thine maybe: string? = zilch string; proclaim(maybe ?? "nil coalesced");`,
-  ],
+  ["nil-coalescing operator", `thine maybe: string? = zilch string; proclaim(maybe ?? "nil coalesced");`],
   [
     "checking if field exists",
     `matter Car {
       init (color: string, model: string, year: int) {
-        ye.color = color;
-        ye.model = model;
-        ye.year = year;
+        ye.color: string = color;
+        ye.model: string = model;
+        ye.year: int = year;
       }
 
       don vroom() -> string {
@@ -148,10 +115,10 @@ const semanticChecks = [
     "checking if optional member in class",
     `matter Coffee {
       init(roast: int, name: string, origin: string?, seasonal: boolean?) {
-          ye.roast = roast + 2;
-          ye.name = name;
-          ye.origin = zilch string;
-          ye.seasonal = seasonal;
+          ye.roast: int = roast + 2;
+          ye.name: string = name;
+          ye.origin: string? = zilch string;
+          ye.seasonal: boolean? = seasonal;
       }
 
       don countryOfOrigin() -> string? {
@@ -163,15 +130,31 @@ const semanticChecks = [
     `optional member check`,
     `matter Car {
         init (color: string, model: string, year: int, yearsOwned: int?) {
-          ye.color = color;
-          ye.model = model;
-          ye.year = year;
-          ye.yearsOwned = 0;
+          ye.color: string = color;
+          ye.model: string = model;
+          ye.year: int = year;
+          ye.yearsOwned: int? = 0;
         }
       }
       thine car: Car? = Car(color: "blue", model: "ford", year: 2025, yearsOwned: zilch int);
       proclaim("This \${car?.model} in \${car?.color} has been owned for \${car?.yearsOwned} years.");`,
     //TO ADD: optional member check for classes when called
+  ],
+  [
+    `class field as an ObjectType`,
+    `
+    matter Coffee {
+      init() {
+          ye.roast: int = 0;
+      }
+    }
+
+    matter Drink {
+        init(drink: Coffee) {
+            ye.drink: Coffee = drink;
+        }
+    }
+    `,
   ],
 ];
 
@@ -187,8 +170,9 @@ const semanticErrors = [
     "calling a function that does not exist in a class",
     `matter Car {
       init (color: string, model: string, year: int) {
-        ye.color = color; ye.model = model;
-        ye.year = year;
+        ye.color: string = color;
+        ye.model: string = model;
+        ye.year: int = year;
       }
 
       don vroom() -> string {
@@ -204,8 +188,9 @@ const semanticErrors = [
     "calling a member that does not exist in a class",
     `matter Car {
       init (color: string, model: string, year: int) {
-        ye.color = color; ye.model = model;
-        ye.year = year;
+        ye.color: string = color;
+        ye.model: string = model;
+        ye.year: int = year;
       }
     }
     thine car: Car = Car(color: "blue", model: "ford", year: 2025);
@@ -217,8 +202,9 @@ const semanticErrors = [
     "calling ye outside of a class",
     `matter Car {
       init (color: string, model: string, year: int) {
-        ye.color = color; ye.model = model;
-        ye.year = year;
+        ye.color: string = color;
+        ye.model: string = model;
+        ye.year: int = year;
       }
     }
     thine car: Car = Car(color: "blue", model: "ford", year: 2025);
@@ -226,19 +212,6 @@ const semanticErrors = [
     `,
   ],
   ["assigning to a constant", "fact x: int = 1; x = 5;"],
-  [
-    "accessing a field that was not included in the class init parameters",
-    `matter Car {
-        init (color: string, model: string, year: int) {
-          ye.color = color;
-          ye.model = model;
-          ye.year = year;
-          ye.yearsOwned = 0;
-        }
-      }
-    thine car: Car = Car(color: "blue", model: "ford", year: 2025);`,
-    /Line 6, col 14/,
-  ],
 ];
 
 describe("The analyzer", () => {

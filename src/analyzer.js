@@ -41,7 +41,6 @@ export default function analyze(match) {
 
   //utility functions
   function checkNotDeclared(name, at) {
-    context.lookup;
     check(!context.lookup(name), `Identifier ${name} already declared`, at);
   }
 
@@ -118,7 +117,8 @@ export default function analyze(match) {
     return (
       t1 === t2 ||
       (t1?.kind === "OptionalType" && t2?.kind == "OptionalType" && equivalent(t1.type, t2.type)) ||
-      (t1?.kind === "ListType" && t2?.kind === "ListType" && equivalent(t1.type, t2.type))
+      (t1?.kind === "ListType" && t2?.kind === "ListType" && equivalent(t1.type, t2.type)) ||
+      typeDescription(t1) === typeDescription(t2)
     );
   }
 
@@ -126,11 +126,6 @@ export default function analyze(match) {
     return (
       toType === core.anyType ||
       equivalent(fromType, toType) ||
-      // (fromType?.kind === "FunctionType" &&
-      //   toType?.kind === "FunctionType" &&
-      //   assignable(fromType.returnType, toType.returnType) &&
-      //   fromType.paramTypes.length === toType.paramTypes.length &&
-      //   toType.paramTypes.every((t, i) => assignable(t, fromType.paramTypes[i]))) ||
       (fromType == core.anyType && toType?.kind === "ListType") ||
       fromType === toType.baseType ||
       fromType === toType.baseType?.name
@@ -140,12 +135,6 @@ export default function analyze(match) {
   function typeDescription(type) {
     if (typeof type === "string") return type;
     if (type.kind == "ObjectType") return type.name;
-    // if (type.kind == "FunctionType") {
-    //   console.log("***TYPE DESCRIPTION CALLED***")
-    //   const paramTypes = type.paramTypes.map(typeDescription).join(", ");
-    //   const returnType = typeDescription(type.returnType);
-    //   return `(${paramTypes})->${returnType}`;
-    // }
     if (type.kind == "ListType") return `[${typeDescription(type.baseType)}]`;
     if (type.kind == "OptionalType") return `${typeDescription(type.baseType)}?`;
   }
@@ -174,9 +163,9 @@ export default function analyze(match) {
     check(isMutable(e), `Cannot assign to immutable expression ${e.name}`, at);
   }
 
-  function checkHasDistinctFields(type, at) {
-    const fieldNames = new Set(type.fields.map((field) => field.name));
-    check(fieldNames.size === type.fields.length, `Fields must be distinct from each other`, at);
+  function checkHasDistinctFields(fields, at) {
+    const fieldNames = new Set(fields.map((field) => field.name));
+    check(fieldNames.size === fields.length, `Fields in init must be distinct from each other`, at);
   }
 
   function checkHasMember(object, givenField, at) {
@@ -222,25 +211,11 @@ export default function analyze(match) {
     check(argCount === paramCount, `Expected ${paramCount} arguments but got ${argCount}`, at);
   }
 
-  function checkFieldInClassInitParams(fieldName, at) {
-    check(context.lookup(fieldName), `Field ${fieldName} not included in Class initializer parameters`, at);
-  }
-
-  function checkAllFieldsInitialized(fields, initialValues, at) {
-    const fieldNames = fields.map((f) => f.name);
-    const initialValueNames = initialValues.map((f) => f.target);
-    check(
-      fieldNames.every((name) => initialValueNames.includes(name)),
-      `Not all fields have been initialized`,
-      at
-    );
-  }
 
   function checkIfReturnable(e, { from: f }, at) {
     checkIsAssignable(e, f.type.returnType, at);
   }
 
-  //TODO: the name of this var should be builder, and .addOperation("rep",
   const analyzer = grammar.createSemantics().addOperation("analyze", {
     Program(statements) {
       return core.program(statements.children.map((s) => s.analyze()));
@@ -295,7 +270,7 @@ export default function analyze(match) {
       // Now add the types as you parse and analyze. Since we already added
       // the struct type itself into the context, we can use it in fields.
       type.fields = fields.children.map((field) => field.analyze());
-      checkHasDistinctFields(type, { at: id });
+      checkHasDistinctFields(type.fields, { at: id });
       checkIfSelfContaining(type, { at: id });
       return core.classDeclaration(type);
     },
@@ -304,13 +279,13 @@ export default function analyze(match) {
       checkNotDeclared(id.sourceString, id);
       const type = core.objectType(id.sourceString, [], [], []);
       context.add(id.sourceString, type);
-      type.fields = classInit.analyze();
+      const classInitialized = classInit.analyze();
+      type.fields = classInitialized.fields;
+      type.fieldArgs = classInitialized.fieldArgs;
       type.fields.map((field) => {
         context.add(field.name, field);
       });
       context = context.newChildContext({ inLoop: false, classDecl: type });
-      // check that every value has been initialized?
-      checkHasDistinctFields(type, id);
       checkIfSelfContaining(type, id);
       type.methods = methods.analyze();
       // checkHadDistinctMethods(type, id);
@@ -323,17 +298,16 @@ export default function analyze(match) {
       return methods.children.map((method) => method.analyze());
     },
 
-    ClassInit(_init, fieldArgs, fieldInitBlock) {
+    ClassInit(_init, fieldParams, fieldInitBlock) {
       context = context.newChildContext({ inLoop: false });
-      const targetFields = fieldArgs.analyze();
+      const fieldArgs = fieldParams.analyze();
       const initialValues = fieldInitBlock.analyze();
-      checkAllFieldsInitialized(targetFields, initialValues, { at: fieldArgs });
-
-      let fields = targetFields.map((field) => {
-        return core.field(field.name, field.type, initialValues.find((f) => f.target === field.name).source);
+      let fields = initialValues.map((initialValue) => {
+        return core.field(initialValue.target, initialValue.type, initialValue.source);
       });
+      checkHasDistinctFields(fields, { at: fieldInitBlock });
       context = context.parent;
-      return fields;
+      return core.classInit(fieldArgs, fields);
     },
 
     FieldArg(id, _colon, type) {
@@ -346,20 +320,20 @@ export default function analyze(match) {
       return fieldList.asIteration().children.map((field) => field.analyze());
     },
 
-    FieldInit(_ye, _dot, id, _eq, exp, _semi) {
+    FieldInit(_ye, _dot, id, _colon, type, _eq, exp, _semi) {
       const fieldName = id.sourceString;
-      checkFieldInClassInitParams(fieldName, { at: id });
-      const initializer = exp.analyze();
-      return core.assignmentStatement(fieldName, initializer, context.lookup(fieldName).type);
+      let targetType = type.analyze();
+      const initialValue = exp.analyze();
+      if (targetType.kind === "ObjectType") {
+        targetType = targetType.name;
+      }
+      checkIsAssignable(initialValue, targetType, exp);
+      return core.assignmentStatement(fieldName, initialValue, targetType);
     },
 
     FieldInitBlock(_open, fieldInits, _close) {
       const initializations = fieldInits.children.map((exp) => {
         const fieldInit = exp.analyze();
-        const fieldInitTarget = context.lookup(fieldInit.target);
-        checkHasBeenDeclared(fieldInit, fieldInit, { at: exp });
-        checkIsAssignable(fieldInit.source, fieldInitTarget.type, { at: exp });
-        checkArgNameMatchesParam(fieldInit, fieldInit, { at: exp });
         return fieldInit;
       });
       return initializations;
@@ -508,12 +482,6 @@ export default function analyze(match) {
       return core.listType(type.analyze());
     },
 
-    // Type_function(_open, types, _close, _arrow, type) {
-    //   const paramTypes = types.asIteration().children.map((t) => t.analyze());
-    //   const returnType = type.analyze();
-    //   return core.functionType(paramTypes, returnType);
-    // },
-
     Type_id(id) {
       const entity = context.lookup(id.sourceString);
       checkHasBeenDeclared(entity, id.sourceString, { at: id });
@@ -605,10 +573,9 @@ export default function analyze(match) {
       const callee = exp.analyze();
       checkIsCallable(callee, { at: exp });
       const exps = argList.asIteration().children;
-      // TODO: what to do when an objectType? Do we currently store the name of attribute for object?
       const targetParamNames =
         callee?.kind === "ObjectType" ? callee.fields.map((f) => f.name) : callee.type.paramNames;
-      const targetTypes = callee?.kind === "ObjectType" ? callee.fields.map((f) => f.type) : callee.type.paramTypes;
+      const targetTypes = callee?.kind === "ObjectType" ? callee.fieldArgs.map((f) => f.type) : callee.type.paramTypes;
       checkArgumentCount(exps.length, targetTypes.length, { at: open });
       const args = exps.map((exp, i) => {
         const arg = exp.analyze();
@@ -679,7 +646,6 @@ export default function analyze(match) {
       const elements = args.asIteration().children.map((e) => e.analyze());
       checkAllSameType(elements, args);
       const elementType = elements[0].type;
-      // const elementType = elements.length > 0 ? elements[0].type : "any";
       return core.listExpression(elements, core.listType(elementType));
     },
 

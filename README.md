@@ -250,3 +250,31 @@ console.log(`This car is a ${car.model} in the color ${car.color}.`);
 </td>
 </tr>
 </table>
+
+```
+
+matter SimpleCar {
+    color: string
+    model: string
+    year: int
+}
+
+matter Car {
+    init (color: string, model: string, year: int, yearsOwned: int?) {
+        ye.color: string = color;
+        ye.model: string = model;
+        ye.year: int = year;
+        ye.yearsOwned: int? = 0;
+    }
+
+    don vroom() -> void {
+        proclaim("vroom vroom ${ye.model}");
+    }
+}
+
+thine car: Car = Car(color: "blue", model: "ford", year: 2025);
+proclaim("This ${car.model} in ${car.color} is a ${car.year} model and has been owned for ${car.yearsOwned} years.");
+
+thine car2: Car? = Car(color: "blue", model: "ford", year: 2025);
+proclaim("This ${car2?.model} in ${car2?.color} is a ${car2?.year} model and has been owned for ${car.yearsOwned} years.");
+```

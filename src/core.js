@@ -14,10 +14,6 @@ export function argument(name, type, value) {
   return { kind: "Argument", name, type, value };
 }
 
-// export function constantDeclaration(variable, initializer) {
-//   return { kind: "ConstantDeclaration", variable, initializer, mutable: false };
-// }
-
 export function printStatement(expressions) {
   return { kind: "PrintStatement", expressions, type: voidType };
 }
@@ -29,10 +25,6 @@ export function functionDeclaration(func) {
 export function func(name, params, body, type, isMethod) {
   return { kind: "FunctionType", name, params, body, type, isMethod };
 }
-
-// export function intrinsicFunction(name, type) {
-//   return { kind: "FunctionType", name, type, intrinsic: true };
-// }
 
 export function functionType(paramNames, paramTypes, returnType) {
   return { kind: "FunctionType", paramNames, paramTypes, returnType };
@@ -132,23 +124,17 @@ export function subscriptExpression(list, index) {
   return { kind: "SubscriptExpression", list, index, type: list.type.baseType };
 }
 
-// export function call(callee, args) {
-//   return { kind: "Call", callee, args, type: callee.type.returnType };
-// }
-
-// eventually add parent classes/superclasses as parameter for classDeclaration?
-// export function classDeclaration(name, superClass, fields, methods) {
 export function classDeclaration(type) {
   return { kind: "ClassDeclaration", type };
 }
 
-export function objectType(name, fields, methods) {
-  return { kind: "ObjectType", name, fields, methods };
+export function classInit(fieldArgs, fields) {
+  return { kind: "ClassDeclaration", fieldArgs, fields };
 }
 
-// export function objectDefinition(name, fields, methods) {
-//   return { kind: "ObjectDefinition", name, fields, methods };
-// }
+export function objectType(name, fields, fieldArgs, methods) {
+  return { kind: "ObjectType", name, fields, fieldArgs, methods };
+}
 
 export function objectCall(callee, args, type) {
   return { kind: "ObjectCall", callee, args, type };
@@ -157,10 +143,6 @@ export function objectCall(callee, args, type) {
 export function memberExpression(object, op, field, isField) {
   return { kind: "MemberExpression", object, op, field, type: field.type, isField };
 }
-
-// export function objectInstance(name, fields) {
-//   return { kind: "ObjectInstance", name, fields };
-// }
 
 export function stringExpression(strings) {
   return { kind: "StringExpression", strings, type: stringType };
@@ -195,7 +177,6 @@ export const standardLibrary = Object.freeze({
   any: anyType,
   zilch: zilchType,
   π: variable("π", false, floatType),
-  // proclaim: intrinsicFunction("proclaim", anyToVoidType),
 });
 
 String.prototype.type = stringType;
