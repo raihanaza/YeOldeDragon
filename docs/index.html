@@ -52,42 +52,6 @@
         </p>
       </section>
 
-      <section id="data-structures">
-        <h2>Data Structures</h2>
-
-        <div class="code-title">Lists</div>
-        <div class="code-block">
-          <pre><code>let dragons = ["Night Fury", "Monstrous Nightmare", "Nadder", "Gronkle"];</code></pre>
-        </div>
-
-        <div class="code-title">Objects</div>
-        <div class="code-block">
-          <pre><code>class Dragon {
-    constructor(name, type, age) {
-        this.name = name;
-        this.type = type;
-        this.age = age;
-    }
-}</code></pre>
-        </div>
-
-        <div class="code-title">Classes</div>
-        <div class="code-block">
-          <pre><code>class Car {
-    constructor(color, model, year) {
-        this.color = color;
-        this.model = model;
-        this.year = year;
-     }
-            
-      vroom() {
-          console.log("vroom vroom");
-      }
-}</code></pre>
-        </div>
-      </section>
-
-
       <section id="features">
         <h2>Key Features</h2>
         <div class="feature-grid">
@@ -104,11 +68,39 @@
             <h3>Various types of Loops</h3>
           </div>
           <div class="feature">
-            <h3>String interpolation</h3>
+            <h3>String Interpolation</h3>
           </div>
           <div class="feature">
             <h3>.yod File Extension</h3>
           </div>
+        </div>
+      </section>
+
+      <section id="data-structures">
+        <h2>Data Structures</h2>
+
+        <div class="code-title">Lists</div>
+        <div class="code-block">
+          <pre><code>thine dragons: [string] = ["Night Fury", "Monstrous Nightmare", "Nadder", "Gronkle"];</code></pre>
+        </div>
+
+        <div class="code-title">Objects</div>
+        <div class="code-block">
+          <pre><code>matter Dragon { 
+    name: string, type: string, age: int 
+}</code></pre>
+        </div>
+
+        <div class="code-title">Classes</div>
+        <div class="code-block">
+          <pre><code>matter Car { 
+    init( color: string, model: string, year: int) { 
+        ye.color = color; 
+        ye.model = model; 
+        ye.year = year; 
+    } 
+
+don vroom() -> void { proclaim("vroom vroom"); } }</code></pre>
         </div>
       </section>
 
@@ -126,22 +118,6 @@
 
 fact pi: float = 3.14159;	
 </code></pre>
-        </div>
-
-        <div class="code-title">Type Conversions</div>
-        <div class="code-block">
-          <pre><code>thine beverages: int = 5;
-
-thine beveragesButAString: string = toString(beverages);</code></pre>
-        </div>
-
-        <div class="code-title">While Loops</div>
-        <div class="code-block">
-          <pre><code>thine dragons: int = 10;
-whilst (dragons > 0) {
-    proclaim(“There are still dragons left in the café”);
-    dragons--;
-}</code></pre>
         </div>
 
         <div class="code-title">For Loops</div>
@@ -196,8 +172,9 @@ proclaim("This car is a ${car.model} in the color ${car.color}.");
     }
     return num * factorial(num: num - 1);
 }
-
-proclaim(factorial(5));</code></pre>
+          
+proclaim(factorial(5));
+~ Expected output: 120</code></pre>
         </div>
 
         <section id="devs">
