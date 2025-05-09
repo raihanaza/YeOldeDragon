@@ -31,7 +31,7 @@ export function functionType(paramNames, paramTypes, returnType) {
 }
 
 export function functionCall(callee, args) {
-  return { kind: "FunctionCall", callee, args };
+  return { kind: "FunctionCall", callee, args, type: callee.type.returnType };
 }
 
 export function incrementStatement(variable) {

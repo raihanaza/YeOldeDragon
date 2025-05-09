@@ -132,6 +132,7 @@ export default function analyze(match) {
 
   function typeDescription(type) {
     if (typeof type === "string") return type;
+    console.log("***type***", type);
     if (type.kind === "ObjectType") return type.name;
     if (type.kind === "ListType") return `[${typeDescription(type.baseType)}]`;
     if (type.kind === "OptionalType") return `${typeDescription(type.baseType)}?`;
@@ -142,7 +143,9 @@ export default function analyze(match) {
   }
 
   function checkIsAssignable(e, targetType, at) {
+    console.log("***source***", e.type);
     const source = typeDescription(e.type);
+    console.log("***target***", targetType);
     const target = typeDescription(targetType);
     const message = `Cannot assign a ${source} to a ${target}`;
     check(assignable(e.type, targetType), message, { at: at });
@@ -226,6 +229,7 @@ export default function analyze(match) {
       if (targetType.kind === "ObjectType") {
         targetType = targetType.name;
       }
+      console.log("**initialValue**", initialValue, "**targetType**", targetType);
       checkIsAssignable(initialValue, targetType, exp);
       context.add(id.sourceString, variable);
       return core.variableDeclaration(variable, initialValue);
