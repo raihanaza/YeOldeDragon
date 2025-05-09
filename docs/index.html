@@ -62,16 +62,16 @@
             <h3>Manifest Typing</h3>
           </div>
           <div class="feature">
-            <h3>Ternary Conditionals</h3>
+            <h3>Structs and Classes</h3>
           </div>
           <div class="feature">
-            <h3>Truthy/Falsy Types</h3>
+            <h3>Various types of Loops</h3>
           </div>
           <div class="feature">
-            <h3>Fallthrough-Free Switches</h3>
+            <h3>String Interpolation</h3>
           </div>
           <div class="feature">
-            <h3>Object-Oriented</h3>
+            <h3>.yod File Extension</h3>
           </div>
         </div>
       </section>
@@ -121,36 +121,29 @@ fortill (coin in coins) {
 }</code></pre>
         </div>
 
-        <div class="code-title">Functions</div>
+        <div class="code-title">Function Calls</div>
         <div class="code-block">
-          <pre><code>don addNums(num1: int, yes: bool) -> int {
-    return num1;
+          <pre><code>don printNum(num: int) -> int {
+    proclaim(num);
 }
 
-proclaim(addNums(1, shall));
+printNum(num: 5);
 </code></pre>
         </div>
 
-        <div class="code-title">Classes</div>
+        <div class="code-title">Class Declaration</div>
         <div class="code-block">
-          <pre><code>matter Coffee {
-    init(name: string, roast: string, seasonal: boolean? = zilch) {
-        ye.name = name;
-        ye.roast = roast;
-        ye.seasonal = seasonal;
-    }
-
-    don brew() -> void {
-        proclaim(“This coffee is called \(ye.name) and it is a \(ye.roast).”)
-    }
-
-    don isSeasonal() -> string {
-        return this.seasonal?.asString() ?? “Not specified”;
+          <pre><code>matter Car {
+    init (color: string, model: string, year: int) {
+        ye.color = color;
+        ye.model = model;
+        ye.year = year;
     }
 }
 
-thine pike = Coffee(name: “Pike Place”, roast: “medium-roast”);
-proclaim(pike.brew());</code></pre>
+thine car: Car = Car(color: "blue", model: "ford", year: 2025);
+proclaim("This car is a ${car.model} in the color ${car.color}.");
+</code></pre>
         </div>
 
         <div class="code-title">Factorial</div>
@@ -188,7 +181,7 @@ proclaim(factorial(5));</code></pre>
               <img src="images/cecilia.png" alt="Cecilia" />
               <h3>Cecilia Zaragoza</h3>
               <p>Cecilia Zaragoza is a junior Computer Science major at LMU with a minor in Business Administration.
-                Before Ye Olde Dragon is even awake, you will most likely spot her at 6am morning F25 sessions at the
+                Before Ye Olde Dragon is even awake, you will most likely spot her at 6am morning F45 sessions at the
                 gym. </p>
             </button>
 
