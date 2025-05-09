@@ -124,7 +124,7 @@ export default function analyze(match) {
     return (
       toType === core.anyType ||
       equivalent(fromType, toType) ||
-      (fromType == core.anyType && toType?.kind === "ListType") ||
+      (fromType === core.anyType && toType?.kind === "ListType") ||
       fromType === toType.baseType ||
       fromType === toType.baseType?.name
     );
@@ -132,9 +132,9 @@ export default function analyze(match) {
 
   function typeDescription(type) {
     if (typeof type === "string") return type;
-    if (type.kind == "ObjectType") return type.name;
-    if (type.kind == "ListType") return `[${typeDescription(type.baseType)}]`;
-    if (type.kind == "OptionalType") return `${typeDescription(type.baseType)}?`;
+    if (type.kind === "ObjectType") return type.name;
+    if (type.kind === "ListType") return `[${typeDescription(type.baseType)}]`;
+    if (type.kind === "OptionalType") return `${typeDescription(type.baseType)}?`;
   }
 
   function checkArgNameMatchesParam(e, name, at) {
@@ -209,7 +209,7 @@ export default function analyze(match) {
   }
 
   function checkIfReturnable(e, { from: f }, at) {
-    checkIsAssignable(e, f.type.returnType, at);
+    checkIsAssignable(e, f.type.returnType, );
   }
 
   const analyzer = grammar.createSemantics().addOperation("analyze", {
@@ -537,7 +537,6 @@ export default function analyze(match) {
     Exp5_multiply(exp1, mulOp, exp2) {
       const [left, op, right] = [exp1.analyze(), mulOp.sourceString, exp2.analyze()];
       checkHasNumericType(left, exp1);
-      // where issue is happening
       checkBothSameType(left, right, { at: exp1 });
       return core.binaryExpression(op, left, right, left.type);
     },
