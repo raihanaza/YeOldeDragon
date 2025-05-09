@@ -139,7 +139,6 @@ export default function analyze(match) {
     if (type.kind == "OptionalType") return `${typeDescription(type.baseType)}?`;
   }
 
-  // TODO: still need to work on throwing error if missing arg name?
   function checkArgNameMatchesParam(e, name, at) {
     check(assignable(e.name, name), `Cannot assign ${e.name} to ${name}`, at);
   }
@@ -247,7 +246,6 @@ export default function analyze(match) {
       const paramTypes = func.params.map((param) => param.type);
       const paramNames = func.params.map((param) => param.name);
       const returnType = type.children?.[0]?.analyze();
-      // const returnType = type.children?.[0]?.analyze() ?? core.voidType;
       func.type = core.functionType(paramNames, paramTypes, returnType);
 
       // Analyze body while still in child context
@@ -288,8 +286,6 @@ export default function analyze(match) {
       context = context.newChildContext({ inLoop: false, classDecl: type });
       checkIfSelfContaining(type, id);
       type.methods = methods.analyze();
-      // checkHadDistinctMethods(type, id);
-      // maybe just check if have distinct methods names since don't want to overload?
       context = context.parent;
       return core.classDeclaration(type);
     },
@@ -342,7 +338,6 @@ export default function analyze(match) {
     Statement_incdec(id, op, _semi) {
       const variable = id.analyze();
       checkHasNumericType(variable, id);
-      //TODO: check if there's a cleaner way to check this
       if (op.sourceString === "++") {
         return core.incrementStatement(variable);
       }
@@ -614,7 +609,6 @@ export default function analyze(match) {
           objectType = object.type;
         }
         checkHasMember(classDecl, id.sourceString, id);
-        // const field = objectType.fields.find((f) => f.name === id.sourceString);
         return core.memberExpression(classDecl, dot.sourceString, object, true);
       } else {
         const object = exp.analyze();

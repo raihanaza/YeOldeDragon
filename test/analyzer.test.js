@@ -49,7 +49,6 @@ const semanticChecks = [
   ["exponents", "thine num: float = 4.2; thine num_sqrd: float = num^2.0;"],
   ["negative numbers", "thine num: int = -23; num = num + 24;"],
   ["not value", `thine isNot: boolean = shall; perchance ne isNot { proclaim("It is!"); }`],
-  //TODO: add ne operator tests with lists
   ["creating empty optional", "thine studentAge: int? = zilch int;"],
   ["declare empty list", "thine nums: [int] = [];"],
   ["declare list elements", "thine numList: [int] = [1, 2, 3];"],
@@ -138,7 +137,6 @@ const semanticChecks = [
       }
       thine car: Car? = Car(color: "blue", model: "ford", year: 2025, yearsOwned: zilch int);
       proclaim("This \${car?.model} in \${car?.color} has been owned for \${car?.yearsOwned} years.");`,
-    //TO ADD: optional member check for classes when called
   ],
   [
     `class field as an ObjectType`,
@@ -159,7 +157,6 @@ const semanticChecks = [
 ];
 
 const semanticErrors = [
-  //TODO: fix errorMessagePatterns
   ["calling an undeclared id", "proclaim(x);", /x not declared/],
   ["assigning zilch to non-optional", "thine x: int = 4; x = zilch int;"],
   [
@@ -182,7 +179,6 @@ const semanticErrors = [
     thine car: Car = Car(color: "blue", model: "ford", year: 2025);
     car.refuel();
     `,
-    ///Object type car does not have a field refuel()/
   ],
   [
     "calling a member that does not exist in a class",
@@ -196,7 +192,6 @@ const semanticErrors = [
     thine car: Car = Car(color: "blue", model: "ford", year: 2025);
     proclaim("This car is of make \${car.make}.");
     `,
-    ///Object type car does not have a field make/
   ],
   [
     "calling ye outside of a class",

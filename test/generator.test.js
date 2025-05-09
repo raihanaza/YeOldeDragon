@@ -354,17 +354,7 @@ const fixtures = [
                 console.log((name_2 ?? "no name"));
             }
     `,
-  },
-  //   {
-  //       name: "",
-  //       source: ``,
-  //       expected: dedent``,
-  //   },
-  // {
-  //     name: "",
-  //     source: ``,
-  //     expected: dedent``,
-  // },
+  }
 ];
 
 describe("The code generator", () => {
