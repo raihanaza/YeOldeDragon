@@ -86,7 +86,7 @@ export default function analyze(match) {
   }
 
   function checkBothSameType(e1, e2, at) {
-    check(e1.type === e2.type, `Operands must have the same type`, at);
+    check(equivalent(e1, e2), `Operands must have the same type`, at);
   }
 
   function checkAllSameType(elements, at) {
@@ -99,9 +99,7 @@ export default function analyze(match) {
   }
 
   function includesAsField(objectType, type) {
-    return objectType.fields.some(
-      (field) => field.type === type
-    );
+    return objectType.fields.some((field) => field.type === type);
   }
 
   function checkIfSelfContaining(objectType, at) {
@@ -209,7 +207,6 @@ export default function analyze(match) {
   function checkArgumentCount(argCount, paramCount, at) {
     check(argCount === paramCount, `Expected ${paramCount} arguments but got ${argCount}`, at);
   }
-
 
   function checkIfReturnable(e, { from: f }, at) {
     checkIsAssignable(e, f.type.returnType, at);
@@ -349,7 +346,7 @@ export default function analyze(match) {
     Statement_assign(variable, _eq, exp, _semi) {
       const target = variable.analyze();
       const source = exp.analyze();
-      checkBothSameType(target, source, variable);
+      checkBothSameType(target, source, { at: variable });
       checkIsMutable(target, variable);
       checkIsAssignable(source, target.type, source);
       return core.assignmentStatement(target, source, target.type);
@@ -487,7 +484,7 @@ export default function analyze(match) {
       const test = exp1.analyze();
       checkHasBoolenType(test, exp1);
       const [consequence, alternate] = [exp2.analyze(), exp3.analyze()];
-      checkBothSameType(consequence, alternate, exp2);
+      checkBothSameType(consequence, alternate, { at: exp2 });
       return core.ternaryExpression(test, consequence, alternate);
     },
 
@@ -520,7 +517,7 @@ export default function analyze(match) {
     },
     Exp3_compare(exp1, relop, exp2) {
       const [left, op, right] = [exp1.analyze(), relop.sourceString, exp2.analyze()];
-      checkBothSameType(left, right, exp1);
+      checkBothSameType(left, right, { at: exp1 });
       if (["==", "!="].includes(op)) {
         return core.binaryExpression(op, left, right, BOOLEAN);
       } else if (["<", "<=", ">", ">="].includes(op)) {
@@ -533,21 +530,22 @@ export default function analyze(match) {
       const [left, op, right] = [exp1.analyze(), addOp.sourceString, exp2.analyze()];
       checkHasNumericType(left, exp1);
       checkHasNumericType(right, exp2);
-      checkBothSameType(left, right, exp1);
+      checkBothSameType(left, right, { at: exp1 });
       return core.binaryExpression(op, left, right, left.type);
     },
 
     Exp5_multiply(exp1, mulOp, exp2) {
       const [left, op, right] = [exp1.analyze(), mulOp.sourceString, exp2.analyze()];
       checkHasNumericType(left, exp1);
-      checkBothSameType(left, right, exp1);
+      // where issue is happening
+      checkBothSameType(left, right, { at: exp1 });
       return core.binaryExpression(op, left, right, left.type);
     },
 
     Exp6_power(exp1, powerOp, exp2) {
       const [left, op, right] = [exp1.analyze(), powerOp.sourceString, exp2.analyze()];
       checkHasNumericType(left, exp1);
-      checkBothSameType(left, right, exp1);
+      checkBothSameType(left, right, { at: exp1 });
       return core.binaryExpression(op, left, right, left.type);
     },
 

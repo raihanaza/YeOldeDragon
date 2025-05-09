@@ -1,10 +1,10 @@
 don factorial(num: int) -> int {
-    doth ((num == 0) || (num == 1)) {
+    perchance ((num == 0) || (num == 1)) {
         return 1;
     }
     return num * factorial(num: num - 1);
 }
 
-proclaim(factorial(5));
+proclaim(factorial(num: 5));
 ~ Expected output: 120
 
