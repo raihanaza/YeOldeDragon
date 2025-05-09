@@ -1,5 +1,3 @@
-~thine hello: string? = "hi";
-
 thine coins: [string] = ["dollar", "fifty cents", "twenty cents"];
 fortill coin in coins {
     proclaim("Thee hath the following coins");

@@ -1,19 +1,19 @@
-don fibonacci(num) {
+don fibonacci(num: int) -> int {
     thine num1: int = 0;
     thine num2: int = 0;
-    thine sum: int
+    thine sum: int = 0;
 
-doth (num == 1) {
-    return num1;
-} doth not (num === 2) {
-    return num2;
-} not {
-    fortill _ in 0..3 {
-        sum = num1 + num2;
-        num1 = num2;
-        num2 = sum;
-    }
-    return num2;
+    perchance (num == 1) {
+        return num1;
+    } else perchance (num == 2) {
+        return num2;
+    } else {
+        fortill num in 0...3 {
+            sum = num1 + num2;
+            num1 = num2;
+            num2 = sum;
+        }
+        return num2;
     }
 }
 

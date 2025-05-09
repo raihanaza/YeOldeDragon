@@ -86,7 +86,7 @@ export default function analyze(match) {
   }
 
   function checkBothSameType(e1, e2, at) {
-    check(e1.type === e2.type, `Operands must have the same type`, at);
+    check(equivalent(e1, e2), `Operands must have the same type`, at);
   }
 
   function checkAllSameType(elements, at) {
@@ -99,9 +99,7 @@ export default function analyze(match) {
   }
 
   function includesAsField(objectType, type) {
-    return objectType.fields.some(
-      (field) => field.type === type
-    );
+    return objectType.fields.some((field) => field.type === type);
   }
 
   function checkIfSelfContaining(objectType, at) {
@@ -126,7 +124,7 @@ export default function analyze(match) {
     return (
       toType === core.anyType ||
       equivalent(fromType, toType) ||
-      (fromType == core.anyType && toType?.kind === "ListType") ||
+      (fromType === core.anyType && toType?.kind === "ListType") ||
       fromType === toType.baseType ||
       fromType === toType.baseType?.name
     );
@@ -134,12 +132,11 @@ export default function analyze(match) {
 
   function typeDescription(type) {
     if (typeof type === "string") return type;
-    if (type.kind == "ObjectType") return type.name;
-    if (type.kind == "ListType") return `[${typeDescription(type.baseType)}]`;
-    if (type.kind == "OptionalType") return `${typeDescription(type.baseType)}?`;
+    if (type.kind === "ObjectType") return type.name;
+    if (type.kind === "ListType") return `[${typeDescription(type.baseType)}]`;
+    if (type.kind === "OptionalType") return `${typeDescription(type.baseType)}?`;
   }
 
-  // TODO: still need to work on throwing error if missing arg name?
   function checkArgNameMatchesParam(e, name, at) {
     check(assignable(e.name, name), `Cannot assign ${e.name} to ${name}`, at);
   }
@@ -211,9 +208,8 @@ export default function analyze(match) {
     check(argCount === paramCount, `Expected ${paramCount} arguments but got ${argCount}`, at);
   }
 
-
   function checkIfReturnable(e, { from: f }, at) {
-    checkIsAssignable(e, f.type.returnType, at);
+    checkIsAssignable(e, f.type.returnType, );
   }
 
   const analyzer = grammar.createSemantics().addOperation("analyze", {
@@ -247,7 +243,6 @@ export default function analyze(match) {
       const paramTypes = func.params.map((param) => param.type);
       const paramNames = func.params.map((param) => param.name);
       const returnType = type.children?.[0]?.analyze();
-      // const returnType = type.children?.[0]?.analyze() ?? core.voidType;
       func.type = core.functionType(paramNames, paramTypes, returnType);
 
       // Analyze body while still in child context
@@ -288,8 +283,6 @@ export default function analyze(match) {
       context = context.newChildContext({ inLoop: false, classDecl: type });
       checkIfSelfContaining(type, id);
       type.methods = methods.analyze();
-      // checkHadDistinctMethods(type, id);
-      // maybe just check if have distinct methods names since don't want to overload?
       context = context.parent;
       return core.classDeclaration(type);
     },
@@ -342,7 +335,6 @@ export default function analyze(match) {
     Statement_incdec(id, op, _semi) {
       const variable = id.analyze();
       checkHasNumericType(variable, id);
-      //TODO: check if there's a cleaner way to check this
       if (op.sourceString === "++") {
         return core.incrementStatement(variable);
       }
@@ -354,7 +346,7 @@ export default function analyze(match) {
     Statement_assign(variable, _eq, exp, _semi) {
       const target = variable.analyze();
       const source = exp.analyze();
-      checkBothSameType(target, source, variable);
+      checkBothSameType(target, source, { at: variable });
       checkIsMutable(target, variable);
       checkIsAssignable(source, target.type, source);
       return core.assignmentStatement(target, source, target.type);
@@ -492,7 +484,7 @@ export default function analyze(match) {
       const test = exp1.analyze();
       checkHasBoolenType(test, exp1);
       const [consequence, alternate] = [exp2.analyze(), exp3.analyze()];
-      checkBothSameType(consequence, alternate, exp2);
+      checkBothSameType(consequence, alternate, { at: exp2 });
       return core.ternaryExpression(test, consequence, alternate);
     },
 
@@ -525,7 +517,7 @@ export default function analyze(match) {
     },
     Exp3_compare(exp1, relop, exp2) {
       const [left, op, right] = [exp1.analyze(), relop.sourceString, exp2.analyze()];
-      checkBothSameType(left, right, exp1);
+      checkBothSameType(left, right, { at: exp1 });
       if (["==", "!="].includes(op)) {
         return core.binaryExpression(op, left, right, BOOLEAN);
       } else if (["<", "<=", ">", ">="].includes(op)) {
@@ -538,21 +530,21 @@ export default function analyze(match) {
       const [left, op, right] = [exp1.analyze(), addOp.sourceString, exp2.analyze()];
       checkHasNumericType(left, exp1);
       checkHasNumericType(right, exp2);
-      checkBothSameType(left, right, exp1);
+      checkBothSameType(left, right, { at: exp1 });
       return core.binaryExpression(op, left, right, left.type);
     },
 
     Exp5_multiply(exp1, mulOp, exp2) {
       const [left, op, right] = [exp1.analyze(), mulOp.sourceString, exp2.analyze()];
       checkHasNumericType(left, exp1);
-      checkBothSameType(left, right, exp1);
+      checkBothSameType(left, right, { at: exp1 });
       return core.binaryExpression(op, left, right, left.type);
     },
 
     Exp6_power(exp1, powerOp, exp2) {
       const [left, op, right] = [exp1.analyze(), powerOp.sourceString, exp2.analyze()];
       checkHasNumericType(left, exp1);
-      checkBothSameType(left, right, exp1);
+      checkBothSameType(left, right, { at: exp1 });
       return core.binaryExpression(op, left, right, left.type);
     },
 
@@ -614,7 +606,6 @@ export default function analyze(match) {
           objectType = object.type;
         }
         checkHasMember(classDecl, id.sourceString, id);
-        // const field = objectType.fields.find((f) => f.name === id.sourceString);
         return core.memberExpression(classDecl, dot.sourceString, object, true);
       } else {
         const object = exp.analyze();

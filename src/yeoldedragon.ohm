@@ -93,9 +93,7 @@ YeOldeDragon {
     don = "don" ~idchar
     matter = "matter" ~idchar
     init = "init" ~idchar
-    changeth = "changeth" ~idchar
     breaketh = "breaketh" ~idchar
-    spell = "spell" ~idchar
     defaulte = "defaulte" ~idchar
     return = "return" ~idchar
     shall = "shall" ~idchar
@@ -106,7 +104,7 @@ YeOldeDragon {
 
     id = ~keyword letter idchar*
     keyword = proclaim | thine | fact | fortill | whilst | perchance | else | don
-            | matter | init | changeth | spell | defaulte | shall | shant | in | return
+            | matter | init | defaulte | shall | shant | in | return
             | breaketh | ne | ye | zilch
     idchar = letter | digit | "_"
     numeral = digit+ ("." digit+)? (("E"|"e") ("+"|"-")? digit+)?

@@ -4,7 +4,9 @@ matter Car {
         ye.model: string = model;
         ye.year: int = year;
         ye.yearsOwned: int = year + 0;
-        ye.yearsOwned: int = year + 0;
+        ~ In the analyzer, there is a check to make sure that there are no duplicate fields in structs and classes.
+        ~ Expected error if the line below is uncommented: Fields in init must be distinct from each other
+        ~ ye.yearsOwned: int = year + 0;
     }
 }
 thine car: Car = Car(color: "blue", model: "ford", year: 2025);

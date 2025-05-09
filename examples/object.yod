@@ -5,7 +5,7 @@ matter Coffee {
         ye.name: string = name;
         ye.origin: string? = zilch string;
         ye.seasonal: boolean? = seasonal;
-        ye.expired: boolean = false
+        ye.expired: boolean = shant;
     }
 
     don brew() -> void {

@@ -1,9 +1,9 @@
 matter Car {
     init (color: string, model: string, year: int, yearsOwned: int?) {
-        ye.color = color;
-        ye.model = model;
-        ye.year = year;
-        ye.yearsOwned = 0;
+        ye.color: string = color;
+        ye.model: string = model;
+        ye.year: int = year;
+        ye.yearsOwned: int? = zilch int;
     }
 
     don vroom() -> void {
