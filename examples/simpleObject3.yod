@@ -1,5 +1,5 @@
 matter Coffee {
     init(seasonal: boolean?) {
-        ye.seasonal = seasonal;
+        ye.seasonal: boolean? = seasonal;
     }
 }
