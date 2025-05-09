@@ -1,0 +1,9 @@
+don addNums(num1: int, num2: int) -> int {
+    return num1 + num2;
+}
+
+don subNums(num1: int, num2: int) -> int {
+    return num1 - num2;
+}
+
+thine x: int = addNums(num1: 1, num2: 2);

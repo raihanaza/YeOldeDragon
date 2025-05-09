@@ -1,0 +1,22 @@
+
+matter Coffee {
+    init(roast: int, name: string, origin: string?, seasonal: boolean?) {
+        ye.roast: int = roast + 2;
+        ye.name: string = name;
+        ye.origin: string? = zilch string;
+        ye.seasonal: boolean? = seasonal;
+        ye.expired: boolean = shant;
+    }
+
+    don brew() -> void {
+        proclaim("This coffee is called ${ye.name} and it is a ${ye.roast}.");
+    }
+
+    don countryOfOrigin() -> string? {
+        return ye?.origin ?? "unknown";
+    }
+
+    don isSeasonal() -> boolean? {
+        return ye?.seasonal ?? shant;
+    }
+}

@@ -8,14 +8,15 @@ Ye Olde Dragon is brought to you by [Raihana Zahra](https://github.com/raihanaza
 
 Our langauge website can be found at https://raihanaza.github.io/YeOldeDragon/.
 
+Our grammar can be found [here](https://github.com/raihanaza/YeOldeDragon/blob/f55a9db563b277290647255097130c814e981888/src/yeoldedragon.ohm).
+
 ## Features
 - .yod File Extension
 - Static and strong typing
 - Manifest typing
-- Ternary Conditional Statement
-- Truthy/Falsy types
-- Switch statements without fall-through
-
+- Structs and Classes
+- Various types of Loops
+- String interpolation
 
 ## Types
 | YeOldeDragon          | JavaScript           |
@@ -30,8 +31,9 @@ Our langauge website can be found at https://raihanaza.github.io/YeOldeDragon/.
 ## Data Structures
 | Structure  | JavaScript Syntax       | YeOldeDragon Syntax                  |
 |------------|------------------------|-------------------------------------|
-| Lists      | `[a, b, c, d]`          | `[dragon, dragin, dragen]`         |
-| Objects    | `{ 'a': 'b', 'c': 'd' }` | `{ "dragon": "a", "drugon": "b" }` |
+| Lists      | `thine dragons: [string] = ["Night Fury", "Monstrous Nightmare", "Nadder", "Gronkle"];`          | `let dragons = ["Night Fury", "Monstrous Nightmare", "Nadder", "Gronkle"];`         |
+| Objects    | `matter Dragon { name: string, type: string, age: int }` | `class Dragon { constructor(name, type, age) { this.name = name; this.type = type; this.age = age; } }` |
+| Classes    | `matter Car { init( color: string, model: string, year: int) { ye.color = color; ye.model = model; ye.year = year; } don vroom() -> void { proclaim("vroom vroom"); } }` | `class Car { constructor(color, model, year) { this.color = color; this.model = model; this.year = year; } vroom() { console.log("vroom vroom); } }` |
 
 
 ## Operators
@@ -62,7 +64,7 @@ Our langauge website can be found at https://raihanaza.github.io/YeOldeDragon/.
 | Assignment               | `=`    | All                               |
 
 ## Code Examples
-Here are some examples, Ye Olde Dragon on the left, JavaScript on the right.
+Here are some examples, YeOldeDragon on the left, JavaScript on the right.
 
 ### Comments
 | YeOldeDragon   | JavaScript                   |
@@ -99,8 +101,9 @@ Here are some examples, Ye Olde Dragon on the left, JavaScript on the right.
 
 ```
 thine coins: [string] = [“gold”, “silver”, “bronze”];
+
 fortill (coin in coins) {
-    proclaim(“We have a ${coin} today!”);
+    proclaim(“We have a ${coin} coin today!”);
 }
 ```
 
@@ -111,7 +114,7 @@ fortill (coin in coins) {
 let coins = [“gold”, “silver”, “bronze”];
 
 for (coin in coins) {
-    console.log(“We have a “ + coins.length + “ today!”);
+    console.log(“We have a “ + coin + “ coin today!”);
 }
 ```
 
@@ -123,8 +126,9 @@ for (coin in coins) {
 
 ```
 thine dragons: int = 10;
+
 whilst (dragons > 0) {
-    proclaim(“There are ${toString(dragons)} left in the café”);
+    proclaim(“There are still dragons left in the café”);
     dragons--;
 }
 ```
@@ -134,8 +138,9 @@ whilst (dragons > 0) {
 
 ```
 let dragons = 10;
+
 while (dragons > 0) {
-    console.log(“There are “ + dragons + “ left in the café”);
+    console.log(“There are still dragons left in the café”);
     dragons--;
 }
 ```
@@ -177,3 +182,99 @@ if (caféIsOpen == true) {
 </td>
 </tr>
 </table>
+
+### Function Calls
+<table>
+<tr> <th>YeOldeDragon</th><th>JavaScript</th> </tr>
+<tr>
+<td>
+
+```
+don printNum(num: int) -> int {
+    proclaim(num);
+}
+
+printNum(num: 5);
+```
+
+</td>
+<td>
+
+```
+function printNum(num) {
+    console.log(num);
+}
+
+printNum(5);
+```
+
+</td>
+</tr>
+</table>
+
+### Class Declaration
+<table>
+<tr> <th>YeOldeDragon</th><th>JavaScript</th> </tr>
+<tr>
+<td>
+
+```
+matter Car {
+    init (color: string, model: string, year: int) {
+        ye.color = color;
+        ye.model = model;
+        ye.year = year;
+    }
+}
+
+thine car: Car = Car(color: "blue", model: "ford", year: 2025);
+proclaim("This car is a ${car.model} in the color ${car.color}.");
+```
+
+</td>
+<td>
+
+```
+class Car {
+    constructor(color, model, year) {
+        this.color = color;
+        this.model = model;
+        this.year = year;
+    }
+}
+
+let car = new Car("blue", "ford", 2025);
+console.log(`This car is a ${car.model} in the color ${car.color}.`);
+```
+
+</td>
+</tr>
+</table>
+
+```
+
+matter SimpleCar {
+    color: string
+    model: string
+    year: int
+}
+
+matter Car {
+    init (color: string, model: string, year: int, yearsOwned: int?) {
+        ye.color: string = color;
+        ye.model: string = model;
+        ye.year: int = year;
+        ye.yearsOwned: int? = 0;
+    }
+
+    don vroom() -> void {
+        proclaim("vroom vroom ${ye.model}");
+    }
+}
+
+thine car: Car = Car(color: "blue", model: "ford", year: 2025);
+proclaim("This ${car.model} in ${car.color} is a ${car.year} model and has been owned for ${car.yearsOwned} years.");
+
+thine car2: Car? = Car(color: "blue", model: "ford", year: 2025);
+proclaim("This ${car2?.model} in ${car2?.color} is a ${car2?.year} model and has been owned for ${car.yearsOwned} years.");
+```

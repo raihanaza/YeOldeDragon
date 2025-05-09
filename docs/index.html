@@ -76,34 +76,6 @@
         </div>
       </section>
 
-      <section id="data-structures">
-        <h2>Data Structures</h2>
-
-        <div class="code-title">Lists</div>
-        <div class="code-block">
-          <pre><code>thine dragons: [string] = ["Night Fury", "Monstrous Nightmare", "Nadder", "Gronkle"];</code></pre>
-        </div>
-
-        <div class="code-title">Objects</div>
-        <div class="code-block">
-          <pre><code>matter Dragon { 
-    name: string, type: string, age: int 
-}</code></pre>
-        </div>
-
-        <div class="code-title">Classes</div>
-        <div class="code-block">
-          <pre><code>matter Car { 
-    init( color: string, model: string, year: int) { 
-        ye.color = color; 
-        ye.model = model; 
-        ye.year = year; 
-    } 
-
-don vroom() -> void { proclaim("vroom vroom"); } }</code></pre>
-        </div>
-      </section>
-
       <section id="examples">
         <h2>Code Examples</h2>
 
@@ -116,8 +88,18 @@ don vroom() -> void { proclaim("vroom vroom"); } }</code></pre>
         <div class="code-block">
           <pre><code>thine gold_cups: int = 8;
 
-fact pi: float = 3.14159;	
-</code></pre>
+fact pi: float = 3.14159;
+
+thine maybe: string? = zilch string;</code></pre>
+        </div>
+
+        <div class="code-title">While Loops</div>
+        <div class="code-block">
+          <pre><code>thine dragons: int = 10;
+whilst (dragons > 0) {
+    proclaim(“There are still dragons left in the café”);
+    dragons--;
+}</code></pre>
         </div>
 
         <div class="code-title">For Loops</div>
@@ -172,9 +154,8 @@ proclaim("This car is a ${car.model} in the color ${car.color}.");
     }
     return num * factorial(num: num - 1);
 }
-          
-proclaim(factorial(5));
-~ Expected output: 120</code></pre>
+
+proclaim(factorial(5));</code></pre>
         </div>
 
         <section id="devs">

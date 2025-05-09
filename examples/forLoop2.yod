@@ -1,0 +1,14 @@
+fortill i in 3...10 {
+    proclaim("I am in the loop! Currently at ${i}");
+}
+
+
+fortill i in 3..<10 {
+    proclaim("I am in the loop! Currently at ${i}");
+}
+
+thine dragons: [string] = ["Night Fury", "Monstrous Nightmare", "Nadder", "Gronkle"];
+fortill dragon in dragons {
+    proclaim("Thee hath trained the following dragon: ${dragon}");
+}
+proclaim(dragons[0]);
