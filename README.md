@@ -29,7 +29,7 @@ Our grammar can be found [here](https://github.com/raihanaza/YeOldeDragon/blob/f
 
 
 ## Data Structures
-| Structure  | JavaScript Syntax       | YeOldeDragon Syntax                  |
+| Structure  | YeOldeDragon Syntax       | JavaScript Syntax                  |
 |------------|------------------------|-------------------------------------|
 | Lists      | `thine dragons: [string] = ["Night Fury", "Monstrous Nightmare", "Nadder", "Gronkle"];`          | `let dragons = ["Night Fury", "Monstrous Nightmare", "Nadder", "Gronkle"];`         |
 | Objects    | `matter Dragon { name: string, type: string, age: int }` | `class Dragon { constructor(name, type, age) { this.name = name; this.type = type; this.age = age; } }` |
